@@ -22,7 +22,7 @@
 		<url>http://www.esciencecenter.nl</url>
 	</organization>
 	<properties>
-		<octopus-version>0..</octopus-version>
+		<octopus.version>0.1</octopus.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<dropwizard.version>0.6.2</dropwizard.version>
 	</properties>
@@ -31,6 +31,21 @@
 			<groupId>com.yammer.dropwizard</groupId>
 			<artifactId>dropwizard-core</artifactId>
 			<version>${dropwizard.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.yammer.dropwizard</groupId>
+			<artifactId>dropwizard-client</artifactId>
+			<version>${dropwizard.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>nl.esciencecenter.octopus</groupId>
+			<artifactId>octopus</artifactId>
+			<version>${octopus.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>nl.esciencecenter.octopus</groupId>
+			<artifactId>octopus-adaptor-local</artifactId>
+			<version>${octopus.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
