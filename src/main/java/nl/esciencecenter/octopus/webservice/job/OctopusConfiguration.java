@@ -2,6 +2,8 @@ package nl.esciencecenter.octopus.webservice.job;
 
 import java.net.URI;
 
+import javax.validation.Valid;
+
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -21,54 +23,53 @@ public class OctopusConfiguration {
      */
     @NotEmpty
     @JsonProperty
-    private String schedulerURI;
+    private URI scheduler;
 
     /**
-     * JavaGAT preferences, these could also be put javagat.properties file, but I like scheduler together with it's preferences
+     * Queue of scheduler used to submit jobs
+     */
+    @NotEmpty
+    @JsonProperty
+    private String queue;
+
+    /**
+     * Place where sandboxes get created. For `local` scheduler set it to `file:///tmp` for example. For `ssh` scheduler set it to
+     * `ssh://<machine>/tmp`
+     */
+    @JsonProperty
+    @NotEmpty
+    private URI sandboxRoot;
+
+    /**
+     * Octopus preferences, these could also be put octopus.properties file, but I like scheduler together with it's preferences
      */
     @JsonProperty
     private ImmutableMap<String, Object> preferences = ImmutableMap.of();
 
     /**
-     * The job state has to be polled.
-     * This is the time in milliseconds between poll calls.
+     * Fields required for polling the state of a job.
      */
-    @JsonProperty
-    private int statePollInterval = 500;
+    @Valid
+    @JsonProperty("poll")
+    private PollConfiguration pollConfiguration = new PollConfiguration();
 
-    /**
-     * The job state has to be polled.
-     * This is the time in milliseconds it polls before canceling the job.
-     */
-    @JsonProperty
-    private int statePollTimeout = 1000*60*60; // one hour
-
-    /**
-     * Place where sandboxes get created.
-     * For `local` scheduler set it to `file:///tmp` for example.
-     * For `ssh` scheduler set it to `ssh://<machine>/tmp`
-     */
-    @JsonProperty
-    private URI sandboxRoot;
-
-    public OctopusConfiguration(String schedulerURI, ImmutableMap<String, Object> preferences, int statePollInterval, int statePollTimeout, URI sandboxRoot) {
-        this.schedulerURI = schedulerURI;
-        this.preferences = preferences;
-        this.statePollInterval = statePollInterval;
-        this.statePollTimeout = statePollTimeout;
+    public OctopusConfiguration(URI scheduler, String queue, URI sandboxRoot, ImmutableMap<String, Object> preferences) {
+        this.scheduler = scheduler;
+        this.queue = queue;
         this.sandboxRoot = sandboxRoot;
+        this.preferences = preferences;
     }
 
     public OctopusConfiguration() {
-        this.schedulerURI = null;
+        this.scheduler = null;
     }
 
-    public String getSchedulerURI() {
-        return schedulerURI;
+    public URI getScheduler() {
+        return scheduler;
     }
 
-    public void setSchedulerURI(String schedulerURI) {
-        this.schedulerURI = schedulerURI;
+    public void setScheduler(URI scheduler) {
+        this.scheduler = scheduler;
     }
 
     public ImmutableMap<String, Object> getPreferences() {
@@ -79,22 +80,6 @@ public class OctopusConfiguration {
         this.preferences = preferences;
     }
 
-    public int getStatePollInterval() {
-        return statePollInterval;
-    }
-
-    public void setStatePollInterval(int statePollInterval) {
-        this.statePollInterval = statePollInterval;
-    }
-
-    public int getStatePollTimeout() {
-        return statePollTimeout;
-    }
-
-    public void setStatePollTimeout(int statePollTimeout) {
-        this.statePollTimeout = statePollTimeout;
-    }
-
     public URI getSandboxRoot() {
         return sandboxRoot;
     }
@@ -103,9 +88,25 @@ public class OctopusConfiguration {
         this.sandboxRoot = sandboxRoot;
     }
 
+    public String getQueue() {
+        return queue;
+    }
+
+    public void setQueue(String queue) {
+        this.queue = queue;
+    }
+
+    public PollConfiguration getPollConfiguration() {
+        return pollConfiguration;
+    }
+
+    public void setPollConfiguration(PollConfiguration pollConfiguration) {
+        this.pollConfiguration = pollConfiguration;
+    }
+
     @Override
     public int hashCode() {
-        return Objects.hashCode(schedulerURI, preferences, statePollInterval);
+        return Objects.hashCode(scheduler, queue, preferences, sandboxRoot, pollConfiguration);
     }
 
     @Override
@@ -115,7 +116,19 @@ public class OctopusConfiguration {
         if (getClass() != obj.getClass())
             return false;
         OctopusConfiguration other = (OctopusConfiguration) obj;
-        return Objects.equal(this.schedulerURI, other.schedulerURI) && Objects.equal(this.preferences, other.preferences)
-                && Objects.equal(this.statePollInterval, other.statePollInterval);
+        return Objects.equal(this.scheduler, other.scheduler) && Objects.equal(this.preferences, other.preferences)
+                && Objects.equal(this.pollConfiguration, other.pollConfiguration) && Objects.equal(this.queue, other.queue)
+                && Objects.equal(this.sandboxRoot, other.sandboxRoot);
+    }
+
+    @Override
+    public String toString() {
+        return com.google.common.base.Objects.toStringHelper(this)
+                .addValue(this.scheduler)
+                .addValue(this.queue)
+                .addValue(this.sandboxRoot)
+                .addValue(this.preferences)
+                .addValue(this.pollConfiguration)
+                .toString();
     }
 }

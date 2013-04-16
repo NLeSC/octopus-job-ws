@@ -7,6 +7,7 @@ import nl.esciencecenter.octopus.webservice.job.OctopusConfiguration;
 import nl.esciencecenter.octopus.webservice.mac.MacCredential;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
 import com.yammer.dropwizard.client.HttpClientConfiguration;
 import com.yammer.dropwizard.config.Configuration;
@@ -88,4 +89,29 @@ public class JobLauncherConfiguration extends Configuration {
         return macs;
     }
 
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(macs, octopusConfiguration, httpClient);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        JobLauncherConfiguration other = (JobLauncherConfiguration) obj;
+        return Objects.equal(this.macs, other.macs)
+                && Objects.equal(this.octopusConfiguration, other.octopusConfiguration)
+                && Objects.equal(this.httpClient, other.httpClient);
+    }
+
+    @Override
+    public String toString() {
+        return com.google.common.base.Objects.toStringHelper(this)
+                .addValue(this.macs)
+                .addValue(this.octopusConfiguration)
+                .addValue(this.httpClient)
+                .toString();
+    }
 }

@@ -64,8 +64,10 @@ public class JobLauncherServiceTest {
     private JobLauncherConfiguration sampleConfiguration()
             throws URISyntaxException {
         ImmutableMap<String, Object> prefs = ImmutableMap.of(
-                "localq.max.concurrent.jobs", (Object) 1);
-        OctopusConfiguration gat = new OctopusConfiguration("localq://localhost", prefs);
+                "octopus.adaptors.local.queue.multi.maxConcurrentJobs", (Object) 1);
+        URI scheduler = new URI("local:///");
+        URI sandboxRoot = new URI("file:///tmp/sandboxes");
+        OctopusConfiguration gat = new OctopusConfiguration(scheduler, "multi", sandboxRoot, prefs);
         ImmutableList<MacCredential> macs = ImmutableList.of(new MacCredential(
                 "id", "key", new URI("http://localhost")));
         HttpClientConfiguration httpClient = new HttpClientConfiguration();

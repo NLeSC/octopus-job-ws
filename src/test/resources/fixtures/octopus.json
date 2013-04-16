@@ -1,6 +1,12 @@
 {
-	"brokerURI": "localq://localhost",
+	"scheduler": "local:///",
+	"queue": "multi",
+	"sandboxRoot": "file:///tmp/sandboxes",
 	"preferences": {
-		"localq.max.concurrent.jobs": 1
+		"octopus.adaptors.local.queue.multi.maxConcurrentJobs": 4
+	},
+	"poll": {
+	   "interval": 500,
+	   "timeout": 3600000
 	}
 }

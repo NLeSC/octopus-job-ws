@@ -1,11 +1,14 @@
 package nl.esciencecenter.octopus.webservice.resources;
 
+import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 
-import nl.esciencecenter.octopus.Octopus;
+import nl.esciencecenter.octopus.exceptions.OctopusException;
+import nl.esciencecenter.octopus.exceptions.OctopusIOException;
 import nl.esciencecenter.octopus.jobs.Job;
-import nl.esciencecenter.octopus.jobs.JobDescription;
 import nl.esciencecenter.octopus.jobs.JobStatus;
 import nl.esciencecenter.octopus.webservice.api.JobSubmitRequest;
 import nl.esciencecenter.octopus.webservice.api.JobSubmitResponse;
@@ -54,9 +57,21 @@ public class JobLauncherResource {
      */
     @POST
     @Timed
-    public JobSubmitResponse launchJob(JobSubmitRequest request) throws Exception {
+    public JobSubmitResponse submitJob(JobSubmitRequest request) throws Exception {
         Job job = octopusmanager.submitJob(request, httpClient);
 
         return new JobSubmitResponse(job.getIdentifier());
+    }
+
+    @GET @Path("/{jobidentifier}")
+    @Timed
+    public JobStatus stateOfJob(@PathParam("jobidentifier") String jobIdentifier) throws OctopusIOException, OctopusException {
+        return octopusmanager.stateOfJob(jobIdentifier);
+    }
+
+    @DELETE @Path("/{jobidentifier}")
+    @Timed
+    public void cancelJob(@PathParam("jobidentifier") String jobIdentifier) throws OctopusIOException, OctopusException {
+        octopusmanager.cancelJob(jobIdentifier);
     }
 }

@@ -5,10 +5,16 @@
 		"scope": "http://localhost",
 		"algorithm": "hmac-sha-1"
 	}],
-	"gat": {
-		"brokerURI": "localq://localhost",
-		"preferences": {
-			"localq.max.concurrent.jobs": 1
-		}
-	}
+    "octopus": {
+        "scheduler": "local:///",
+        "queue": "multi",
+        "sandboxRoot": "file:///tmp/sandboxes",
+        "preferences": {
+            "octopus.adaptors.local.queue.multi.maxConcurrentJobs": 4
+        },
+        "poll": {
+           "interval": 500,
+           "timeout": 3600000
+        }
+    }
 }

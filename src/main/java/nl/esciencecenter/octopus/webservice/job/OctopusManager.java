@@ -2,11 +2,13 @@ package nl.esciencecenter.octopus.webservice.job;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.UUID;
 
-import org.apache.http.client.HttpClient;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Response.Status;
 
 import nl.esciencecenter.octopus.Octopus;
 import nl.esciencecenter.octopus.OctopusFactory;
@@ -18,9 +20,12 @@ import nl.esciencecenter.octopus.files.FileSystem;
 import nl.esciencecenter.octopus.files.RelativePath;
 import nl.esciencecenter.octopus.jobs.Job;
 import nl.esciencecenter.octopus.jobs.JobDescription;
+import nl.esciencecenter.octopus.jobs.JobStatus;
 import nl.esciencecenter.octopus.jobs.Scheduler;
 import nl.esciencecenter.octopus.util.Sandbox;
 import nl.esciencecenter.octopus.webservice.api.JobSubmitRequest;
+
+import org.apache.http.client.HttpClient;
 
 import com.yammer.dropwizard.lifecycle.Managed;
 
@@ -35,6 +40,7 @@ public class OctopusManager implements Managed {
     private final Octopus octopus;
     private final Scheduler scheduler;
     private final Credential credential = null;
+    private final Map<String, SandboxedJob> jobs = new HashMap<String, SandboxedJob>();
 
     /**
      * Sets preferences in GAT context and initializes a broker.
@@ -50,73 +56,79 @@ public class OctopusManager implements Managed {
         Properties properties = new Properties();
         Set<String> keys = configuration.getPreferences().keySet();
         for (String key : keys) {
-            String value = (String) configuration.getPreferences().get(key);
+            String value = configuration.getPreferences().get(key).toString();
             properties.setProperty(key, value);
         }
 
         octopus = OctopusFactory.newOctopus(properties);
-        URI schedulerURI = new URI(configuration.getSchedulerURI());
+        URI schedulerURI = configuration.getScheduler();
         // TODO parse credentials from config of prompt user for password/passphrases
         scheduler = octopus.jobs().newScheduler(schedulerURI, credential, null);
+    }
+
+    protected OctopusManager(OctopusConfiguration configuration, Octopus octopus, Scheduler scheduler) {
+        super();
+        this.configuration = configuration;
+        this.octopus = octopus;
+        this.scheduler = scheduler;
     }
 
     public void start() throws Exception {
     }
 
     /**
-     * Terminates any running JavaGAT processes.
+     * Terminates any running Octopus processes.
      */
     public void stop() throws Exception {
-        // TODO replace with end of octopus instance
-        OctopusFactory.end();
+        // TODO should I call OctopusFactory.endAll() or the octopus.end()
+        octopus.end();
     }
 
-    public Octopus getOctopus() {
-        return octopus;
-    }
+    public Job submitJob(JobSubmitRequest request, HttpClient httpClient) throws OctopusIOException, OctopusException,
+            URISyntaxException {
+        //create sandbox
+        FileSystem sandboxFS = octopus.files().newFileSystem(configuration.getSandboxRoot(), credential, null);
+        String sandboxRoot = configuration.getSandboxRoot().getPath();
+        AbsolutePath sandboxRootPath =
+                octopus.files().newPath(sandboxFS, new RelativePath(sandboxRoot));
+        Sandbox sandbox = request.toSandbox(octopus, sandboxRootPath, null);
 
-    public Scheduler getScheduler() {
-        return scheduler;
-    }
+        // create job description
+        JobDescription description = request.toJobDescription(octopus);
+        description.setQueueName(configuration.getQueue());
+        description.setWorkingDirectory(sandbox.getPath().getPath());
 
-    public Job submitJob(JobSubmitRequest request, HttpClient httpClient) throws Exception {
-        JobDescription description = new JobDescription();
-        description.setExecutable(request.executable);
-        description.setArguments(request.arguments);
-
-        String sandbox_id = UUID.randomUUID().toString();
-        FileSystem localrootfs = octopus.files().newFileSystem(new URI("file:///"), credential, null);
-        FileSystem localjobdirfs = octopus.files().newFileSystem(new URI("file://"+request.jobdir), credential, null);
-        FileSystem filesystem = octopus.files().newFileSystem(configuration.getSandboxRoot(), credential, null);
-        RelativePath location = new RelativePath(System.getProperty("java.io.tmpdir") + "/" + sandbox_id);
-        AbsolutePath root = octopus.files().newPath(filesystem, location);
-        Sandbox sandbox = new Sandbox(octopus, root, sandbox_id);
-
-        // Upload files in request to sandbox
-        for (String prestage : request.prestaged) {
-            AbsolutePath src;
-            if (prestage.startsWith("/")) {
-                src = octopus.files().newPath(localrootfs, new RelativePath(prestage));
-            } else {
-                src = octopus.files().newPath(localjobdirfs, new RelativePath(prestage));
-            }
-            sandbox.addUploadFile(src, src.getFileName());
-        }
-        // Download files from sandbox to request.jobdir
-        for (String poststaged : request.poststaged) {
-            AbsolutePath dest = octopus.files().newPath(localjobdirfs, new RelativePath(poststaged));
-            sandbox.addDownloadFile(poststaged, dest);
-        }
-
+        // stage input files and submit job
         sandbox.upload();
-
         Job job = octopus.jobs().submitJob(scheduler, description);
 
+        // store job in jobs map
         URI callback = request.status_callback_url;
+        SandboxedJob sjob = new SandboxedJob(sandbox, job, callback, httpClient);
+        jobs.put(job.getIdentifier(), sjob);
 
-        JobPoller jp = new JobPoller(configuration.getStatePollTimeout(), configuration.getStatePollInterval(), octopus, job, sandbox, callback, httpClient);
+        // poll job status
+        JobPoller jp = new JobPoller(sjob, configuration.getPollConfiguration(), octopus);
         jp.start();
 
         return job;
+    }
+
+    public JobStatus stateOfJob(String jobIdentifier) throws OctopusIOException, OctopusException {
+        SandboxedJob job;
+        if ((job = jobs.get(jobIdentifier)) != null) {
+            return octopus.jobs().getJobStatus(job.getJob());
+        } else {
+            throw new WebApplicationException(Status.NOT_FOUND);
+        }
+    }
+
+    public void cancelJob(String jobIdentifier) throws OctopusIOException, OctopusException {
+        SandboxedJob job;
+        if ((job = jobs.get(jobIdentifier)) != null) {
+            octopus.jobs().cancelJob(job.getJob());
+        } else {
+            throw new WebApplicationException(Status.NOT_FOUND);
+        }
     }
 }

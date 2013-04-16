@@ -5,6 +5,8 @@ import static com.yammer.dropwizard.testing.JsonHelpers.jsonFixture;
 import static org.fest.assertions.api.Assertions.assertThat;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 import nl.esciencecenter.octopus.webservice.job.OctopusConfiguration;
 
@@ -15,21 +17,19 @@ import com.google.common.collect.ImmutableMap;
 public class OctopusConfigurationTest {
 
     @Test
-    public void testGATConfigurationBrokerPrefs() {
+    public void testGATConfigurationBrokerPrefs() throws URISyntaxException {
+        URI scheduler = new URI("local:///");
+        String queue = null;
+        URI sandbox = new URI("file:///tmp");
         ImmutableMap<String, Object> prefs = ImmutableMap.of(
-                "localq.max.concurrent.jobs", (Object) 1);
+                "octopus.adaptors.local.queue.multi.maxConcurrentJobs", (Object) 1);
 
-        OctopusConfiguration g = new OctopusConfiguration("localq://localhost", prefs);
+        OctopusConfiguration g = new OctopusConfiguration(scheduler, queue, sandbox, prefs);
 
-        assertThat(g.getBrokerURI()).isEqualTo("localq://localhost");
+        assertThat(g.getScheduler()).isEqualTo(scheduler);
+        assertThat(g.getQueue()).isEqualTo(queue);
+        assertThat(g.getSandboxRoot()).isEqualTo(sandbox);
         assertThat(g.getPreferences()).isEqualTo(prefs);
-    }
-
-    @Test
-    public void testSetGetBrokerURI() {
-        OctopusConfiguration g = new OctopusConfiguration();
-        g.setBrokerURI("localq://localhost");
-        assertThat(g.getBrokerURI()).isEqualTo("localq://localhost");
     }
 
     @Test
@@ -49,38 +49,17 @@ public class OctopusConfigurationTest {
     }
 
     @Test
-    public void deserializesFromJSON() throws IOException {
+    public void deserializesFromJSON() throws IOException, URISyntaxException {
         OctopusConfiguration actual = fromJson(jsonFixture("fixtures/octopus.json"),
                 OctopusConfiguration.class);
 
-        assertThat(actual.getBrokerURI()).isEqualTo("localq://localhost");
+        assertThat(actual.getScheduler()).isEqualTo(new URI("local:///"));
+        assertThat(actual.getQueue()).isEqualTo("multi");
+        assertThat(actual.getSandboxRoot()).isEqualTo(new URI("file:///tmp/sandboxes"));
         ImmutableMap<String, Object> prefs = ImmutableMap.of(
-                "localq.max.concurrent.jobs", (Object) 1);
+                "octopus.adaptors.local.queue.multi.maxConcurrentJobs", (Object) 4);
         assertThat(actual.getPreferences()).isEqualTo(prefs);
-    }
-
-    @Test
-    public void hasAWorkingEqualsMethod() throws Exception {
-        ImmutableMap<String, Object> prefs = ImmutableMap.of(
-                "localq.max.concurrent.jobs", (Object) 1);
-
-        OctopusConfiguration g = new OctopusConfiguration("localq://localhost", prefs);
-
-        assertThat(g.equals(g)).isTrue();
-
-        assertThat(g.equals(new OctopusConfiguration("localq://localhost", prefs)))
-                .isTrue();
-
-        assertThat(g.equals(null)).isFalse();
-
-        assertThat(g.equals("string")).isFalse();
-
-        assertThat(g.equals(new OctopusConfiguration("ssh://example.com", prefs)))
-                .isFalse();
-
-        ImmutableMap<String, Object> prefs2 = ImmutableMap.of(
-                "localq.max.concurrent.jobs", (Object) 4);
-        assertThat(g.equals(new OctopusConfiguration("localq://localhost", prefs2)))
-                .isFalse();
+        PollConfiguration expected_poll = new PollConfiguration(500, 3600000);
+        assertThat(actual.getPollConfiguration()).isEqualTo(expected_poll);
     }
 }

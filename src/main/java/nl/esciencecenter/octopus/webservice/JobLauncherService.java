@@ -52,13 +52,13 @@ public class JobLauncherService extends Service<JobLauncherConfiguration> {
 
     @Override
     public void run(JobLauncherConfiguration configuration, Environment environment) throws Exception {
-        OctopusManager gatmanager = new OctopusManager(configuration.getOctopusConfiguration());
-        environment.manage(gatmanager);
+        OctopusManager octopus = new OctopusManager(configuration.getOctopusConfiguration());
+        environment.manage(octopus);
         HttpClient httpClient = new HttpClientBuilder().using(configuration.getHttpClientConfiguration()).build();
 
         httpClient = macifyHttpClient((AbstractHttpClient) httpClient, configuration.getMacs());
 
-        environment.addResource(new JobLauncherResource(gatmanager, httpClient));
+        environment.addResource(new JobLauncherResource(octopus, httpClient));
         environment.addHealthCheck(new JobLauncherHealthCheck("joblauncher"));
     }
 

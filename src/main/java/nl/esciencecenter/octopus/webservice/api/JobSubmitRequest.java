@@ -6,7 +6,13 @@ import java.util.Arrays;
 import javax.validation.constraints.NotNull;
 
 import nl.esciencecenter.octopus.Octopus;
+import nl.esciencecenter.octopus.exceptions.OctopusException;
+import nl.esciencecenter.octopus.exceptions.OctopusIOException;
+import nl.esciencecenter.octopus.files.AbsolutePath;
+import nl.esciencecenter.octopus.files.FileSystem;
+import nl.esciencecenter.octopus.files.RelativePath;
 import nl.esciencecenter.octopus.jobs.JobDescription;
+import nl.esciencecenter.octopus.util.Sandbox;
 
 import com.google.common.base.Objects;
 
@@ -113,35 +119,36 @@ public class JobSubmitRequest {
      * @throws GATObjectCreationException
      */
     public JobDescription toJobDescription(Octopus octopus) {
-        JobDescription sd = new JobDescription();
-        sd.setExecutable(executable);
-        sd.setArguments(arguments);
-        // TODO add stderr, stdout and sandbox
-//        sd.setStderr(GAT.createFile(jobdir + stderr));
-//        sd.setStdout(GAT.createFile(jobdir + stdout));
-//        if (time_max > 0) {
-//            sd.addAttribute("time.max", time_max);
-//        }
-//        if (memory_min > 0) {
-//            sd.addAttribute("memory.min", memory_min);
-//        }
-//        if (memory_max > 0) {
-//            sd.addAttribute("memory.max", memory_max);
-//        }
-//        for (String prestage : prestaged) {
-//            File prestagefile = GAT.createFile(prestage);
-//            if (!prestagefile.isAbsolute()) {
-//                prestagefile = GAT.createFile(jobdir + prestage);
-//            }
-//            sd.addPreStagedFile(prestagefile);
-//        }
-//        for (String poststage : poststaged) {
-//            File poststagefile = GAT.createFile(poststage);
-//            sd.addPostStagedFile(poststagefile,
-//                    GAT.createFile(jobdir + poststage));
-//        }
+        JobDescription description = new JobDescription();
+        description.setExecutable(executable);
+        description.setArguments(arguments);
+        description.setStdout(stdout);
+        description.setStderr(stderr);
 
-        return sd;
+        return description;
+    }
+
+    public Sandbox toSandbox(Octopus octopus, AbsolutePath sandBoxRoot, String sandboxId) throws OctopusException, OctopusIOException {
+        Sandbox sandbox = new Sandbox(octopus, sandBoxRoot, sandboxId);
+        FileSystem localFS = sandBoxRoot.getFileSystem();
+        // Upload files in request to sandbox
+        for (String prestage : prestaged) {
+            AbsolutePath src;
+            if (prestage.startsWith("/")) {
+                src = octopus.files().newPath(localFS, new RelativePath(prestage));
+            } else {
+                src = octopus.files().newPath(localFS, new RelativePath(new String[] {jobdir, prestage}));
+            }
+            sandbox.addUploadFile(src, src.getFileName());
+        }
+        // Download files from sandbox to request.jobdir
+        sandbox.addDownloadFile(stdout, octopus.files().newPath(localFS, new RelativePath(new String[] {jobdir, stdout})));
+        sandbox.addDownloadFile(stderr, octopus.files().newPath(localFS, new RelativePath(new String[] {jobdir, stderr})));
+        for (String poststage : poststaged) {
+            AbsolutePath dest = octopus.files().newPath(localFS, new RelativePath(new String[] {jobdir, poststage}));
+            sandbox.addDownloadFile(poststage, dest);
+        }
+        return sandbox;
     }
 
     @Override

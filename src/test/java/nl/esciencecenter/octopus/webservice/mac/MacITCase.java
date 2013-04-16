@@ -16,7 +16,6 @@ import org.apache.http.client.methods.HttpPut;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.AbstractHttpClient;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.gridlab.gat.resources.Job.JobState;
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
@@ -39,7 +38,7 @@ public class MacITCase {
         // TODO read url to test from somewhere instead of hardcoding
         URI url = new URI(
                 "http://localhost/magma/status/8a566a5f-565e-4861-8018-128adec07bbe.json");
-        String state = JobState.STOPPED.toString();
+        String state = "STOPPED";
         HttpPut request = new HttpPut(url);
         request.setEntity(new StringEntity(state));
 
