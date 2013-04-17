@@ -6,6 +6,8 @@ import javax.validation.constraints.NotNull;
 
 import nl.esciencecenter.octopus.jobs.JobStatus;
 
+import com.google.common.base.Objects;
+
 public class JobStatusResponse {
     @NotNull
     private final String state;
@@ -52,5 +54,33 @@ public class JobStatusResponse {
 
     public Map<String, String> getSchedulerSpecficInformation() {
         return schedulerSpecficInformation;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(state, done, exitCode, exception, schedulerSpecficInformation);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        JobStatusResponse other = (JobStatusResponse) obj;
+        return Objects.equal(this.state, other.state) && Objects.equal(this.done, other.done)
+                && Objects.equal(this.exitCode, other.exitCode) && Objects.equal(this.exception, other.exception)
+                && Objects.equal(this.schedulerSpecficInformation, other.schedulerSpecficInformation);
+    }
+
+    @Override
+    public String toString() {
+        return com.google.common.base.Objects.toStringHelper(this)
+                .addValue(this.state)
+                .addValue(this.done)
+                .addValue(this.exitCode)
+                .addValue(this.exception)
+                .addValue(this.schedulerSpecficInformation)
+                .toString();
     }
 }

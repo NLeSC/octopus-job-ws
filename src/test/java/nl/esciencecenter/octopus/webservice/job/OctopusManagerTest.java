@@ -1,14 +1,18 @@
 package nl.esciencecenter.octopus.webservice.job;
 
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import nl.esciencecenter.octopus.Octopus;
 import nl.esciencecenter.octopus.OctopusFactory;
@@ -20,12 +24,12 @@ import nl.esciencecenter.octopus.files.Files;
 import nl.esciencecenter.octopus.files.RelativePath;
 import nl.esciencecenter.octopus.jobs.Job;
 import nl.esciencecenter.octopus.jobs.JobDescription;
+import nl.esciencecenter.octopus.jobs.JobStatus;
 import nl.esciencecenter.octopus.jobs.Jobs;
 import nl.esciencecenter.octopus.jobs.Scheduler;
 import nl.esciencecenter.octopus.util.Sandbox;
+import nl.esciencecenter.octopus.webservice.api.JobStatusResponse;
 import nl.esciencecenter.octopus.webservice.api.JobSubmitRequest;
-import nl.esciencecenter.octopus.webservice.job.OctopusConfiguration;
-import nl.esciencecenter.octopus.webservice.job.OctopusManager;
 
 import org.apache.http.client.HttpClient;
 import org.junit.Test;
@@ -33,6 +37,7 @@ import org.junit.runner.RunWith;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
+
 import com.google.common.collect.ImmutableMap;
 
 /**
@@ -44,43 +49,52 @@ import com.google.common.collect.ImmutableMap;
 @PrepareForTest(OctopusFactory.class)
 public class OctopusManagerTest {
 
-    public OctopusManager sampleGATManager() throws URISyntaxException, OctopusIOException, OctopusException {
-        ImmutableMap<String, Object> prefs = ImmutableMap.of("octopus.adaptors.local.queue.multi.maxConcurrentJobs", (Object) 1);
-        OctopusConfiguration conf =
-                new OctopusConfiguration(new URI("local:///"), "multi", new URI("file:///tmp/sandboxes"), prefs);
-        return new OctopusManager(conf);
-    }
-
     @Test
-    public void testGATManager() throws URISyntaxException, OctopusException, OctopusIOException {
+    public void testOctopusManager() throws URISyntaxException, OctopusException, OctopusIOException {
+        // Use powermock mockito to mock OctopusFactory.newOctopus()
         PowerMockito.mockStatic(OctopusFactory.class);
         Octopus octopus = mock(Octopus.class);
         Jobs jobs = mock(Jobs.class);
         when(octopus.jobs()).thenReturn(jobs);
         when(OctopusFactory.newOctopus(any(Properties.class))).thenReturn(octopus);
 
-        sampleGATManager();
+        ImmutableMap<String, Object> prefs = ImmutableMap.of("octopus.adaptors.local.queue.multi.maxConcurrentJobs", (Object) 1);
+        OctopusConfiguration conf =
+                new OctopusConfiguration(new URI("local:///"), "multi", new URI("file:///tmp/sandboxes"), prefs);
+
+        new OctopusManager(conf);
 
         // verify octopus created
         PowerMockito.verifyStatic();
         Properties expected_props = new Properties();
         expected_props.setProperty("octopus.adaptors.local.queue.multi.maxConcurrentJobs", "1");
         OctopusFactory.newOctopus(expected_props);
-
         // verify scheduler created
         when(jobs.newScheduler(new URI("local:///"), null, expected_props));
     }
 
     @Test
+    public void testStart() throws Exception {
+        JobsPoller poller = mock(JobsPoller.class);
+        ExecutorService executor = mock(ExecutorService.class);
+        OctopusManager manager = new OctopusManager(null, null, null, null, poller, executor);
+
+        manager.start();
+
+        verify(executor).execute(poller);
+    }
+
+    @Test
     public void testStop() throws Exception {
-        OctopusConfiguration configuration = new OctopusConfiguration();
         Octopus octopus = mock(Octopus.class);
-        Scheduler scheduler = mock(Scheduler.class);
-        OctopusManager manager = new OctopusManager(configuration, octopus, scheduler);
+        ExecutorService executor = mock(ExecutorService.class);
+        OctopusManager manager = new OctopusManager(null, octopus, null, null, null, executor);
 
         manager.stop();
 
         verify(octopus).end();
+        verify(executor).shutdown();
+        verify(executor).awaitTermination(1, TimeUnit.MINUTES);
     }
 
     @Test
@@ -111,22 +125,60 @@ public class OctopusManagerTest {
         Job job = mock(Job.class);
         when(job.getIdentifier()).thenReturn("11111111-1111-1111-1111-111111111111");
         when(jobs.submitJob(scheduler, description)).thenReturn(job);
+        Map<String, SandboxedJob> sjobs = new HashMap<String, SandboxedJob>();
+        JobsPoller poller = mock(JobsPoller.class);
+        ExecutorService executor = mock(ExecutorService.class);
+        OctopusManager manager = new OctopusManager(conf, octopus, scheduler, sjobs, poller, executor);
 
-        OctopusManager manager = new OctopusManager(conf, octopus, scheduler);
         Job result = manager.submitJob(request, httpClient);
 
         assertThat(result.getIdentifier()).isEqualTo("11111111-1111-1111-1111-111111111111");
         verify(sandbox).upload();
-        verify(jobs.submitJob(scheduler, description));
+        verify(jobs).submitJob(scheduler, description);
     }
 
     @Test
-    public void testStateOfJob() {
-        fail("Not yet implemented");
+    public void testStateOfJob() throws URISyntaxException, OctopusIOException, OctopusException {
+        // create manager with stubbed members
+        Octopus octopus = mock(Octopus.class);
+        Jobs jobsEngine= mock(Jobs.class);
+        when(octopus.jobs()).thenReturn(jobsEngine);
+        Map<String, SandboxedJob> sjobs = new HashMap<String, SandboxedJob>();
+        SandboxedJob sjob = mock(SandboxedJob.class);
+        Job job = mock(Job.class);
+        when(sjob.getJob()).thenReturn(job);
+        sjobs.put("11111111-1111-1111-1111-111111111111", sjob);
+        OctopusManager manager = new OctopusManager(null, octopus, null, sjobs, null, null);
+        // created jobstatus stub
+        JobStatus jobstatus = mock(JobStatus.class);
+        when(jobstatus.getState()).thenReturn("DONE");
+        when(jobstatus.isDone()).thenReturn(true);
+        when(jobstatus.getExitCode()).thenReturn(0);
+        when(jobstatus.getException()).thenReturn(null);
+        when(jobstatus.getSchedulerSpecficInformation()).thenReturn(null);
+        when(jobsEngine.getJobStatus(job)).thenReturn(jobstatus);
+
+        JobStatusResponse result = manager.stateOfJob("11111111-1111-1111-1111-111111111111");
+
+        JobStatusResponse expected_status = new JobStatusResponse("DONE", true, 0, null, null);
+        assertThat(result).isEqualTo(expected_status);
     }
 
     @Test
-    public void testCancelJob() {
-        fail("Not yet implemented");
+    public void testCancelJob() throws OctopusIOException, OctopusException {
+        // create manager with mocked Jobs and other members stubbed
+        Octopus octopus = mock(Octopus.class);
+        Jobs jobsEngine= mock(Jobs.class);
+        when(octopus.jobs()).thenReturn(jobsEngine);
+        Map<String, SandboxedJob> sjobs = new HashMap<String, SandboxedJob>();
+        SandboxedJob sjob = mock(SandboxedJob.class);
+        Job job = mock(Job.class);
+        when(sjob.getJob()).thenReturn(job);
+        sjobs.put("11111111-1111-1111-1111-111111111111", sjob);
+        OctopusManager manager = new OctopusManager(null, octopus, null, sjobs, null, null);
+
+        manager.cancelJob("11111111-1111-1111-1111-111111111111");
+
+        verify(jobsEngine).cancelJob(job);
     }
 }

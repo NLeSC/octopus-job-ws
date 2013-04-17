@@ -4,7 +4,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -42,8 +41,7 @@ public class OctopusManager implements Managed {
     private final OctopusConfiguration configuration;
     private final Octopus octopus;
     private final Scheduler scheduler;
-    private final Credential credential = null;
-    private final Map<String, SandboxedJob> jobs = new ConcurrentHashMap<String, SandboxedJob>();
+    private final Map<String, SandboxedJob> jobs;
     private final JobsPoller poller;
     private ExecutorService executor;
 
@@ -57,28 +55,25 @@ public class OctopusManager implements Managed {
      */
     public OctopusManager(OctopusConfiguration configuration) throws URISyntaxException, OctopusException, OctopusIOException {
         this.configuration = configuration;
-        // copy over preferences from config to default GAT context
-        Properties properties = new Properties();
-        Set<String> keys = configuration.getPreferences().keySet();
-        for (String key : keys) {
-            String value = configuration.getPreferences().get(key).toString();
-            properties.setProperty(key, value);
-        }
-
-        octopus = OctopusFactory.newOctopus(properties);
+        Properties props = configuration.getPreferencesAsProperties();
+        octopus = OctopusFactory.newOctopus(props);
         URI schedulerURI = configuration.getScheduler();
-        // TODO parse credentials from config of prompt user for password/passphrases
+        Credential credential = configuration.getCredential();
+        // TODO prompt user for password/passphrases
         scheduler = octopus.jobs().newScheduler(schedulerURI, credential, null);
+        jobs = new ConcurrentHashMap<String, SandboxedJob>();
         executor = Executors.newSingleThreadExecutor();
-        poller = new JobsPoller(jobs, configuration.getPollConfiguration(), octopus);
+        PollConfiguration pollConf = configuration.getPollConfiguration();
+        poller = new JobsPoller(jobs, pollConf, octopus);
     }
 
-    protected OctopusManager(OctopusConfiguration configuration, Octopus octopus, Scheduler scheduler, JobsPoller poller,
-            ExecutorService executor) {
+    protected OctopusManager(OctopusConfiguration configuration, Octopus octopus, Scheduler scheduler,
+            Map<String, SandboxedJob> jobs, JobsPoller poller, ExecutorService executor) {
         super();
         this.configuration = configuration;
         this.octopus = octopus;
         this.scheduler = scheduler;
+        this.jobs = jobs;
         this.poller = poller;
         this.executor = executor;
     }
@@ -100,10 +95,10 @@ public class OctopusManager implements Managed {
     public Job submitJob(JobSubmitRequest request, HttpClient httpClient) throws OctopusIOException, OctopusException,
             URISyntaxException {
         //create sandbox
+        Credential credential = configuration.getCredential();
         FileSystem sandboxFS = octopus.files().newFileSystem(configuration.getSandboxRoot(), credential, null);
         String sandboxRoot = configuration.getSandboxRoot().getPath();
-        AbsolutePath sandboxRootPath =
-                octopus.files().newPath(sandboxFS, new RelativePath(sandboxRoot));
+        AbsolutePath sandboxRootPath = octopus.files().newPath(sandboxFS, new RelativePath(sandboxRoot));
         Sandbox sandbox = request.toSandbox(octopus, sandboxRootPath, null);
 
         // create job description
@@ -139,9 +134,5 @@ public class OctopusManager implements Managed {
         } else {
             throw new WebApplicationException(Status.NOT_FOUND);
         }
-    }
-
-    public Map<String, SandboxedJob> getJobs() {
-        return jobs;
     }
 }

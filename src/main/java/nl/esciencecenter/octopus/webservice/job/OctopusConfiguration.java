@@ -1,8 +1,12 @@
 package nl.esciencecenter.octopus.webservice.job;
 
 import java.net.URI;
+import java.util.Properties;
+import java.util.Set;
 
 import javax.validation.Valid;
+
+import nl.esciencecenter.octopus.credentials.Credential;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
@@ -11,7 +15,7 @@ import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableMap;
 
 /**
- * JavaGAT configuration
+ * Octopus configuration
  *
  * @author verhoes
  *
@@ -123,7 +127,7 @@ public class OctopusConfiguration {
 
     @Override
     public String toString() {
-        return com.google.common.base.Objects.toStringHelper(this)
+        return Objects.toStringHelper(this)
                 .addValue(this.scheduler)
                 .addValue(this.queue)
                 .addValue(this.sandboxRoot)
@@ -131,4 +135,22 @@ public class OctopusConfiguration {
                 .addValue(this.pollConfiguration)
                 .toString();
     }
+
+    public Credential getCredential() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    public Properties getPreferencesAsProperties() {
+        // copy over preferences from config to default GAT context
+        Properties properties = new Properties();
+        Set<String> keys = preferences.keySet();
+        for (String key : keys) {
+            String value = preferences.get(key).toString();
+            properties.setProperty(key, value);
+        }
+        return properties;
+    }
+
+
 }

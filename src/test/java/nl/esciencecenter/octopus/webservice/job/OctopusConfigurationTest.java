@@ -7,6 +7,7 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Properties;
 
 import nl.esciencecenter.octopus.webservice.job.OctopusConfiguration;
 
@@ -59,7 +60,22 @@ public class OctopusConfigurationTest {
         ImmutableMap<String, Object> prefs = ImmutableMap.of(
                 "octopus.adaptors.local.queue.multi.maxConcurrentJobs", (Object) 4);
         assertThat(actual.getPreferences()).isEqualTo(prefs);
-        PollConfiguration expected_poll = new PollConfiguration(500, 3600000);
+        PollConfiguration expected_poll = new PollConfiguration(500, 3600000, 43200000);
         assertThat(actual.getPollConfiguration()).isEqualTo(expected_poll);
+    }
+
+    @Test
+    public void getPreferencesAsProperties() throws URISyntaxException {
+        URI scheduler = new URI("local:///");
+        String queue = null;
+        URI sandbox = new URI("file:///tmp");
+        ImmutableMap<String, Object> prefs = ImmutableMap.of(
+                "octopus.adaptors.local.queue.multi.maxConcurrentJobs", (Object) 1);
+        OctopusConfiguration conf = new OctopusConfiguration(scheduler, queue, sandbox, prefs);
+
+        Properties props = conf.getPreferencesAsProperties();
+        Properties expected_props = new Properties();
+        expected_props.put("octopus.adaptors.local.queue.multi.maxConcurrentJobs", "1");
+        assertThat(props).isEqualTo(expected_props);
     }
 }
