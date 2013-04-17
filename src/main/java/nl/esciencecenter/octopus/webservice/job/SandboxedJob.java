@@ -12,6 +12,8 @@ import org.apache.http.entity.StringEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Objects;
+
 import nl.esciencecenter.octopus.jobs.Job;
 import nl.esciencecenter.octopus.jobs.JobStatus;
 import nl.esciencecenter.octopus.util.Sandbox;
@@ -33,6 +35,16 @@ public class SandboxedJob {
         this.job = job;
         this.callback = callback;
         this.httpClient = httpClient;
+    }
+
+    protected SandboxedJob(Sandbox sandbox, Job job, URI callback, HttpClient httpClient, JobStatus status, int pollIterations) {
+        super();
+        this.sandbox = sandbox;
+        this.job = job;
+        this.callback = callback;
+        this.httpClient = httpClient;
+        this.status = status;
+        this.pollIterations = pollIterations;
     }
 
     public Sandbox getSandbox() {
@@ -71,7 +83,7 @@ public class SandboxedJob {
     }
 
     public void setStatus(JobStatus status) throws UnsupportedEncodingException, ClientProtocolException, IOException {
-        if (!this.status.equals(status)) {
+        if (!Objects.equal(this.status, status)) {
             this.status = status;
             putState2Callback(status.getState());
         }

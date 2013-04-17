@@ -8,6 +8,7 @@ import java.util.concurrent.TimeUnit;
 import nl.esciencecenter.octopus.Octopus;
 import nl.esciencecenter.octopus.jobs.Job;
 import nl.esciencecenter.octopus.jobs.JobStatus;
+import nl.esciencecenter.octopus.jobs.Jobs;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,24 +28,55 @@ public class JobsPoller implements Runnable {
     }
 
     public void run() {
-        int interval = pollConfiguration.getInterval();
-        int timeout = pollConfiguration.getTimeout();
-        // maximum number of poll iterations
-        int maxIterations = timeout / interval;
-
+        long timeout = pollConfiguration.getCancelTimeout();
         while (!Thread.currentThread().isInterrupted()) {
-            // convert SandboxedJob list to Job list
-            List<Job> jjobs = new ArrayList<Job>();
-            for (SandboxedJob job : jobs.values()) {
-                // dont need to fetch status of jobs that are done
-                if (!job.getStatus().isDone()) {
-                    jjobs.add(job.getJob());
-                }
+            poll();
+            try {
+                TimeUnit.MILLISECONDS.sleep(timeout);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return;
+            }
+        }
+    }
+
+    public void poll() {
+        long interval = pollConfiguration.getInterval();
+        long timeout = pollConfiguration.getCancelTimeout();
+        // maximum number of poll iterations
+        long maxIterations = timeout / interval;
+        // convert SandboxedJob list to Job list
+        List<Job> jjobs = new ArrayList<Job>();
+        for (SandboxedJob job : jobs.values()) {
+            Boolean jobIsDone = false;
+            if (job.getStatus() != null) {
+                jobIsDone = job.getStatus().isDone();
             }
 
-            // fetch statuses of all jobs
-            JobStatus[] statuses = octopus.jobs().getJobStatuses(jjobs.toArray(new Job[0]));
+            job.incrPollIterations();
+            Boolean polledTooLong = (job.getPollIterations() > maxIterations);
+            if (job.getPollIterations() > pollConfiguration.getDeleteTimeout()) {
+                // delete timeout reached -> get rid of job completely
+                cancelJob(job);
+                cleanSandbox(job);
+                deleteJob(job);
+            } else if (!jobIsDone && polledTooLong) {
+                // cancel timeout reached -> remove job from scheduler
+                cancelJob(job);
+                cleanSandbox(job);
+            } else if (!jobIsDone) {
+                jjobs.add(job.getJob());
+            } else {
+                // dont need to fetch status of jobs that are done
+            }
+        }
 
+        // fetch statuses of all jobs
+        Job[] jobarray = jjobs.toArray(new Job[0]);
+        Jobs jobsEngine = octopus.jobs();
+        JobStatus[] statuses = jobsEngine.getJobStatuses(jobarray);
+
+        if (statuses != null) {
             for (JobStatus status : statuses) {
                 SandboxedJob job = jobs.get(status.getJob().getIdentifier());
 
@@ -52,25 +84,15 @@ public class JobsPoller implements Runnable {
                 if (!status.equals(job.getStatus())) {
                     commitStatus(status, job);
                     if (status.isDone()) {
-                        // download and delete sandbox
                         this.cleanSandbox(job);
                     }
                 }
-
-                // if job is has been running to long then kill it
-                Boolean polledTooLong = (job.getPollIterations() > maxIterations);
-                if (!status.isDone() && polledTooLong) {
-                    cancelJob(job);
-                }
-                job.incrPollIterations();
-            }
-            try {
-                TimeUnit.SECONDS.sleep(timeout);
-            } catch (InterruptedException e1) {
-                Thread.currentThread().interrupt();
-                return;
             }
         }
+    }
+
+    private void deleteJob(SandboxedJob job) {
+        jobs.remove(job.getJob().getIdentifier());
     }
 
     /**
@@ -100,7 +122,6 @@ public class JobsPoller implements Runnable {
         } catch (Exception e) {
             logger.info(e.toString());
         }
-        this.cleanSandbox(job);
     }
 
 }
