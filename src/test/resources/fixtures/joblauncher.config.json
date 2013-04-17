@@ -13,8 +13,9 @@
             "octopus.adaptors.local.queue.multi.maxConcurrentJobs": 4
         },
         "poll": {
-           "interval": 500,
-           "timeout": 3600000
+           "interval": 30000,
+           "cancelTimeout": 3600000,
+           "deleteTimeout": 43200000
         }
     }
 }

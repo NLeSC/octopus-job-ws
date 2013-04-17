@@ -7,17 +7,19 @@ import org.junit.Test;
 public class PollConfigurationTest {
 
     @Test
-    public void testPollConfigurationIntInt() {
-        PollConfiguration conf = new PollConfiguration(123, 456);
+    public void testPollConfiguration_AllParameters() {
+        PollConfiguration conf = new PollConfiguration(123, 456, 789);
         assertThat(conf.getInterval()).isEqualTo(123);
-        assertThat(conf.getTimeout()).isEqualTo(456);
+        assertThat(conf.getCancelTimeout()).isEqualTo(456);
+        assertThat(conf.getDeleteTimeout()).isEqualTo(789);
     }
 
     @Test
-    public void testPollConfiguration() {
+    public void testPollConfiguration_NoParameters() {
         PollConfiguration conf = new PollConfiguration();
-        assertThat(conf.getInterval()).isEqualTo(500);
-        assertThat(conf.getTimeout()).isEqualTo(3600000);
+        assertThat(conf.getInterval()).isEqualTo(30000);
+        assertThat(conf.getCancelTimeout()).isEqualTo(3600000);
+        assertThat(conf.getDeleteTimeout()).isEqualTo(12*60*60*1000);
     }
 
     @Test
@@ -33,9 +35,9 @@ public class PollConfigurationTest {
     public void testSetTimeout() {
         PollConfiguration conf = new PollConfiguration();
 
-        conf.setTimeout(456);
+        conf.setCancelTimeout(456);
 
-        assertThat(conf.getTimeout()).isEqualTo(456);
+        assertThat(conf.getCancelTimeout()).isEqualTo(456);
     }
 
     @Test
@@ -44,7 +46,7 @@ public class PollConfigurationTest {
 
         String result = conf.toString();
 
-        String expected = "PollConfiguration{500, 3600000}";
+        String expected = "PollConfiguration{30000, 3600000, 43200000}";
         assertThat(result).isEqualTo(expected);
     }
 }
