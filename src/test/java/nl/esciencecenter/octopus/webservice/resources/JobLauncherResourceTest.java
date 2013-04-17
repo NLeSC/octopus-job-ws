@@ -3,12 +3,12 @@ package nl.esciencecenter.octopus.webservice.resources;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import nl.esciencecenter.octopus.exceptions.OctopusException;
 import nl.esciencecenter.octopus.exceptions.OctopusIOException;
 import nl.esciencecenter.octopus.jobs.Job;
-import nl.esciencecenter.octopus.jobs.JobStatus;
+import nl.esciencecenter.octopus.webservice.api.JobStatusResponse;
 import nl.esciencecenter.octopus.webservice.api.JobSubmitRequest;
 import nl.esciencecenter.octopus.webservice.api.JobSubmitResponse;
 import nl.esciencecenter.octopus.webservice.job.OctopusManager;
@@ -38,13 +38,13 @@ public class JobLauncherResourceTest {
     @Test
     public void testStateJob() throws OctopusIOException, OctopusException {
         OctopusManager manager = mock(OctopusManager.class);
-        JobStatus status = mock(JobStatus.class);
+        JobStatusResponse status = mock(JobStatusResponse.class);
         HttpClient httpClient = new DefaultHttpClient();
         when(manager.stateOfJob("1234")).thenReturn(status);
 
         JobLauncherResource resource = new JobLauncherResource(manager, httpClient);
 
-        JobStatus response = resource.stateOfJob("1234");
+        JobStatusResponse response = resource.stateOfJob("1234");
 
         assertThat(response).isEqualTo(status);
     }

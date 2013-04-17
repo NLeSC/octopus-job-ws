@@ -1,0 +1,9 @@
+{
+	"state" : "DONE",
+	"exitCode" : 0,
+	"exception" : null,
+	"done" : true,
+	"schedulerSpecficInformation" : {
+		"status" : "STOPPED"
+	}
+}

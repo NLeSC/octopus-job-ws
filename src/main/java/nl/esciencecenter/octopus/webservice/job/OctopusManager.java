@@ -23,9 +23,9 @@ import nl.esciencecenter.octopus.files.FileSystem;
 import nl.esciencecenter.octopus.files.RelativePath;
 import nl.esciencecenter.octopus.jobs.Job;
 import nl.esciencecenter.octopus.jobs.JobDescription;
-import nl.esciencecenter.octopus.jobs.JobStatus;
 import nl.esciencecenter.octopus.jobs.Scheduler;
 import nl.esciencecenter.octopus.util.Sandbox;
+import nl.esciencecenter.octopus.webservice.api.JobStatusResponse;
 import nl.esciencecenter.octopus.webservice.api.JobSubmitRequest;
 
 import org.apache.http.client.HttpClient;
@@ -123,10 +123,10 @@ public class OctopusManager implements Managed {
         return job;
     }
 
-    public JobStatus stateOfJob(String jobIdentifier) throws OctopusIOException, OctopusException {
+    public JobStatusResponse stateOfJob(String jobIdentifier) throws OctopusIOException, OctopusException {
         SandboxedJob job;
         if ((job = jobs.get(jobIdentifier)) != null) {
-            return octopus.jobs().getJobStatus(job.getJob());
+            return new JobStatusResponse(octopus.jobs().getJobStatus(job.getJob()));
         } else {
             throw new WebApplicationException(Status.NOT_FOUND);
         }
@@ -139,5 +139,9 @@ public class OctopusManager implements Managed {
         } else {
             throw new WebApplicationException(Status.NOT_FOUND);
         }
+    }
+
+    public Map<String, SandboxedJob> getJobs() {
+        return jobs;
     }
 }

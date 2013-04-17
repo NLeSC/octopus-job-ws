@@ -9,7 +9,7 @@ import javax.ws.rs.PathParam;
 import nl.esciencecenter.octopus.exceptions.OctopusException;
 import nl.esciencecenter.octopus.exceptions.OctopusIOException;
 import nl.esciencecenter.octopus.jobs.Job;
-import nl.esciencecenter.octopus.jobs.JobStatus;
+import nl.esciencecenter.octopus.webservice.api.JobStatusResponse;
 import nl.esciencecenter.octopus.webservice.api.JobSubmitRequest;
 import nl.esciencecenter.octopus.webservice.api.JobSubmitResponse;
 import nl.esciencecenter.octopus.webservice.job.OctopusManager;
@@ -65,7 +65,7 @@ public class JobLauncherResource {
 
     @GET @Path("/{jobidentifier}")
     @Timed
-    public JobStatus stateOfJob(@PathParam("jobidentifier") String jobIdentifier) throws OctopusIOException, OctopusException {
+    public JobStatusResponse stateOfJob(@PathParam("jobidentifier") String jobIdentifier) throws OctopusIOException, OctopusException {
         return octopusmanager.stateOfJob(jobIdentifier);
     }
 
