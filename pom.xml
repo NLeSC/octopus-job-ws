@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>nl.esciencecenter.octopus.webservice</groupId>
 	<artifactId>octopus-job-ws</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.0.2</version>
 	<name>REST base job submission using Octopus</name>
 	<developers>
 		<developer>
@@ -22,7 +22,7 @@
 		<url>http://www.esciencecenter.nl</url>
 	</organization>
 	<properties>
-		<octopus.version>0.2</octopus.version>
+		<octopus.version>0.3</octopus.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<dropwizard.version>0.6.2</dropwizard.version>
 		<powermock.version>1.5</powermock.version>
@@ -41,11 +41,6 @@
 		<dependency>
 			<groupId>nl.esciencecenter.octopus</groupId>
 			<artifactId>octopus</artifactId>
-			<version>${octopus.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>nl.esciencecenter.octopus</groupId>
-			<artifactId>octopus-adaptor-local</artifactId>
 			<version>${octopus.version}</version>
 		</dependency>
 		<dependency>
@@ -100,7 +95,7 @@
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>exec-maven-plugin</artifactId>
-				<version>1.1</version>
+				<version>1.2.1</version>
 				<executions>
 					<execution>
 						<goals>

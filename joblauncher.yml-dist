@@ -1,0 +1,18 @@
+# Example configuration make copy of me
+#macs:
+#- id: <MAC key identifier>
+#  key: <MAC key>
+#  scope: <URL where MAC key should be used>
+octopus:
+  scheduler: local:///
+  queue: multi
+  sandboxRoot: file:///tmp/
+  preferences:
+    octopus.adaptor.dir: <directory where octopus-adaptor-*.jar are located>
+    octopus.adaptors.local.queue.multi.maxConcurrentJobs: 4
+  poll:
+   interval: 30000
+   cancelTimeout: 3600000
+   deleteTimeout: 43200000
+http:
+  port: 9998

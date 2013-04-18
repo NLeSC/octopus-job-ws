@@ -29,8 +29,7 @@ public class JobSubmitRequestTest {
 
     @Test
     public void testGetStatus_callback_url() throws URISyntaxException {
-        assertEquals(request.getStatus_callback_url(), new URI(
-                "http://localhost/status"));
+        assertEquals(request.getStatus_callback_url(), new URI("http://localhost/status"));
     }
 
     @Test
@@ -47,23 +46,26 @@ public class JobSubmitRequestTest {
             cb = new URI("http://localhost/status");
         } catch (URISyntaxException e) {
         }
-        return new JobSubmitRequest("/tmp/jobdir/", "/bin/sh", arguments,
-                prestaged, poststaged, "stderr.txt", "stdout.txt", cb);
+        return new JobSubmitRequest("/tmp/jobdir/", "/bin/sh", arguments, prestaged, poststaged, "stderr.txt", "stdout.txt", cb);
     }
 
     @Test
     public void serializesToJSON() throws IOException {
-        assertThat("a JobSubmitRequest can be serialized to JSON",
-                   asJson(request),
-                   is(equalTo(jsonFixture("fixtures/request.json"))));
+        assertThat("a JobSubmitRequest can be serialized to JSON", asJson(request),
+                is(equalTo(jsonFixture("fixtures/request.json"))));
     }
 
     @Test
     public void deserializesFromJSON() throws IOException {
-        assertThat(
-                "a JobSubmitRequest can be deserialized from JSON",
-                fromJson(jsonFixture("fixtures/request.json"),
-                        JobSubmitRequest.class), is(request));
+        assertThat("a JobSubmitRequest can be deserialized from JSON",
+                fromJson(jsonFixture("fixtures/request.json"), JobSubmitRequest.class), is(request));
+    }
+
+    @Test
+    public void deserializedFromJson_WithoutCallback() throws IOException {
+        request.status_callback_url = null;
+        assertThat("a JobSubmitRequest can be deserialized from JSON",
+                fromJson(jsonFixture("fixtures/request.nocallback.json"), JobSubmitRequest.class), is(request));
     }
 
     @Test
@@ -115,7 +117,8 @@ public class JobSubmitRequestTest {
 
     @Test
     public void testToString() {
-        String s = "JobSubmitRequest{jobdir=/tmp/jobdir/, executable=/bin/sh, stderr=stderr.txt, stdout=stdout.txt, arguments=[magma.sh], prestaged=[magma.sh, data.mzxml], poststaged=[results.db], time_max=0, memory_min=0, memory_max=0, status_callback_url=http://localhost/status}";
+        String s =
+                "JobSubmitRequest{jobdir=/tmp/jobdir/, executable=/bin/sh, stderr=stderr.txt, stdout=stdout.txt, arguments=[magma.sh], prestaged=[magma.sh, data.mzxml], poststaged=[results.db], time_max=0, memory_min=0, memory_max=0, status_callback_url=http://localhost/status}";
         assertEquals(s, request.toString());
     }
 }
