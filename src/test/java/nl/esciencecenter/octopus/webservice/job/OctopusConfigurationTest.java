@@ -8,6 +8,12 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Properties;
+import java.util.Set;
+
+import javax.validation.ConstraintViolation;
+import javax.validation.Validation;
+import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
 
 import nl.esciencecenter.octopus.webservice.job.OctopusConfiguration;
 
@@ -16,7 +22,6 @@ import org.junit.Test;
 import com.google.common.collect.ImmutableMap;
 
 public class OctopusConfigurationTest {
-
     @Test
     public void testGATConfigurationBrokerPrefs() throws URISyntaxException {
         URI scheduler = new URI("local:///");
@@ -50,7 +55,7 @@ public class OctopusConfigurationTest {
     }
 
     @Test
-    public void deserializesFromJSON() throws IOException, URISyntaxException {
+    public void deserializesFromJson() throws IOException, URISyntaxException {
         OctopusConfiguration actual = fromJson(jsonFixture("fixtures/octopus.json"),
                 OctopusConfiguration.class);
 
@@ -77,5 +82,18 @@ public class OctopusConfigurationTest {
         Properties expected_props = new Properties();
         expected_props.put("octopus.adaptors.local.queue.multi.maxConcurrentJobs", "1");
         assertThat(props).isEqualTo(expected_props);
+    }
+
+    @Test
+    public void validateFromJson() throws IOException {
+        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+        Validator validator = factory.getValidator();
+
+        OctopusConfiguration actual = fromJson(jsonFixture("fixtures/octopus.json"),
+                OctopusConfiguration.class);
+
+        Set<ConstraintViolation<OctopusConfiguration>> constraintViolations = validator.validateProperty(actual, "scheduler");
+
+        assertThat(constraintViolations.size()).isEqualTo(0);
     }
 }

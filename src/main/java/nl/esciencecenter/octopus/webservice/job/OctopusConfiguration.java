@@ -5,6 +5,7 @@ import java.util.Properties;
 import java.util.Set;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 
 import nl.esciencecenter.octopus.credentials.Credential;
 
@@ -25,7 +26,7 @@ public class OctopusConfiguration {
     /**
      * Scheduler URI used to submit jobs
      */
-    @NotEmpty
+    @NotNull
     @JsonProperty
     private URI scheduler;
 
@@ -41,7 +42,7 @@ public class OctopusConfiguration {
      * `ssh://<machine>/tmp`
      */
     @JsonProperty
-    @NotEmpty
+    @NotNull
     private URI sandboxRoot;
 
     /**
@@ -151,6 +152,4 @@ public class OctopusConfiguration {
         }
         return properties;
     }
-
-
 }
