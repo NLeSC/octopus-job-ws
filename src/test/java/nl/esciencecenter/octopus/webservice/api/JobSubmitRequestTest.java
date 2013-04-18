@@ -41,12 +41,12 @@ public class JobSubmitRequestTest {
 
     private JobSubmitRequest sampleRequest() {
         List<String> arguments = new ArrayList<String>();
-        arguments.add("magma.sh");
+        arguments.add("runme.sh");
         List<String> prestaged = new ArrayList<String>();
-        prestaged.add("magma.sh");
-        prestaged.add("data.mzxml");
+        prestaged.add("runme.sh");
+        prestaged.add("input.dat");
         List<String> poststaged = new ArrayList<String>();
-        poststaged.add("results.db");
+        poststaged.add("output.dat");
         URI cb = null;
         try {
             cb = new URI("http://localhost/status");
@@ -124,7 +124,7 @@ public class JobSubmitRequestTest {
     @Test
     public void testToString() {
         String s =
-                "JobSubmitRequest{jobdir=/tmp/jobdir/, executable=/bin/sh, stderr=stderr.txt, stdout=stdout.txt, arguments=[magma.sh], prestaged=[magma.sh, data.mzxml], poststaged=[results.db], status_callback_url=http://localhost/status}";
+                "JobSubmitRequest{jobdir=/tmp/jobdir/, executable=/bin/sh, stderr=stderr.txt, stdout=stdout.txt, arguments=[runme.sh], prestaged=[runme.sh, input.dat], poststaged=[output.dat], status_callback_url=http://localhost/status}";
         assertEquals(s, request.toString());
     }
 }

@@ -3,8 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>nl.esciencecenter.octopus.webservice</groupId>
 	<artifactId>octopus-job-ws</artifactId>
-	<version>0.0.2</version>
-	<name>REST base job submission using Octopus</name>
+	<version>2.0</version>
 	<developers>
 		<developer>
 			<id>stefanv</id>
@@ -22,7 +21,7 @@
 		<url>http://www.esciencecenter.nl</url>
 	</organization>
 	<properties>
-		<octopus.version>0.3</octopus.version>
+		<octopus.version>1.0</octopus.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<dropwizard.version>0.6.2</dropwizard.version>
 		<powermock.version>1.5</powermock.version>
@@ -82,6 +81,19 @@
 	</dependencies>
 	<build>
 		<plugins>
+		<plugin>
+    <groupId>org.codehaus.mojo</groupId>
+    <artifactId>license-maven-plugin</artifactId>
+    <version>1.4</version>
+    <executions>
+        <execution>
+            <id>download-licenses</id>
+            <goals>
+              <goal>download-licenses</goal>
+            </goals>
+        </execution>
+    </executions>
+</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
@@ -305,4 +317,15 @@
 			</plugin>
 		</plugins>
 	</build>
+	<issueManagement>
+		<system>GitHub</system>
+		<url>https://github.com/sverhoeven/octopus-job-ws/issues</url>
+	</issueManagement>
+	<scm>
+		<url>scm:git:https://github.com/sverhoeven/octopus-job-ws</url>
+		<connection>scm:git:https://github.com/sverhoeven/octopus-job-ws</connection>
+		<developerConnection>scm:git:https://github.com/sverhoeven/octopus-job-ws</developerConnection>
+	</scm>
+	<description>REST based job submission using Octopus</description>
+	<name>Octopus Job Webservice</name>
 </project>
