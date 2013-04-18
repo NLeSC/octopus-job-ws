@@ -32,7 +32,7 @@ import org.junit.Test;
 public class JobsPollerTest {
 
     @Test
-    public void testPoll_NoState_StateFilledAndIterationIncreased() throws URISyntaxException {
+    public void run_NoState_StateFilledAndIterationIncreased() throws URISyntaxException {
         Map<String, SandboxedJob> jobs = new HashMap<String, SandboxedJob>();
         String identifier = "11111111-1111-1111-1111-111111111111";
         Job job = new JobImplementation(mock(JobDescription.class), mock(Scheduler.class), identifier);
@@ -48,14 +48,14 @@ public class JobsPollerTest {
         doReturn(statuses).when(jobsEngine).getJobStatuses((Job[]) any());
         JobsPoller poller = new JobsPoller(jobs, pollConf, octopus);
 
-        poller.poll();
+        poller.run();
 
         assertThat(sjob.getStatus()).isEqualTo(jobstatus);
         assertThat(sjob.getPollIterations()).isEqualTo(1);
     }
 
     @Test
-    public void testPoll_RunningState_StateUnchangedIterationIncreased() throws URISyntaxException, UnsupportedEncodingException,
+    public void run_RunningState_StateUnchangedIterationIncreased() throws URISyntaxException, UnsupportedEncodingException,
             ClientProtocolException, IOException {
         Map<String, SandboxedJob> jobs = new HashMap<String, SandboxedJob>();
         String identifier = "11111111-1111-1111-1111-111111111111";
@@ -72,14 +72,14 @@ public class JobsPollerTest {
         doReturn(statuses).when(jobsEngine).getJobStatuses((Job[]) any());
         JobsPoller poller = new JobsPoller(jobs, pollConf, octopus);
 
-        poller.poll();
+        poller.run();
 
         assertThat(sjob.getStatus()).isEqualTo(jobstatus);
         assertThat(sjob.getPollIterations()).isEqualTo(6);
     }
 
     @Test
-    public void testPoll_PendingState_StateUpdated() throws URISyntaxException {
+    public void run_PendingState_StateUpdated() throws URISyntaxException {
         Map<String, SandboxedJob> jobs = new HashMap<String, SandboxedJob>();
         String identifier = "11111111-1111-1111-1111-111111111111";
         Job job = new JobImplementation(mock(JobDescription.class), mock(Scheduler.class), identifier);
@@ -96,14 +96,14 @@ public class JobsPollerTest {
         doReturn(statuses).when(jobsEngine).getJobStatuses((Job[]) any());
         JobsPoller poller = new JobsPoller(jobs, pollConf, octopus);
 
-        poller.poll();
+        poller.run();
 
         assertThat(sjob.getStatus()).isEqualTo(new_jobstatus);
         assertThat(sjob.getPollIterations()).isEqualTo(6);
     }
 
     @Test
-    public void testPoll_RunningState_DoneOkWithCleanupSandbox() throws OctopusIOException {
+    public void run_RunningState_DoneOkWithCleanupSandbox() throws OctopusIOException {
         Map<String, SandboxedJob> jobs = new HashMap<String, SandboxedJob>();
         String identifier = "11111111-1111-1111-1111-111111111111";
         Job job = new JobImplementation(mock(JobDescription.class), mock(Scheduler.class), identifier);
@@ -121,14 +121,14 @@ public class JobsPollerTest {
         doReturn(statuses).when(jobsEngine).getJobStatuses((Job[]) any());
         JobsPoller poller = new JobsPoller(jobs, pollConf, octopus);
 
-        poller.poll();
+        poller.run();
 
         verify(sb).download();
         verify(sb).delete();
     }
 
     @Test
-    public void testPoll_PendingStateOnCancelTimeout_JobCanceled() throws OctopusIOException, OctopusException {
+    public void run_PendingStateOnCancelTimeout_JobCanceled() throws OctopusIOException, OctopusException {
         Map<String, SandboxedJob> jobs = new HashMap<String, SandboxedJob>();
         String identifier = "11111111-1111-1111-1111-111111111111";
         Job job = new JobImplementation(mock(JobDescription.class), mock(Scheduler.class), identifier);
@@ -146,7 +146,7 @@ public class JobsPollerTest {
         doReturn(statuses).when(jobsEngine).getJobStatuses((Job[]) any());
         JobsPoller poller = new JobsPoller(jobs, pollConf, octopus);
 
-        poller.poll();
+        poller.run();
 
         verify(jobsEngine).cancelJob(job);
         verify(sb).download();
@@ -154,7 +154,7 @@ public class JobsPollerTest {
     }
 
     @Test
-    public void testPoll_PendingStateOnDeleteTimeout_JobDeleted() throws OctopusIOException, OctopusException {
+    public void run_PendingStateOnDeleteTimeout_JobDeleted() throws OctopusIOException, OctopusException {
         Map<String, SandboxedJob> jobs = new HashMap<String, SandboxedJob>();
         String identifier = "11111111-1111-1111-1111-111111111111";
         Job job = new JobImplementation(mock(JobDescription.class), mock(Scheduler.class), identifier);
@@ -172,7 +172,7 @@ public class JobsPollerTest {
         doReturn(statuses).when(jobsEngine).getJobStatuses((Job[]) any());
         JobsPoller poller = new JobsPoller(jobs, pollConf, octopus);
 
-        poller.poll();
+        poller.run();
 
         verify(jobsEngine).cancelJob(job);
         verify(sb).download();
@@ -181,7 +181,7 @@ public class JobsPollerTest {
     }
 
     @Test
-    public void testPoll_DoneState_JobStatusNotCalledAndIterationIncreased() {
+    public void run_DoneState_JobStatusNotCalledAndIterationIncreased() {
         Map<String, SandboxedJob> jobs = new HashMap<String, SandboxedJob>();
         String identifier = "11111111-1111-1111-1111-111111111111";
         Job job = new JobImplementation(mock(JobDescription.class), mock(Scheduler.class), identifier);
@@ -194,7 +194,7 @@ public class JobsPollerTest {
         when(octopus.jobs()).thenReturn(jobsEngine);
         JobsPoller poller = new JobsPoller(jobs, pollConf, octopus);
 
-        poller.poll();
+        poller.run();
 
         verify(jobsEngine, never()).getJobStatuses(any(Job.class));
         assertThat(sjob.getPollIterations()).isEqualTo(6);

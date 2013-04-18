@@ -11,7 +11,7 @@ import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import nl.esciencecenter.octopus.Octopus;
@@ -76,18 +76,19 @@ public class OctopusManagerTest {
     @Test
     public void testStart() throws Exception {
         JobsPoller poller = mock(JobsPoller.class);
-        ExecutorService executor = mock(ExecutorService.class);
-        OctopusManager manager = new OctopusManager(null, null, null, null, poller, executor);
+        ScheduledExecutorService executor = mock(ScheduledExecutorService.class);
+        OctopusConfiguration conf = new OctopusConfiguration();
+        OctopusManager manager = new OctopusManager(conf, null, null, null, poller, executor);
 
         manager.start();
 
-        verify(executor).execute(poller);
+        verify(executor).scheduleAtFixedRate(poller, 0, 30*1000, TimeUnit.MILLISECONDS);
     }
 
     @Test
     public void testStop() throws Exception {
         Octopus octopus = mock(Octopus.class);
-        ExecutorService executor = mock(ExecutorService.class);
+        ScheduledExecutorService executor = mock(ScheduledExecutorService.class);
         OctopusManager manager = new OctopusManager(null, octopus, null, null, null, executor);
 
         manager.stop();
@@ -112,7 +113,7 @@ public class OctopusManagerTest {
         when(octopus.files()).thenReturn(files);
         AbsolutePath sandboxPath = mock(AbsolutePath.class);
         FileSystem filesystem = mock(FileSystem.class);
-        when(files.newFileSystem(new URI("file:///tmp/sandboxes"), null, null)).thenReturn(filesystem);
+        when(files.newFileSystem(new URI("file:///"), null, null)).thenReturn(filesystem);
         when(files.newPath(filesystem, new RelativePath("/tmp/sandboxes"))).thenReturn(sandboxPath);
         JobSubmitRequest request = mock(JobSubmitRequest.class);
         JobDescription description = mock(JobDescription.class);
@@ -127,7 +128,7 @@ public class OctopusManagerTest {
         when(jobs.submitJob(scheduler, description)).thenReturn(job);
         Map<String, SandboxedJob> sjobs = new HashMap<String, SandboxedJob>();
         JobsPoller poller = mock(JobsPoller.class);
-        ExecutorService executor = mock(ExecutorService.class);
+        ScheduledExecutorService executor = mock(ScheduledExecutorService.class);
         OctopusManager manager = new OctopusManager(conf, octopus, scheduler, sjobs, poller, executor);
 
         Job result = manager.submitJob(request, httpClient);

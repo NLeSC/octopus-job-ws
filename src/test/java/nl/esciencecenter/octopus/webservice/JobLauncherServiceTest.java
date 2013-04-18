@@ -67,12 +67,12 @@ public class JobLauncherServiceTest {
                 "octopus.adaptors.local.queue.multi.maxConcurrentJobs", (Object) 1);
         URI scheduler = new URI("local:///");
         URI sandboxRoot = new URI("file:///tmp/sandboxes");
-        OctopusConfiguration gat = new OctopusConfiguration(scheduler, "multi", sandboxRoot, prefs);
+        OctopusConfiguration octopus = new OctopusConfiguration(scheduler, "multi", sandboxRoot, prefs);
         ImmutableList<MacCredential> macs = ImmutableList.of(new MacCredential(
                 "id", "key", new URI("http://localhost")));
         HttpClientConfiguration httpClient = new HttpClientConfiguration();
 
-        JobLauncherConfiguration config = new JobLauncherConfiguration(gat,
+        JobLauncherConfiguration config = new JobLauncherConfiguration(octopus,
                 macs, httpClient);
         return config;
     }

@@ -5,8 +5,8 @@ import java.net.URISyntaxException;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import javax.ws.rs.WebApplicationException;
@@ -28,6 +28,8 @@ import nl.esciencecenter.octopus.webservice.api.JobStatusResponse;
 import nl.esciencecenter.octopus.webservice.api.JobSubmitRequest;
 
 import org.apache.http.client.HttpClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.yammer.dropwizard.lifecycle.Managed;
 
@@ -38,12 +40,14 @@ import com.yammer.dropwizard.lifecycle.Managed;
  *
  */
 public class OctopusManager implements Managed {
+    protected final static Logger logger = LoggerFactory.getLogger(OctopusManager.class);
+
     private final OctopusConfiguration configuration;
     private final Octopus octopus;
     private final Scheduler scheduler;
     private final Map<String, SandboxedJob> jobs;
     private final JobsPoller poller;
-    private ExecutorService executor;
+    private ScheduledExecutorService executor;
 
     /**
      * Sets preferences in GAT context and initializes a broker.
@@ -62,13 +66,13 @@ public class OctopusManager implements Managed {
         // TODO prompt user for password/passphrases
         scheduler = octopus.jobs().newScheduler(schedulerURI, credential, null);
         jobs = new ConcurrentHashMap<String, SandboxedJob>();
-        executor = Executors.newSingleThreadExecutor();
+        executor = Executors.newSingleThreadScheduledExecutor();
         PollConfiguration pollConf = configuration.getPollConfiguration();
         poller = new JobsPoller(jobs, pollConf, octopus);
     }
 
     protected OctopusManager(OctopusConfiguration configuration, Octopus octopus, Scheduler scheduler,
-            Map<String, SandboxedJob> jobs, JobsPoller poller, ExecutorService executor) {
+            Map<String, SandboxedJob> jobs, JobsPoller poller, ScheduledExecutorService executor) {
         super();
         this.configuration = configuration;
         this.octopus = octopus;
@@ -79,7 +83,8 @@ public class OctopusManager implements Managed {
     }
 
     public void start() throws Exception {
-        executor.execute(poller);
+        long interval = configuration.getPollConfiguration().getInterval();
+        executor.scheduleAtFixedRate(poller, 0, interval, TimeUnit.MILLISECONDS);
     }
 
     /**
@@ -89,14 +94,18 @@ public class OctopusManager implements Managed {
         // TODO should I call OctopusFactory.endAll() or the octopus.end()
         octopus.end();
         executor.shutdown();
+        // JobsPoller can be in middle of fetching job statuses so give it 1 minute to finish before interrupting it
         executor.awaitTermination(1, TimeUnit.MINUTES);
     }
 
     public Job submitJob(JobSubmitRequest request, HttpClient httpClient) throws OctopusIOException, OctopusException,
             URISyntaxException {
-        //create sandbox
         Credential credential = configuration.getCredential();
-        FileSystem sandboxFS = octopus.files().newFileSystem(configuration.getSandboxRoot(), credential, null);
+        // filesystems cant have path in them so strip eg. file:///tmp to file:///
+        URI s = configuration.getSandboxRoot();
+        URI sandboxURI = new URI(s.getScheme(), s.getUserInfo(), s.getHost(), s.getPort(), "/", s.getQuery(), s.getFragment());
+        //create sandbox
+        FileSystem sandboxFS = octopus.files().newFileSystem(sandboxURI, credential, null);
         String sandboxRoot = configuration.getSandboxRoot().getPath();
         AbsolutePath sandboxRootPath = octopus.files().newPath(sandboxFS, new RelativePath(sandboxRoot));
         Sandbox sandbox = request.toSandbox(octopus, sandboxRootPath, null);
@@ -106,14 +115,18 @@ public class OctopusManager implements Managed {
         description.setQueueName(configuration.getQueue());
         description.setWorkingDirectory(sandbox.getPath().getPath());
 
-        // stage input files and submit job
+        // stage input files
         sandbox.upload();
+
+        // submit job
         Job job = octopus.jobs().submitJob(scheduler, description);
 
         // store job in jobs map
         URI callback = request.status_callback_url;
         SandboxedJob sjob = new SandboxedJob(sandbox, job, callback, httpClient);
         jobs.put(job.getIdentifier(), sjob);
+
+        // JobsPoller will poll job status and download sandbox when job is done.
 
         return job;
     }

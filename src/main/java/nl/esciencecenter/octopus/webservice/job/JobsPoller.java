@@ -3,7 +3,6 @@ package nl.esciencecenter.octopus.webservice.job;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 import nl.esciencecenter.octopus.Octopus;
 import nl.esciencecenter.octopus.jobs.Job;
@@ -28,19 +27,7 @@ public class JobsPoller implements Runnable {
     }
 
     public void run() {
-        long timeout = pollConfiguration.getCancelTimeout();
-        while (!Thread.currentThread().isInterrupted()) {
-            poll();
-            try {
-                TimeUnit.MILLISECONDS.sleep(timeout);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                return;
-            }
-        }
-    }
-
-    public void poll() {
+        logger.debug("Polling for jobs statuses");
         long interval = pollConfiguration.getInterval();
         long timeout = pollConfiguration.getCancelTimeout();
         // maximum number of poll iterations
@@ -56,11 +43,13 @@ public class JobsPoller implements Runnable {
             job.incrPollIterations();
             Boolean polledTooLong = (job.getPollIterations() > maxIterations);
             if (job.getPollIterations() > pollConfiguration.getDeleteTimeout()) {
+                logger.debug("Deleting job");
                 // delete timeout reached -> get rid of job completely
                 cancelJob(job);
                 cleanSandbox(job);
                 deleteJob(job);
             } else if (!jobIsDone && polledTooLong) {
+                logger.debug("Canceling job");
                 // cancel timeout reached -> remove job from scheduler
                 cancelJob(job);
                 cleanSandbox(job);
@@ -70,6 +59,8 @@ public class JobsPoller implements Runnable {
                 // dont need to fetch status of jobs that are done
             }
         }
+
+        logger.debug("Fetching job statuses");
 
         // fetch statuses of all jobs
         Job[] jobarray = jjobs.toArray(new Job[0]);
@@ -82,8 +73,10 @@ public class JobsPoller implements Runnable {
 
                 // when state changed then commit
                 if (!status.equals(job.getStatus())) {
+                    logger.debug("Status changed");
                     commitStatus(status, job);
                     if (status.isDone()) {
+                        logger.debug("Emptying sandbox");
                         this.cleanSandbox(job);
                     }
                 }
