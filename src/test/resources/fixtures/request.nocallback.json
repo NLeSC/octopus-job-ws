@@ -9,6 +9,5 @@
     "prestaged": [
     	"magma.sh", "data.mzxml"
     ],
-    "poststaged": ["results.db"],
-    "status_callback_url": "http://localhost/status"
+    "poststaged": ["results.db"]
 }

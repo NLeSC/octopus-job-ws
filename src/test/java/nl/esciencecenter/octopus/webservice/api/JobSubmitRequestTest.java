@@ -5,6 +5,8 @@ import static org.junit.Assert.*;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
 
 import nl.esciencecenter.octopus.webservice.api.JobSubmitRequest;
 import org.junit.Before;
@@ -23,7 +25,7 @@ public class JobSubmitRequestTest {
     }
 
     @Test
-    public void testJobSubmitRequestStringStringStringArrayStringArrayStringArrayStringStringURI() {
+    public void testJobSubmitRequest_AllArguments() {
         assertNotNull(request);
     }
 
@@ -38,9 +40,13 @@ public class JobSubmitRequestTest {
     }
 
     private JobSubmitRequest sampleRequest() {
-        String[] arguments = { "magma.sh" };
-        String[] prestaged = { "magma.sh", "data.mzxml" };
-        String[] poststaged = { "results.db" };
+        List<String> arguments = new ArrayList<String>();
+        arguments.add("magma.sh");
+        List<String> prestaged = new ArrayList<String>();
+        prestaged.add("magma.sh");
+        prestaged.add("data.mzxml");
+        List<String> poststaged = new ArrayList<String>();
+        poststaged.add("results.db");
         URI cb = null;
         try {
             cb = new URI("http://localhost/status");
@@ -95,15 +101,15 @@ public class JobSubmitRequestTest {
         assertFalse(request.equals(r5));
 
         JobSubmitRequest r6 = sampleRequest();
-        r6.memory_max = 512;
+        r6.arguments.add("bla");
         assertFalse(request.equals(r6));
 
         JobSubmitRequest r7 = sampleRequest();
-        r7.memory_min = 512;
+        r7.prestaged.add("somefile");
         assertFalse(request.equals(r7));
 
         JobSubmitRequest r8 = sampleRequest();
-        r8.time_max = 60;
+        r8.poststaged.add("somefile");
         assertFalse(request.equals(r8));
 
         try {
@@ -118,7 +124,7 @@ public class JobSubmitRequestTest {
     @Test
     public void testToString() {
         String s =
-                "JobSubmitRequest{jobdir=/tmp/jobdir/, executable=/bin/sh, stderr=stderr.txt, stdout=stdout.txt, arguments=[magma.sh], prestaged=[magma.sh, data.mzxml], poststaged=[results.db], time_max=0, memory_min=0, memory_max=0, status_callback_url=http://localhost/status}";
+                "JobSubmitRequest{jobdir=/tmp/jobdir/, executable=/bin/sh, stderr=stderr.txt, stdout=stdout.txt, arguments=[magma.sh], prestaged=[magma.sh, data.mzxml], poststaged=[results.db], status_callback_url=http://localhost/status}";
         assertEquals(s, request.toString());
     }
 }
