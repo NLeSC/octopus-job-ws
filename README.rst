@@ -36,12 +36,12 @@ Install
 3.3 Configure Octopus adaptor directory to dist/ subdirectory of octopus clone.
 3.4 Configure optional MAC id/key
 4. Build uber-jar or execute from maven.
-4.1. Uber-jar, to start on other machine the `joblauncher-2.0.jar`, `joblauncher.yml` and `dist/octpus-adaptor-*.jar` files must be copied.
+4.1. Uber-jar, to start on other machine the `octopus-job-ws-2.0.jar`, `joblauncher.yml` and `dist/octpus-adaptor-*.jar` files must be copied.
 
 .. code-block:: bash
 
    mvn package
-   java -jar target/joblauncher-2.0.jar server joblauncher.yml
+   java -jar target/octopus-job-ws-2.0.jar server joblauncher.yml
 
 4.2 Execute from maven
 
@@ -84,6 +84,14 @@ Then submit it
 
    curl -H "Content-Type: application/json" -H 'Accept: application/json' -X POST -d @query.json http://localhost:9998/job
 
+   {
+      "state":"RUNNING",
+      "exitCode":null,
+      "exception":null,
+      "done":false,
+      "schedulerSpecficInformation":null
+   }
+
 After a while `output_file`, `stderr.txt` and `stdout.txt` file appear in `myjob` directory.
 "http://localhost/job/myjob/status" will have several PUT HTTP requests send to it.
 The PUT requestes contain job statuses like PRE_STAGING, RUNNING, POST_STAGING, STOPPED.
@@ -93,6 +101,52 @@ Callback authentication
 
 The status callbacks uses MAC Access Authentication.
 The MAC key indentifier and MAC key must be obtained from the provider.
+
+Status
+^^^^^^
+
+.. code-block:: bash
+
+   curl -H "Content-Type: application/json" -H 'Accept: application/json' http://localhost:9998/job/localjob-0
+
+   {
+      "state":"RUNNING",
+      "exitCode":null,
+      "exception":null,
+      "done":false,
+      "schedulerSpecficInformation":null
+   }
+
+   {
+      "state":"DONE",
+      "exitCode":0,
+      "exception":null,
+      "done":true,
+      "schedulerSpecficInformation":null
+   }
+
+   {
+      "state":"KILLED",
+      "exitCode":null,
+      "exception": {
+         "cause":null,
+         "stackTrace":[{
+            "methodName":"run",
+            "fileName":"LocalJobExecutor.java",
+            "lineNumber":163,
+            "className":"nl.esciencecenter.octopus.adaptors.local.LocalJobExecutor"
+            ,"nativeMethod":false
+         },{
+            "methodName":"runWorker","fileName":"ThreadPoolExecutor.java","lineNumber":1145,"className":"java.util.concurrent.ThreadPoolExecutor","nativeMethod":false},{"methodName":"run","fileName":"ThreadPoolExecutor.java","lineNumber":615,"className":"java.util.concurrent.ThreadPoolExecutor$Worker","nativeMethod":false},{"methodName":"run","fileName":"Thread.java","lineNumber":722,"className":"java.lang.Thread","nativeMethod":false}],"message":"Process cancelled by user.","localizedMessage":"Process cancelled by user.","suppressed":[]},
+      "done":true,
+      "schedulerSpecficInformation":null
+   }
+
+Cancel
+^^^^^^
+.. code-block:: bash
+
+   curl -H "Content-Type: application/json" -H 'Accept: application/json' -X DELETE http://localhost:9998/job/localjob-0
 
 Documentation
 -------------
