@@ -9,9 +9,9 @@ package nl.esciencecenter.octopus.webservice.api;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -122,7 +122,7 @@ public class JobSubmitRequest {
      * @return JobDescription
      * @throws GATObjectCreationException
      */
-    public JobDescription toJobDescription(Octopus octopus) {
+    public JobDescription toJobDescription() {
         JobDescription description = new JobDescription();
         description.setExecutable(executable);
         description.setArguments(arguments.toArray(new String[0]));
@@ -142,9 +142,11 @@ public class JobSubmitRequest {
             if (prestage.startsWith("/")) {
                 src = octopus.files().newPath(localFS, new RelativePath(prestage));
             } else {
-                src = octopus.files().newPath(localFS, new RelativePath(new String[] { jobdir, prestage }));
+                RelativePath rsrc = new RelativePath(new String[] { jobdir, prestage });
+                src = octopus.files().newPath(localFS, rsrc);
             }
-            sandbox.addUploadFile(src, src.getFileName());
+            String filename = src.getFileName();
+            sandbox.addUploadFile(src, filename);
         }
         // Download files from sandbox to request.jobdir
         sandbox.addDownloadFile(stdout, octopus.files().newPath(localFS, new RelativePath(new String[] { jobdir, stdout })));
