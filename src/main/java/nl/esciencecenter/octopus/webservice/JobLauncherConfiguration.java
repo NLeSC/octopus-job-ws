@@ -40,22 +40,22 @@ import com.yammer.dropwizard.config.Configuration;
  */
 public class JobLauncherConfiguration extends Configuration {
     /**
-     * List of mac credentials used to perform authentication
-     * when using http client on their scope.
+     * List of mac credentials used to perform authentication when using http client on their scope.
      */
     @NotNull
     @JsonProperty
     private ImmutableList<MacCredential> macs = ImmutableList.of();
 
-
+    /**
+     * Octopus configuration, contains settings to schedule a job
+     */
     @Valid
     @NotNull
     @JsonProperty("octopus")
     private OctopusConfiguration octopusConfiguration = new OctopusConfiguration();
 
     /**
-     * Http client used to PUT state changes of jobs
-     * the launcher is monitoring to the status callback url of the job
+     * Http client used to PUT state changes of jobs the launcher is monitoring to the status callback url of the job
      */
     @Valid
     @NotNull
@@ -65,36 +65,36 @@ public class JobLauncherConfiguration extends Configuration {
     /**
      * Constructor
      *
-     * @param gat
+     * @param octopus
+     *            Octopus configuration
      * @param macs
+     *            List of macs
      * @param httpClient
+     *            Http client configuration
      */
-    public JobLauncherConfiguration(OctopusConfiguration gat,
-            ImmutableList<MacCredential> macs,
+    public JobLauncherConfiguration(OctopusConfiguration octopus, final ImmutableList<MacCredential> macs,
             HttpClientConfiguration httpClient) {
-        this.octopusConfiguration = gat;
+        this.octopusConfiguration = octopus;
         this.macs = macs;
         this.httpClient = httpClient;
     }
 
     /**
-     * No argument contructor required for JAXB
+     * No argument contructor required for JAXB.
      */
     public JobLauncherConfiguration() {
 
     }
 
     /**
-     *
-     * @return HttpClientConfiguration
+     * @return Http client configuration
      */
     public HttpClientConfiguration getHttpClientConfiguration() {
         return httpClient;
     }
 
     /**
-     *
-     * @return GATConfiguration
+     * @return Octopus configuration
      */
     public OctopusConfiguration getOctopusConfiguration() {
         return octopusConfiguration;
@@ -121,17 +121,13 @@ public class JobLauncherConfiguration extends Configuration {
         if (getClass() != obj.getClass())
             return false;
         JobLauncherConfiguration other = (JobLauncherConfiguration) obj;
-        return Objects.equal(this.macs, other.macs)
-                && Objects.equal(this.octopusConfiguration, other.octopusConfiguration)
+        return Objects.equal(this.macs, other.macs) && Objects.equal(this.octopusConfiguration, other.octopusConfiguration)
                 && Objects.equal(this.httpClient, other.httpClient);
     }
 
     @Override
     public String toString() {
-        return Objects.toStringHelper(this)
-                .addValue(this.macs)
-                .addValue(this.octopusConfiguration)
-                .addValue(this.httpClient)
+        return Objects.toStringHelper(this).addValue(this.macs).addValue(this.octopusConfiguration).addValue(this.httpClient)
                 .toString();
     }
 }

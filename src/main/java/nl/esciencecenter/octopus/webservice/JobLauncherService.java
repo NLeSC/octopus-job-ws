@@ -9,9 +9,9 @@ package nl.esciencecenter.octopus.webservice;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -37,7 +37,8 @@ import nl.esciencecenter.octopus.webservice.job.OctopusManager;
 import nl.esciencecenter.octopus.webservice.mac.MacCredential;
 import nl.esciencecenter.octopus.webservice.mac.MacScheme;
 import nl.esciencecenter.octopus.webservice.mac.MacSchemeFactory;
-import nl.esciencecenter.octopus.webservice.resources.JobLauncherResource;
+import nl.esciencecenter.octopus.webservice.resources.JobResource;
+import nl.esciencecenter.octopus.webservice.resources.JobsResource;
 
 import com.google.common.collect.ImmutableList;
 import com.yammer.dropwizard.Service;
@@ -46,7 +47,7 @@ import com.yammer.dropwizard.config.Bootstrap;
 import com.yammer.dropwizard.config.Environment;
 
 /**
- * Service to submit jobs using a JavaGAT broker.
+ * Service to submit jobs using a Octopus scheduler and sandbox.
  *
  * @author verhoes
  *
@@ -78,7 +79,8 @@ public class JobLauncherService extends Service<JobLauncherConfiguration> {
 
         httpClient = macifyHttpClient((AbstractHttpClient) httpClient, configuration.getMacs());
 
-        environment.addResource(new JobLauncherResource(octopus, httpClient));
+        environment.addResource(new JobsResource(octopus, httpClient));
+        environment.addResource(new JobResource(octopus));
         environment.addHealthCheck(new JobLauncherHealthCheck("joblauncher"));
     }
 

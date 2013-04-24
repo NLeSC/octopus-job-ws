@@ -52,7 +52,8 @@ import nl.esciencecenter.octopus.webservice.job.OctopusConfiguration;
 import nl.esciencecenter.octopus.webservice.job.OctopusManager;
 import nl.esciencecenter.octopus.webservice.mac.MacCredential;
 import nl.esciencecenter.octopus.webservice.mac.MacScheme;
-import nl.esciencecenter.octopus.webservice.resources.JobLauncherResource;
+import nl.esciencecenter.octopus.webservice.resources.JobResource;
+import nl.esciencecenter.octopus.webservice.resources.JobsResource;
 
 public class JobLauncherServiceTest {
     private final Environment environment = mock(Environment.class);
@@ -76,7 +77,8 @@ public class JobLauncherServiceTest {
 
         service.run(config, environment);
 
-        verify(environment).addResource(any(JobLauncherResource.class));
+        verify(environment).addResource(any(JobResource.class));
+        verify(environment).addResource(any(JobsResource.class));
         verify(environment).addHealthCheck(any(JobLauncherHealthCheck.class));
         verify(environment).manage(any(OctopusManager.class));
 

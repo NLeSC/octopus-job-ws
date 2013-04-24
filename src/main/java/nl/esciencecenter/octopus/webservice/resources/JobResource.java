@@ -9,9 +9,9 @@ package nl.esciencecenter.octopus.webservice.resources;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -22,19 +22,16 @@ package nl.esciencecenter.octopus.webservice.resources;
 
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
-import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Response.Status;
 
+import nl.esciencecenter.octopus.exceptions.NoSuchJobException;
 import nl.esciencecenter.octopus.exceptions.OctopusException;
 import nl.esciencecenter.octopus.exceptions.OctopusIOException;
-import nl.esciencecenter.octopus.jobs.Job;
 import nl.esciencecenter.octopus.webservice.api.JobStatusResponse;
-import nl.esciencecenter.octopus.webservice.api.JobSubmitRequest;
-import nl.esciencecenter.octopus.webservice.api.JobSubmitResponse;
 import nl.esciencecenter.octopus.webservice.job.OctopusManager;
-
-import org.apache.http.client.HttpClient;
 
 import com.yammer.metrics.annotation.Timed;
 
@@ -44,54 +41,32 @@ import com.yammer.metrics.annotation.Timed;
  * @author verhoes
  *
  */
-@Path("/job")
-public class JobLauncherResource {
-    /**
-     * Broker to submit jobs with
-     */
-    private final OctopusManager octopusmanager;
-    /**
-     * Http client to perform status callbacks with
-     */
-    private final HttpClient httpClient;
+@Path("/job/{jobidentifier}")
+public class JobResource {
+    private OctopusManager octopusmanager;
 
-    /**
-     * Constructor
-     *
-     * @param broker
-     * @param httpClient
-     */
-    public JobLauncherResource(OctopusManager octopusmanager, HttpClient httpClient) {
+    public JobResource(OctopusManager octopusmanager) {
+        super();
         this.octopusmanager = octopusmanager;
-        this.httpClient = httpClient;
     }
 
-    /**
-     * Launch a job based on a request.
-     *
-     * @param request A job submission request
-     * @return a job submission response
-     * @throws Exception
-     * @throws GATInvocationException
-     * @throws GATObjectCreationException
-     */
-    @POST
-    @Timed
-    public JobSubmitResponse submitJob(JobSubmitRequest request) throws Exception {
-        Job job = octopusmanager.submitJob(request, httpClient);
-
-        return new JobSubmitResponse(job.getIdentifier());
-    }
-
-    @GET @Path("/{jobidentifier}")
+    @GET
     @Timed
     public JobStatusResponse stateOfJob(@PathParam("jobidentifier") String jobIdentifier) throws OctopusIOException, OctopusException {
-        return octopusmanager.stateOfJob(jobIdentifier);
+        try {
+            return octopusmanager.stateOfJob(jobIdentifier);
+        } catch (NoSuchJobException e) {
+            throw new WebApplicationException(Status.NOT_FOUND);
+        }
     }
 
-    @DELETE @Path("/{jobidentifier}")
+    @DELETE
     @Timed
     public void cancelJob(@PathParam("jobidentifier") String jobIdentifier) throws OctopusIOException, OctopusException {
-        octopusmanager.cancelJob(jobIdentifier);
+        try {
+            octopusmanager.cancelJob(jobIdentifier);
+        } catch (NoSuchJobException e) {
+            throw new WebApplicationException(Status.NOT_FOUND);
+        }
     }
 }

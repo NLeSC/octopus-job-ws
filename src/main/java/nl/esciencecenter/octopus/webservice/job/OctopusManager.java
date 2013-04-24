@@ -29,12 +29,10 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response.Status;
-
 import nl.esciencecenter.octopus.Octopus;
 import nl.esciencecenter.octopus.OctopusFactory;
 import nl.esciencecenter.octopus.credentials.Credential;
+import nl.esciencecenter.octopus.exceptions.NoSuchJobException;
 import nl.esciencecenter.octopus.exceptions.OctopusException;
 import nl.esciencecenter.octopus.exceptions.OctopusIOException;
 import nl.esciencecenter.octopus.files.AbsolutePath;
@@ -54,7 +52,9 @@ import org.slf4j.LoggerFactory;
 import com.yammer.dropwizard.lifecycle.Managed;
 
 /**
- * JavaGAT manager.
+ * Octopus manager.
+ *
+ * Responsible for submitting jobs, polling their status and cleaning jobs up.
  *
  * @author verhoes
  *
@@ -102,13 +102,16 @@ public class OctopusManager implements Managed {
         this.executor = executor;
     }
 
+    /**
+     * Starts the job poller.
+     */
     public void start() throws Exception {
         long interval = configuration.getPollConfiguration().getInterval();
         executor.scheduleAtFixedRate(poller, 0, interval, TimeUnit.MILLISECONDS);
     }
 
     /**
-     * Terminates any running Octopus processes.
+     * Terminates any running Octopus processes and stops the job poller.
      */
     public void stop() throws Exception {
         // TODO should I call OctopusFactory.endAll() or the octopus.end()
@@ -118,6 +121,17 @@ public class OctopusManager implements Managed {
         executor.awaitTermination(1, TimeUnit.MINUTES);
     }
 
+    /**
+     * Submit a job request.
+     *
+     * @param request The job request
+     * @param httpClient http client used to reporting status to job callback.
+     * @return Job identifier
+     *
+     * @throws OctopusIOException
+     * @throws OctopusException
+     * @throws URISyntaxException
+     */
     public Job submitJob(JobSubmitRequest request, HttpClient httpClient) throws OctopusIOException, OctopusException,
             URISyntaxException {
         Credential credential = configuration.getCredential();
@@ -151,21 +165,45 @@ public class OctopusManager implements Managed {
         return job;
     }
 
+    /**
+     * Get status of job
+     *
+     * @param jobIdentifier
+     * @return Status of job
+     *
+     * @throws OctopusIOException
+     * @throws OctopusException
+     * @throws NoSuchJobException When job is unknown to service
+     */
     public JobStatusResponse stateOfJob(String jobIdentifier) throws OctopusIOException, OctopusException {
         SandboxedJob job;
         if ((job = jobs.get(jobIdentifier)) != null) {
             return new JobStatusResponse(octopus.jobs().getJobStatus(job.getJob()));
         } else {
-            throw new WebApplicationException(Status.NOT_FOUND);
+            throw new NoSuchJobException("", "Job not found");
         }
     }
 
+    /**
+     * Cancel job, cancels pending job and kills running job.
+     *
+     * If job is DONE then nothing happens.
+     *
+     * @param jobIdentifier The identifier of the job.
+     *
+     * @throws NoSuchJobException When job with jobIdentifier could not be found.
+     * @throws OctopusIOException
+     * @throws OctopusException
+     */
     public void cancelJob(String jobIdentifier) throws OctopusIOException, OctopusException {
         SandboxedJob job;
         if ((job = jobs.get(jobIdentifier)) != null) {
-            octopus.jobs().cancelJob(job.getJob());
+            // no need to cancel completed jobs
+            if (!job.getStatus().isDone()) {
+                octopus.jobs().cancelJob(job.getJob());
+            }
         } else {
-            throw new WebApplicationException(Status.NOT_FOUND);
+            throw new NoSuchJobException("", "Job not found");
         }
     }
 }

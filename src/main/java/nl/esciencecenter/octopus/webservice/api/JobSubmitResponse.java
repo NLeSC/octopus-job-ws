@@ -9,9 +9,9 @@ package nl.esciencecenter.octopus.webservice.api;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,6 +20,13 @@ package nl.esciencecenter.octopus.webservice.api;
  * #L%
  */
 
+import java.net.URI;
+
+import javax.ws.rs.core.UriBuilder;
+
+import nl.esciencecenter.octopus.webservice.resources.JobResource;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Objects;
 
 /**
@@ -28,6 +35,7 @@ import com.google.common.base.Objects;
  * @author Stefan Verhoeven <s.verhoeven@esciencecenter.nl>
  */
 public class JobSubmitResponse {
+    @JsonProperty
     public String jobid;
 
     public JobSubmitResponse(String jobid) {
@@ -37,6 +45,15 @@ public class JobSubmitResponse {
     public JobSubmitResponse() {
         super();
         jobid = null;
+    }
+
+    /**
+     * URL of job.
+     *
+     * @return URL which can be used to fetch status of job (GET) or cancel it (DELETE).
+     */
+    public URI getURL() {
+        return UriBuilder.fromResource(JobResource.class).build(jobid);
     }
 
     @Override

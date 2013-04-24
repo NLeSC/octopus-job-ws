@@ -24,6 +24,7 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import java.net.URI;
@@ -36,6 +37,7 @@ import java.util.concurrent.TimeUnit;
 
 import nl.esciencecenter.octopus.Octopus;
 import nl.esciencecenter.octopus.OctopusFactory;
+import nl.esciencecenter.octopus.exceptions.NoSuchJobException;
 import nl.esciencecenter.octopus.exceptions.OctopusException;
 import nl.esciencecenter.octopus.exceptions.OctopusIOException;
 import nl.esciencecenter.octopus.files.AbsolutePath;
@@ -159,7 +161,7 @@ public class OctopusManagerTest {
     }
 
     @Test
-    public void testStateOfJob() throws URISyntaxException, OctopusIOException, OctopusException {
+    public void testStateOfJob_DoneJob_DoneJob() throws URISyntaxException, OctopusIOException, OctopusException {
         // create manager with stubbed members
         Octopus octopus = mock(Octopus.class);
         Jobs jobsEngine= mock(Jobs.class);
@@ -185,8 +187,16 @@ public class OctopusManagerTest {
         assertThat(result).isEqualTo(expected_status);
     }
 
+    @Test(expected=NoSuchJobException.class)
+    public void testStateOfJob_UnknownJob_ThrowsNoSuchJobException() throws OctopusIOException, OctopusException {
+        Map<String, SandboxedJob> sjobs = new HashMap<String, SandboxedJob>();
+        OctopusManager manager = new OctopusManager(null, null, null, sjobs, null, null);
+
+        manager.stateOfJob("11111111-1111-1111-1111-111111111111");
+    }
+
     @Test
-    public void testCancelJob() throws OctopusIOException, OctopusException {
+    public void testCancelJob_NonDoneJob_JobCanceled() throws OctopusIOException, OctopusException {
         // create manager with mocked Jobs and other members stubbed
         Octopus octopus = mock(Octopus.class);
         Jobs jobsEngine= mock(Jobs.class);
@@ -195,11 +205,43 @@ public class OctopusManagerTest {
         SandboxedJob sjob = mock(SandboxedJob.class);
         Job job = mock(Job.class);
         when(sjob.getJob()).thenReturn(job);
+        JobStatus status = mock(JobStatus.class);
+        when(status.isDone()).thenReturn(false); // Job is not done
+        when(sjob.getStatus()).thenReturn(status);
         sjobs.put("11111111-1111-1111-1111-111111111111", sjob);
         OctopusManager manager = new OctopusManager(null, octopus, null, sjobs, null, null);
 
         manager.cancelJob("11111111-1111-1111-1111-111111111111");
 
         verify(jobsEngine).cancelJob(job);
+    }
+
+    @Test
+    public void testCancelJob_DoneJob_JobNotCanceled() throws OctopusIOException, OctopusException {
+        // create manager with mocked Jobs and other members stubbed
+        Octopus octopus = mock(Octopus.class);
+        Jobs jobsEngine= mock(Jobs.class);
+        when(octopus.jobs()).thenReturn(jobsEngine);
+        Map<String, SandboxedJob> sjobs = new HashMap<String, SandboxedJob>();
+        SandboxedJob sjob = mock(SandboxedJob.class);
+        Job job = mock(Job.class);
+        when(sjob.getJob()).thenReturn(job);
+        JobStatus status = mock(JobStatus.class);
+        when(status.isDone()).thenReturn(true); // Job is done
+        when(sjob.getStatus()).thenReturn(status);
+        sjobs.put("11111111-1111-1111-1111-111111111111", sjob);
+        OctopusManager manager = new OctopusManager(null, octopus, null, sjobs, null, null);
+
+        manager.cancelJob("11111111-1111-1111-1111-111111111111");
+
+        verifyNoMoreInteractions(jobsEngine);
+    }
+
+    @Test(expected=NoSuchJobException.class)
+    public void testCancelJob_UnknownJob_ThrowsNoSuchJobException() throws OctopusIOException, OctopusException {
+        Map<String, SandboxedJob> sjobs = new HashMap<String, SandboxedJob>();
+        OctopusManager manager = new OctopusManager(null, null, null, sjobs, null, null);
+
+        manager.cancelJob("11111111-1111-1111-1111-111111111111");
     }
 }

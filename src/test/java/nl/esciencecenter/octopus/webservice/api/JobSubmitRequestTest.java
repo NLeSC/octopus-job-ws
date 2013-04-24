@@ -20,10 +20,20 @@ package nl.esciencecenter.octopus.webservice.api;
  * #L%
  */
 
-import static org.junit.Assert.*;
+import static com.yammer.dropwizard.testing.JsonHelpers.asJson;
+import static com.yammer.dropwizard.testing.JsonHelpers.fromJson;
+import static com.yammer.dropwizard.testing.JsonHelpers.jsonFixture;
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.verify;
 
 import java.io.IOException;
 import java.net.URI;
@@ -41,14 +51,10 @@ import nl.esciencecenter.octopus.files.Files;
 import nl.esciencecenter.octopus.files.RelativePath;
 import nl.esciencecenter.octopus.jobs.JobDescription;
 import nl.esciencecenter.octopus.util.Sandbox;
-import nl.esciencecenter.octopus.webservice.api.JobSubmitRequest;
+
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-
-import static com.yammer.dropwizard.testing.JsonHelpers.*;
-import static org.fest.assertions.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.*;
 
 public class JobSubmitRequestTest {
     private JobSubmitRequest request;
@@ -183,11 +189,16 @@ public class JobSubmitRequestTest {
         Files filesEngine = mock(Files.class);
         when(octopus.files()).thenReturn(filesEngine);
         FileSystem filesystem = mock(FileSystem.class);
-        when(filesEngine.newPath(filesystem, new RelativePath(new String[] {"/tmp/jobdir/", "runme.sh"}))).thenReturn(new AbsolutePathImplementation(filesystem, new RelativePath("/tmp/jobdir/runme.sh")));
-        when(filesEngine.newPath(filesystem, new RelativePath(new String[] {"/tmp/jobdir/", "input.dat"}))).thenReturn(new AbsolutePathImplementation(filesystem, new RelativePath("/tmp/jobdir/input.dat")));
-        when(filesEngine.newPath(filesystem, new RelativePath(new String[] {"/tmp/jobdir/", "stderr.txt"}))).thenReturn(new AbsolutePathImplementation(filesystem, new RelativePath("/tmp/jobdir/stderr.txt")));
-        when(filesEngine.newPath(filesystem, new RelativePath(new String[] {"/tmp/jobdir/", "stdout.txt"}))).thenReturn(new AbsolutePathImplementation(filesystem, new RelativePath("/tmp/jobdir/stdout.txt")));
-        when(filesEngine.newPath(filesystem, new RelativePath(new String[] {"/tmp/jobdir/", "output.dat"}))).thenReturn(new AbsolutePathImplementation(filesystem, new RelativePath("/tmp/jobdir/output.dat")));
+        when(filesEngine.newPath(filesystem, new RelativePath(new String[] { "/tmp/jobdir/", "runme.sh" }))).thenReturn(
+                new AbsolutePathImplementation(filesystem, new RelativePath("/tmp/jobdir/runme.sh")));
+        when(filesEngine.newPath(filesystem, new RelativePath(new String[] { "/tmp/jobdir/", "input.dat" }))).thenReturn(
+                new AbsolutePathImplementation(filesystem, new RelativePath("/tmp/jobdir/input.dat")));
+        when(filesEngine.newPath(filesystem, new RelativePath(new String[] { "/tmp/jobdir/", "stderr.txt" }))).thenReturn(
+                new AbsolutePathImplementation(filesystem, new RelativePath("/tmp/jobdir/stderr.txt")));
+        when(filesEngine.newPath(filesystem, new RelativePath(new String[] { "/tmp/jobdir/", "stdout.txt" }))).thenReturn(
+                new AbsolutePathImplementation(filesystem, new RelativePath("/tmp/jobdir/stdout.txt")));
+        when(filesEngine.newPath(filesystem, new RelativePath(new String[] { "/tmp/jobdir/", "output.dat" }))).thenReturn(
+                new AbsolutePathImplementation(filesystem, new RelativePath("/tmp/jobdir/output.dat")));
         AbsolutePath sandBoxRoot = new AbsolutePathImplementation(filesystem, new RelativePath("/tmp"));
 
         Object sandbox = request.toSandbox(octopus, sandBoxRoot, sandboxId);
@@ -195,9 +206,12 @@ public class JobSubmitRequestTest {
         Sandbox expected = new Sandbox(octopus, sandBoxRoot, sandboxId);
         expected.addUploadFile(new AbsolutePathImplementation(filesystem, new RelativePath("/tmp/jobdir/runme.sh")), "runme.sh");
         expected.addUploadFile(new AbsolutePathImplementation(filesystem, new RelativePath("/tmp/jobdir/input.dat")), "input.dat");
-        expected.addDownloadFile("output.dat", new AbsolutePathImplementation(filesystem, new RelativePath("/tmp/jobdir/output.dat")));
-        expected.addDownloadFile("stderr.txt", new AbsolutePathImplementation(filesystem, new RelativePath("/tmp/jobdir/stderr.txt")));
-        expected.addDownloadFile("stdout.txt", new AbsolutePathImplementation(filesystem, new RelativePath("/tmp/jobdir/stdout.txt")));
+        expected.addDownloadFile("output.dat", new AbsolutePathImplementation(filesystem, new RelativePath(
+                "/tmp/jobdir/output.dat")));
+        expected.addDownloadFile("stderr.txt", new AbsolutePathImplementation(filesystem, new RelativePath(
+                "/tmp/jobdir/stderr.txt")));
+        expected.addDownloadFile("stdout.txt", new AbsolutePathImplementation(filesystem, new RelativePath(
+                "/tmp/jobdir/stdout.txt")));
 
         // FIXME when https://github.com/NLeSC/octopus/issues/53 is resolved then remove ignore
         assertThat(sandbox).isEqualTo(expected);
