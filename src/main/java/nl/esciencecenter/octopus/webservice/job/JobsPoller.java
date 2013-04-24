@@ -9,9 +9,9 @@ package nl.esciencecenter.octopus.webservice.job;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -32,6 +32,14 @@ import nl.esciencecenter.octopus.jobs.Jobs;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Poll the status of jobs using pollConfiguration and octopus.
+ *
+ * Only polls status of jobs that are not DONE.
+ *
+ * @author verhoes
+ *
+ */
 public class JobsPoller implements Runnable {
     protected final static Logger logger = LoggerFactory.getLogger(JobsPoller.class);
 
@@ -61,7 +69,7 @@ public class JobsPoller implements Runnable {
             }
 
             job.incrPollIterations();
-            Boolean polledTooLong = (job.getPollIterations() > maxIterations);
+            Boolean polledTooLong = job.getPollIterations() > maxIterations;
             if (job.getPollIterations() > pollConfiguration.getDeleteTimeout()) {
                 logger.debug("Deleting job");
                 // delete timeout reached -> get rid of job completely
@@ -75,9 +83,8 @@ public class JobsPoller implements Runnable {
                 cleanSandbox(job);
             } else if (!jobIsDone) {
                 jjobs.add(job.getJob());
-            } else {
-                // dont need to fetch status of jobs that are done
             }
+            // else dont need to fetch status of jobs that are done
         }
 
         logger.debug("Fetching job statuses");
@@ -92,7 +99,7 @@ public class JobsPoller implements Runnable {
                 SandboxedJob job = jobs.get(status.getJob().getIdentifier());
 
                 // when state changed then commit
-                if (!status.equals(job.getStatus())) {
+                if (job.getStatus() == null || !status.getState().equals(job.getStatus().getState())) {
                     logger.debug("Status changed");
                     commitStatus(status, job);
                     if (status.isDone()) {
@@ -108,11 +115,7 @@ public class JobsPoller implements Runnable {
         jobs.remove(job.getJob().getIdentifier());
     }
 
-    /**
-     * @param status
-     * @param job
-     */
-    public void commitStatus(JobStatus status, SandboxedJob job) {
+    protected void commitStatus(JobStatus status, SandboxedJob job) {
         try {
             job.setStatus(status);
         } catch (Exception e) {
@@ -120,21 +123,19 @@ public class JobsPoller implements Runnable {
         }
     }
 
-    public void cleanSandbox(SandboxedJob job) {
+    protected void cleanSandbox(SandboxedJob job) {
         try {
-            job.getSandbox().download();
-            job.getSandbox().delete();
+            job.cleanSandbox();
         } catch (Exception e) {
             logger.info(e.toString());
         }
     }
 
-    public void cancelJob(SandboxedJob job) {
+    protected void cancelJob(SandboxedJob job) {
         try {
             octopus.jobs().cancelJob(job.getJob());
         } catch (Exception e) {
             logger.info(e.toString());
         }
     }
-
 }
