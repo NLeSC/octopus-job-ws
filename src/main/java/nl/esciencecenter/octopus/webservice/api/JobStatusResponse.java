@@ -31,8 +31,8 @@ import com.google.common.base.Objects;
 public class JobStatusResponse {
     @NotNull
     private final String state;
-    @NotNull
     private final Integer exitCode;
+    @NotNull
     private final Exception exception;
     @NotNull
     private final boolean done;
