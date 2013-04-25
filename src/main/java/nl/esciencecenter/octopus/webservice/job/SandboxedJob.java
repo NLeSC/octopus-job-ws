@@ -34,8 +34,10 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Objects;
 
 import nl.esciencecenter.octopus.exceptions.OctopusIOException;
+import nl.esciencecenter.octopus.exceptions.UnsupportedOperationException;
 import nl.esciencecenter.octopus.jobs.Job;
 import nl.esciencecenter.octopus.jobs.JobStatus;
+import nl.esciencecenter.octopus.util.CopyOption;
 import nl.esciencecenter.octopus.util.Sandbox;
 
 public class SandboxedJob {
@@ -129,9 +131,10 @@ public class SandboxedJob {
      * Downloads sandbox and delete it's contents
      *
      * @throws OctopusIOException
+     * @throws UnsupportedOperationException
      */
-    public void cleanSandbox() throws OctopusIOException {
-        sandbox.download();
+    public void cleanSandbox() throws OctopusIOException, UnsupportedOperationException {
+        sandbox.download(CopyOption.REPLACE_EXISTING);
         sandbox.delete();
     }
 }

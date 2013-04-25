@@ -39,11 +39,13 @@ import nl.esciencecenter.octopus.engine.jobs.JobImplementation;
 import nl.esciencecenter.octopus.engine.jobs.JobStatusImplementation;
 import nl.esciencecenter.octopus.exceptions.OctopusException;
 import nl.esciencecenter.octopus.exceptions.OctopusIOException;
+import nl.esciencecenter.octopus.exceptions.UnsupportedOperationException;
 import nl.esciencecenter.octopus.jobs.Job;
 import nl.esciencecenter.octopus.jobs.JobDescription;
 import nl.esciencecenter.octopus.jobs.JobStatus;
 import nl.esciencecenter.octopus.jobs.Jobs;
 import nl.esciencecenter.octopus.jobs.Scheduler;
+import nl.esciencecenter.octopus.util.CopyOption;
 import nl.esciencecenter.octopus.util.Sandbox;
 
 import org.apache.http.client.ClientProtocolException;
@@ -123,7 +125,7 @@ public class JobsPollerTest {
     }
 
     @Test
-    public void run_RunningState_DoneOkWithCleanupSandbox() throws OctopusIOException {
+    public void run_RunningState_DoneOkWithCleanupSandbox() throws OctopusIOException, UnsupportedOperationException {
         Map<String, SandboxedJob> jobs = new HashMap<String, SandboxedJob>();
         String identifier = "11111111-1111-1111-1111-111111111111";
         Job job = new JobImplementation(mock(JobDescription.class), mock(Scheduler.class), identifier);
@@ -143,7 +145,7 @@ public class JobsPollerTest {
 
         poller.run();
 
-        verify(sb).download();
+        verify(sb).download(CopyOption.REPLACE_EXISTING);
         verify(sb).delete();
     }
 
@@ -169,7 +171,7 @@ public class JobsPollerTest {
         poller.run();
 
         verify(jobsEngine).cancelJob(job);
-        verify(sb).download();
+        verify(sb).download(CopyOption.REPLACE_EXISTING);
         verify(sb).delete();
     }
 
@@ -195,7 +197,7 @@ public class JobsPollerTest {
         poller.run();
 
         verify(jobsEngine).cancelJob(job);
-        verify(sb).download();
+        verify(sb).download(CopyOption.REPLACE_EXISTING);
         verify(sb).delete();
         assertThat(jobs).doesNotContainKey(identifier);
     }
@@ -236,7 +238,7 @@ public class JobsPollerTest {
     }
 
     @Test
-    public void testCleanSandbox() throws OctopusIOException {
+    public void testCleanSandbox() throws OctopusIOException, UnsupportedOperationException {
         Octopus octopus = mock(Octopus.class);
         JobsPoller poller = new JobsPoller(null, null, octopus);
         SandboxedJob job = mock(SandboxedJob.class);

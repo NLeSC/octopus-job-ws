@@ -33,8 +33,10 @@ import java.net.URISyntaxException;
 
 import nl.esciencecenter.octopus.engine.jobs.JobStatusImplementation;
 import nl.esciencecenter.octopus.exceptions.OctopusIOException;
+import nl.esciencecenter.octopus.exceptions.UnsupportedOperationException;
 import nl.esciencecenter.octopus.jobs.Job;
 import nl.esciencecenter.octopus.jobs.JobStatus;
+import nl.esciencecenter.octopus.util.CopyOption;
 import nl.esciencecenter.octopus.util.Sandbox;
 
 import org.apache.http.client.ClientProtocolException;
@@ -140,10 +142,10 @@ public class SandboxedJobTest {
     }
 
     @Test
-    public void testCleanSandbox() throws URISyntaxException, OctopusIOException {
+    public void testCleanSandbox() throws URISyntaxException, OctopusIOException, UnsupportedOperationException {
         job.cleanSandbox();
 
-        verify(sandbox).download();
+        verify(sandbox).download(CopyOption.REPLACE_EXISTING);
         verify(sandbox).delete();
     }
 
