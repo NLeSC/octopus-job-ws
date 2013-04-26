@@ -20,6 +20,9 @@ package nl.esciencecenter.octopus.webservice.resources;
  * #L%
  */
 
+import java.util.Collection;
+
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 
@@ -27,13 +30,14 @@ import nl.esciencecenter.octopus.jobs.Job;
 import nl.esciencecenter.octopus.webservice.api.JobSubmitRequest;
 import nl.esciencecenter.octopus.webservice.api.JobSubmitResponse;
 import nl.esciencecenter.octopus.webservice.job.OctopusManager;
+import nl.esciencecenter.octopus.webservice.job.SandboxedJob;
 
 import org.apache.http.client.HttpClient;
 
 import com.yammer.metrics.annotation.Timed;
 
 
-@Path("/jobs")
+@Path("/job")
 public class JobsResource {
     /**
      * Broker to submit jobs with
@@ -70,5 +74,11 @@ public class JobsResource {
         Job job = octopusmanager.submitJob(request, httpClient);
 
         return new JobSubmitResponse(job.getIdentifier());
+    }
+
+    @GET
+    @Timed
+    public Collection<SandboxedJob> getJobs() {
+        return octopusmanager.jobs();
     }
 }

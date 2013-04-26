@@ -22,6 +22,7 @@ package nl.esciencecenter.octopus.webservice.job;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
@@ -205,5 +206,9 @@ public class OctopusManager implements Managed {
         } else {
             throw new NoSuchJobException("", "Job not found");
         }
+    }
+
+    public Collection<SandboxedJob> jobs() {
+        return jobs.values();
     }
 }
