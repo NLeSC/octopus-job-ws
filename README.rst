@@ -22,7 +22,7 @@ Install
 
    git clone https://github.com/NLeSC/octopus.git
    cd octopus
-   ant build -Dversion=1.0
+   ant build -Dversion=-1.0
 
 2. Add Octopus jar to local maven repository, so it can be used as maven dependencies
 

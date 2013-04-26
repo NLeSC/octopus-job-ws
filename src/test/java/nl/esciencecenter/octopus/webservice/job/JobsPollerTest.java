@@ -57,7 +57,7 @@ public class JobsPollerTest {
     public void run_NoState_StateFilledAndIterationIncreased() throws URISyntaxException {
         Map<String, SandboxedJob> jobs = new HashMap<String, SandboxedJob>();
         String identifier = "11111111-1111-1111-1111-111111111111";
-        Job job = new JobImplementation(mock(JobDescription.class), mock(Scheduler.class), identifier);
+        Job job = new JobImplementation(mock(JobDescription.class), mock(Scheduler.class), identifier, false, false);
         SandboxedJob sjob = new SandboxedJob(null, job, null, null);
         jobs.put(identifier, sjob);
         PollConfiguration pollConf = new PollConfiguration();
@@ -81,7 +81,7 @@ public class JobsPollerTest {
             ClientProtocolException, IOException {
         Map<String, SandboxedJob> jobs = new HashMap<String, SandboxedJob>();
         String identifier = "11111111-1111-1111-1111-111111111111";
-        Job job = new JobImplementation(mock(JobDescription.class), mock(Scheduler.class), identifier);
+        Job job = new JobImplementation(mock(JobDescription.class), mock(Scheduler.class), identifier, false, false);
         JobStatus jobstatus = new JobStatusImplementation(job, "RUNNING", 0, null, false, null);
         SandboxedJob sjob = new SandboxedJob(null, job, null, null, jobstatus, 5);
         jobs.put(identifier, sjob);
@@ -104,7 +104,7 @@ public class JobsPollerTest {
     public void run_PendingState_StateUpdated() throws URISyntaxException {
         Map<String, SandboxedJob> jobs = new HashMap<String, SandboxedJob>();
         String identifier = "11111111-1111-1111-1111-111111111111";
-        Job job = new JobImplementation(mock(JobDescription.class), mock(Scheduler.class), identifier);
+        Job job = new JobImplementation(mock(JobDescription.class), mock(Scheduler.class), identifier, false, false);
         JobStatus jobstatus = new JobStatusImplementation(job, "PENDING", 0, null, false, null);
         SandboxedJob sjob = new SandboxedJob(null, job, null, null, jobstatus, 5);
         jobs.put(identifier, sjob);
@@ -128,7 +128,7 @@ public class JobsPollerTest {
     public void run_RunningState_DoneOkWithCleanupSandbox() throws OctopusIOException, UnsupportedOperationException {
         Map<String, SandboxedJob> jobs = new HashMap<String, SandboxedJob>();
         String identifier = "11111111-1111-1111-1111-111111111111";
-        Job job = new JobImplementation(mock(JobDescription.class), mock(Scheduler.class), identifier);
+        Job job = new JobImplementation(mock(JobDescription.class), mock(Scheduler.class), identifier, false, false);
         JobStatus jobstatus = new JobStatusImplementation(job, "RUNNING", 0, null, false, null);
         Sandbox sb = mock(Sandbox.class);
         SandboxedJob sjob = new SandboxedJob(sb, job, null, null, jobstatus, 5);
@@ -153,7 +153,7 @@ public class JobsPollerTest {
     public void run_PendingStateOnCancelTimeout_JobCanceled() throws OctopusIOException, OctopusException {
         Map<String, SandboxedJob> jobs = new HashMap<String, SandboxedJob>();
         String identifier = "11111111-1111-1111-1111-111111111111";
-        Job job = new JobImplementation(mock(JobDescription.class), mock(Scheduler.class), identifier);
+        Job job = new JobImplementation(mock(JobDescription.class), mock(Scheduler.class), identifier, false, false);
         JobStatus jobstatus = new JobStatusImplementation(job, "PENDING", 0, null, false, null);
         Sandbox sb = mock(Sandbox.class);
         SandboxedJob sjob = new SandboxedJob(sb, job, null, null, jobstatus, 5);
@@ -179,7 +179,7 @@ public class JobsPollerTest {
     public void run_PendingStateOnDeleteTimeout_JobDeleted() throws OctopusIOException, OctopusException {
         Map<String, SandboxedJob> jobs = new HashMap<String, SandboxedJob>();
         String identifier = "11111111-1111-1111-1111-111111111111";
-        Job job = new JobImplementation(mock(JobDescription.class), mock(Scheduler.class), identifier);
+        Job job = new JobImplementation(mock(JobDescription.class), mock(Scheduler.class), identifier, false, false);
         JobStatus jobstatus = new JobStatusImplementation(job, "PENDING", 0, null, false, null);
         Sandbox sb = mock(Sandbox.class);
         SandboxedJob sjob = new SandboxedJob(sb, job, null, null, jobstatus, 5);
@@ -206,7 +206,7 @@ public class JobsPollerTest {
     public void run_DoneState_JobStatusNotCalledAndIterationIncreased() {
         Map<String, SandboxedJob> jobs = new HashMap<String, SandboxedJob>();
         String identifier = "11111111-1111-1111-1111-111111111111";
-        Job job = new JobImplementation(mock(JobDescription.class), mock(Scheduler.class), identifier);
+        Job job = new JobImplementation(mock(JobDescription.class), mock(Scheduler.class), identifier, false, false);
         JobStatus jobstatus = new JobStatusImplementation(job, "DONE", 0, null, true, null);
         SandboxedJob sjob = new SandboxedJob(null, job, null, null, jobstatus, 5);
         jobs.put(identifier, sjob);
