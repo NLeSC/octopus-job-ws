@@ -51,7 +51,7 @@ public class JobsResource {
     /**
      * Constructor
      *
-     * @param broker
+     * @param octopusmanager
      * @param httpClient
      */
     public JobsResource(OctopusManager octopusmanager, HttpClient httpClient) {

@@ -8,7 +8,6 @@ octopus:
   queue: multi
   sandboxRoot: file:///tmp/
   preferences:
-    octopus.adaptor.dir: <directory where octopus-adaptor-*.jar are located>
     octopus.adaptors.local.queue.multi.maxConcurrentJobs: 4
   poll:
    interval: 30000

@@ -91,7 +91,7 @@ public class JobLauncherService extends Service<JobLauncherConfiguration> {
      *
      * @param httpClient
      * @param macs
-     * @return
+     * @return httpClient with MAC access authentication and credentials injected.
      */
     public static AbstractHttpClient macifyHttpClient(AbstractHttpClient httpClient, ImmutableList<MacCredential> macs) {
 

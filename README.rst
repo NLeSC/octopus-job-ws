@@ -33,10 +33,9 @@ Install
 3. Make copy of 'joblauncher.yml-dist' to 'joblauncher.yml'
 3.1 Configure Octopus scheduler
 3.2 Configure Octopus sandbox root directory
-3.3 Configure Octopus adaptor directory to dist/ subdirectory of octopus clone.
-3.4 Configure optional MAC id/key
+3.3 Configure optional MAC id/key
 4. Build uber-jar or execute from maven.
-4.1. Uber-jar, to start on other machine the `octopus-job-ws-2.0.jar`, `joblauncher.yml` and `dist/octpus-adaptor-*.jar` files must be copied.
+4.1. Uber-jar, to start on other machine the `octopus-job-ws-2.0.jar` and `joblauncher.yml` files must be copied.
 
 .. code-block:: bash
 
@@ -158,3 +157,14 @@ A maven site can be generated with
    mvn site
    firefox target/site/index.html
 
+Integration tests
+-----------------
+
+Running the integration tests requires a configuration file called `src/test/resources/integration.props`.
+An example configuration is available as `src/test/resources/integration.props-dist`.
+
+Run integration tests with
+
+.. code-block:: bash
+
+  mvn verify

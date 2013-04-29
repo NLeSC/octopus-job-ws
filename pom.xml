@@ -4,6 +4,17 @@
 	<groupId>nl.esciencecenter.octopus.webservice</groupId>
 	<artifactId>octopus-job-ws</artifactId>
 	<version>2.0</version>
+	<name>Octopus Job Webservice</name>
+	<description>REST based job submission using Octopus</description>
+	<issueManagement>
+		<system>GitHub</system>
+		<url>https://github.com/sverhoeven/octopus-job-ws/issues</url>
+	</issueManagement>
+	<scm>
+		<url>scm:git:https://github.com/sverhoeven/octopus-job-ws</url>
+		<connection>scm:git:https://github.com/sverhoeven/octopus-job-ws</connection>
+		<developerConnection>scm:git:https://github.com/sverhoeven/octopus-job-ws</developerConnection>
+	</scm>
 	<developers>
 		<developer>
 			<id>stefanv</id>
@@ -121,8 +132,8 @@
 				</configuration>
 			</plugin>
 
-			<!-- To run ws as standalone use 'mvn package;java -Dgat.adaptor.path=${gat-adaptor-path}
-				-jar target/target/joblauncher-0.0.1-SNAPSHOT.jar server joblauncher.yml' -->
+			<!-- To run ws as standalone use 'mvn package;java -jar target/target/joblauncher-${version}.jar
+				server joblauncher.yml' -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-shade-plugin</artifactId>
@@ -175,16 +186,36 @@
 
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+				<version>2.2.1</version>
+				<executions>
+					<execution>
+						<id>attach-sources</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>2.9</version>
+				<executions>
+					<execution>
+						<id>attach-javadocs</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
 				<version>2.14.1</version>
-				<configuration>
-					<systemPropertyVariables>
-						<gat.adaptor.path>${gat-adaptor-path}</gat.adaptor.path>
-					</systemPropertyVariables>
-					<excludes>
-						<exclude>**/*ITCase.java</exclude>
-					</excludes>
-				</configuration>
 			</plugin>
 
 			<plugin>
@@ -199,11 +230,6 @@
 						</goals>
 					</execution>
 				</executions>
-				<configuration>
-					<systemPropertyVariables>
-						<gat.adaptor.path>${gat-adaptor-path}</gat.adaptor.path>
-					</systemPropertyVariables>
-				</configuration>
 			</plugin>
 
 			<plugin>
@@ -320,15 +346,4 @@
 			</plugin>
 		</plugins>
 	</build>
-	<issueManagement>
-		<system>GitHub</system>
-		<url>https://github.com/sverhoeven/octopus-job-ws/issues</url>
-	</issueManagement>
-	<scm>
-		<url>scm:git:https://github.com/sverhoeven/octopus-job-ws</url>
-		<connection>scm:git:https://github.com/sverhoeven/octopus-job-ws</connection>
-		<developerConnection>scm:git:https://github.com/sverhoeven/octopus-job-ws</developerConnection>
-	</scm>
-	<description>REST based job submission using Octopus</description>
-	<name>Octopus Job Webservice</name>
 </project>
