@@ -20,25 +20,31 @@ package nl.esciencecenter.octopus.webservice.resources;
  * #L%
  */
 
-import java.util.Collection;
+import java.net.URI;
+import java.util.LinkedList;
+import java.util.List;
 
+import javax.validation.Valid;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
 
-import nl.esciencecenter.octopus.jobs.Job;
 import nl.esciencecenter.octopus.webservice.api.JobSubmitRequest;
-import nl.esciencecenter.octopus.webservice.api.JobSubmitResponse;
+import nl.esciencecenter.octopus.webservice.api.SandboxedJob;
 import nl.esciencecenter.octopus.webservice.job.OctopusManager;
-import nl.esciencecenter.octopus.webservice.job.SandboxedJob;
 
 import org.apache.http.client.HttpClient;
 
 import com.yammer.metrics.annotation.Timed;
 
-
 @Path("/job")
+@Consumes(MediaType.APPLICATION_JSON)
+@Produces(MediaType.APPLICATION_JSON)
 public class JobsResource {
+
     /**
      * Broker to submit jobs with
      */
@@ -62,7 +68,8 @@ public class JobsResource {
     /**
      * Launch a job based on a request.
      *
-     * @param request A job submission request
+     * @param request
+     *            A job submission request
      * @return a job submission response
      * @throws Exception
      * @throws GATInvocationException
@@ -70,15 +77,20 @@ public class JobsResource {
      */
     @POST
     @Timed
-    public JobSubmitResponse submitJob(JobSubmitRequest request) throws Exception {
-        Job job = octopusmanager.submitJob(request, httpClient);
-
-        return new JobSubmitResponse(job.getIdentifier());
+    public SandboxedJob submitJob(@Valid JobSubmitRequest request) throws Exception {
+        return octopusmanager.submitJob(request, httpClient);
     }
 
+    /**
+     * @return List of URI's of all submitted jobs.
+     */
     @GET
     @Timed
-    public Collection<SandboxedJob> getJobs() {
-        return octopusmanager.jobs();
+    public URI[] getJobs() {
+        List<URI> uris = new LinkedList<URI>();
+        for (SandboxedJob job : octopusmanager.getJobs()) {
+            uris.add(job.getUrl());
+        }
+        return uris.toArray(new URI[0]);
     }
 }

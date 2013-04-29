@@ -18,15 +18,9 @@
  * #L%
  */
 {
-    "jobdir": "/tmp/jobdir",
-    "executable": "/bin/sh",
-    "stderr": "stderr.txt",
-    "stdout": "stdout.txt",
-    "arguments": [
-        "runme.sh"
-    ],
-    "prestaged": [
-    	"runme.sh", "input.dat"
-    ],
-    "poststaged": ["output.dat"]
+	"state" : "INITIAL",
+	"exitCode" : null,
+	"exception" : null,
+	"done" : false,
+	"schedulerSpecficInformation" : null
 }

@@ -47,6 +47,7 @@ import nl.esciencecenter.octopus.jobs.Jobs;
 import nl.esciencecenter.octopus.jobs.Scheduler;
 import nl.esciencecenter.octopus.util.CopyOption;
 import nl.esciencecenter.octopus.util.Sandbox;
+import nl.esciencecenter.octopus.webservice.api.SandboxedJob;
 
 import org.apache.http.client.ClientProtocolException;
 import org.junit.Test;

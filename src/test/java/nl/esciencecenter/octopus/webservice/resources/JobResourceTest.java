@@ -33,7 +33,7 @@ import javax.ws.rs.core.Response.Status;
 import nl.esciencecenter.octopus.exceptions.NoSuchJobException;
 import nl.esciencecenter.octopus.exceptions.OctopusException;
 import nl.esciencecenter.octopus.exceptions.OctopusIOException;
-import nl.esciencecenter.octopus.webservice.api.JobStatusResponse;
+import nl.esciencecenter.octopus.webservice.api.SandboxedJob;
 import nl.esciencecenter.octopus.webservice.job.OctopusManager;
 
 import org.junit.Test;
@@ -43,26 +43,26 @@ public class JobResourceTest {
     @Test
     public void testStateJob_KnownJob_JobStatusReturned() throws OctopusIOException, OctopusException {
         OctopusManager manager = mock(OctopusManager.class);
-        JobStatusResponse status = mock(JobStatusResponse.class);
-        when(manager.stateOfJob("1234")).thenReturn(status);
+        SandboxedJob job = mock(SandboxedJob.class);
+        when(manager.getJob("1234")).thenReturn(job);
 
         JobResource resource = new JobResource(manager);
 
-        JobStatusResponse response = resource.stateOfJob("1234");
+        SandboxedJob response = resource.getJob("1234");
 
-        assertThat(response).isEqualTo(status);
+        assertThat(response).isEqualTo(job);
     }
 
     @Test
     public void testStateJob_UnknownJob_ThrowsWebApplicationException() throws OctopusIOException, OctopusException {
         String request = "1234";
         OctopusManager manager = mock(OctopusManager.class);
-        doThrow(new NoSuchJobException("", "Job not found")).when(manager).stateOfJob("1234");
+        doThrow(new NoSuchJobException("", "Job not found")).when(manager).getJob("1234");
 
         JobResource resource = new JobResource(manager);
 
         try {
-            resource.stateOfJob(request);
+            resource.getJob(request);
             fail("WebApplicationException not thrown");
         } catch (WebApplicationException e) {
             // Equal with `new WebApplicationException(Status.NOT_FOUND)` fails on unimplemented equals().
