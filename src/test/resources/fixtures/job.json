@@ -32,8 +32,7 @@
         "poststaged": ["output.dat"],
         "status_callback_url": "http://localhost/status"
     },
-    "identifier": "1234",
-    "url": "/job/1234",
+    "url": "/job/11111111-1111-1111-1111-111111111111",
     "status": {
         "state" : "DONE",
         "exitCode" : 0,

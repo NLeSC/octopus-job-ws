@@ -29,9 +29,11 @@ import static org.mockito.Mockito.when;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.UUID;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -146,7 +148,7 @@ public class OctopusManagerTest {
         when(sandboxPath.getPath()).thenReturn("/tmp/sandboxes");
         HttpClient httpClient = mock(HttpClient.class);
         Job job = mock(Job.class);
-        when(job.getIdentifier()).thenReturn("11111111-1111-1111-1111-111111111111");
+        when(job.getUUID()).thenReturn(UUID.fromString("11111111-1111-1111-1111-111111111111"));
         when(jobs.submitJob(scheduler, description)).thenReturn(job);
         Map<String, SandboxedJob> sjobs = new HashMap<String, SandboxedJob>();
         JobsPoller poller = mock(JobsPoller.class);
@@ -228,5 +230,18 @@ public class OctopusManagerTest {
         OctopusManager manager = new OctopusManager(null, null, null, sjobs, null, null);
 
         manager.cancelJob("11111111-1111-1111-1111-111111111111");
+    }
+
+    @Test
+    public void getJobs() {
+        Map<String, SandboxedJob> sjobs = new HashMap<String, SandboxedJob>();
+        SandboxedJob sjob = mock(SandboxedJob.class);
+        when(sjob.getIdentifier()).thenReturn("11111111-1111-1111-1111-111111111111");
+        sjobs.put(sjob.getIdentifier(), sjob);
+        OctopusManager manager = new OctopusManager(null, null, null, sjobs, null, null);
+
+        Collection<SandboxedJob> jobs = manager.getJobs();
+
+        assertThat(jobs).contains(sjob);
     }
 }

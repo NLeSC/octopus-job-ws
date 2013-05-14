@@ -98,7 +98,6 @@ Then submit it
            "poststaged": ["output.dat"],
            "status_callback_url": "http://localhost/status"
        },
-       "identifier": "1234",
        "url": "/job/1234",
        "status": {
            "state" : "INITIAL",
@@ -147,7 +146,6 @@ Example response when job is running:
            "poststaged": ["output.dat"],
            "status_callback_url": "http://localhost/status"
        },
-       "identifier": "1234",
        "url": "/job/1234",
        "status":    {
          "state":"RUNNING",
@@ -177,7 +175,6 @@ Example response when job is done:
            "poststaged": ["output.dat"],
            "status_callback_url": "http://localhost/status"
        },
-       "identifier": "1234",
        "url": "/job/1234",
        "status":    {
          "state":"DONE",
@@ -188,7 +185,7 @@ Example response when job is done:
       }
    }
 
-Example response when job has been canceled:
+Example response when job has been canceled (see below for cancel command):
 
 .. code-block:: json
 
@@ -210,7 +207,7 @@ Example response when job has been canceled:
          ],
          "stdout" : "stdout.txt"
       },
-      "identifier" : "localjob-2",
+      "url": "/job/1234",
       "status" : {
          "done" : true,
          "exception" : {
@@ -252,8 +249,7 @@ Example response when job has been canceled:
          "schedulerSpecficInformation" : null,
          "exitCode" : null,
          "state" : "KILLED"
-      },
-      "url" : "/job/localjob-2"
+      }
    }
 
 Cancel
@@ -263,7 +259,7 @@ Cancel a pending or running job.
 
 .. code-block:: bash
 
-   curl -H "Content-Type: application/json" -H 'Accept: application/json' -X DELETE http://localhost:9998/job/localjob-0
+   curl -H "Content-Type: application/json" -H 'Accept: application/json' -X DELETE http://localhost:9998/job/1234
 
 Documentation
 -------------

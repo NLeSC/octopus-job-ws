@@ -168,7 +168,6 @@ public class JobSubmitRequestTest {
         assertEquals(s, request.toString());
     }
 
-    @Ignore("Test is ignored because JobDescription is missing equals() method")
     @Test
     public void toJobDescription() {
         JobDescription description = request.toJobDescription();
@@ -178,7 +177,7 @@ public class JobSubmitRequestTest {
         expected_description.setExecutable("/bin/sh");
 
         // FIXME when https://github.com/NLeSC/octopus/issues/53 is resolved then remove ignore
-        assertThat(description).isEqualTo(expected_description);
+        assertThat(description.toString()).isEqualTo(expected_description.toString());
     }
 
     @Ignore("Test is ignored because Sandbox is missing equals() method")
@@ -201,7 +200,7 @@ public class JobSubmitRequestTest {
                 new AbsolutePathImplementation(filesystem, new RelativePath("/tmp/jobdir/output.dat")));
         AbsolutePath sandBoxRoot = new AbsolutePathImplementation(filesystem, new RelativePath("/tmp"));
 
-        Object sandbox = request.toSandbox(octopus, sandBoxRoot, sandboxId);
+        Sandbox sandbox = request.toSandbox(octopus, sandBoxRoot, sandboxId);
 
         Sandbox expected = new Sandbox(octopus, sandBoxRoot, sandboxId);
         expected.addUploadFile(new AbsolutePathImplementation(filesystem, new RelativePath("/tmp/jobdir/runme.sh")), "runme.sh");

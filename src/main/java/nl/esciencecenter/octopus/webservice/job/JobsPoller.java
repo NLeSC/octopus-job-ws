@@ -97,7 +97,7 @@ public class JobsPoller implements Runnable {
 
         if (statuses != null) {
             for (JobStatus status : statuses) {
-                SandboxedJob job = jobs.get(status.getJob().getIdentifier());
+                SandboxedJob job = jobs.get(status.getJob().getUUID().toString());
 
                 // when state changed then commit
                 if (job.getStatus() == null || !status.getState().equals(job.getStatus().getState())) {
@@ -113,7 +113,7 @@ public class JobsPoller implements Runnable {
     }
 
     private void deleteJob(SandboxedJob job) {
-        jobs.remove(job.getJob().getIdentifier());
+        jobs.remove(job.getIdentifier());
     }
 
     protected void commitStatus(JobStatus status, SandboxedJob job) {

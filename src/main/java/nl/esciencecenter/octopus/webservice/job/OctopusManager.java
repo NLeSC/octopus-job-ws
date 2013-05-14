@@ -158,7 +158,7 @@ public class OctopusManager implements Managed {
 
         // store job in jobs map
         SandboxedJob sjob = new SandboxedJob(sandbox, job, request, httpClient);
-        jobs.put(job.getIdentifier(), sjob);
+        jobs.put(sjob.getIdentifier(), sjob);
 
         // JobsPoller will poll job status and download sandbox when job is done.
 

@@ -20,11 +20,11 @@ package nl.esciencecenter.octopus.webservice.resources;
  * #L%
  */
 
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -74,4 +74,5 @@ public class JobsResourceTest {
         URI[] expected = {new URI("/job/1234")};
         assertThat(response, is(expected));
     }
+
 }

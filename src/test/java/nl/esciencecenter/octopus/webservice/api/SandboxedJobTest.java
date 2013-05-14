@@ -36,6 +36,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.UUID;
 
 import nl.esciencecenter.octopus.engine.jobs.JobStatusImplementation;
 import nl.esciencecenter.octopus.exceptions.OctopusIOException;
@@ -66,6 +67,8 @@ public class SandboxedJobTest {
     public void setUp() throws URISyntaxException {
         sandbox = mock(Sandbox.class);
         ojob = mock(Job.class);
+        UUID uuid = UUID.fromString("11111111-1111-1111-1111-111111111111");
+        when(ojob.getUUID()).thenReturn(uuid);
         request = new JobSubmitRequest();
         request.status_callback_url = new URI("http://localhost/job/status");
         httpClient = mock(HttpClient.class);
@@ -159,9 +162,24 @@ public class SandboxedJobTest {
     }
 
     @Test
+    public void getIdentifier() {
+        String id = job.getIdentifier();
+
+        String expected = "11111111-1111-1111-1111-111111111111";
+        assertThat(id).isEqualTo(expected);
+    }
+
+    @Test
+    public void getUrl() throws URISyntaxException {
+        URI url = job.getUrl();
+
+        URI expected = new URI("/job/11111111-1111-1111-1111-111111111111");
+        assertThat(url).isEqualTo(expected);
+    }
+
+    @Test
     public void serializesToJSON() throws IOException {
         JobSubmitRequest request2 = JobSubmitRequestTest.sampleRequest();
-        when(ojob.getIdentifier()).thenReturn("1234");
         job = new SandboxedJob(sandbox, ojob, request2, httpClient, status, pollIterations);
 
         assertThat(asJson(job),

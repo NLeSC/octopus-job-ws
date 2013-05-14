@@ -23,6 +23,7 @@ package nl.esciencecenter.octopus.webservice.api;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
+import java.util.UUID;
 
 import javax.ws.rs.core.UriBuilder;
 
@@ -77,10 +78,6 @@ public class SandboxedJob {
         this.httpClient = httpClient;
         this.status = status;
         this.pollIterations = pollIterations;
-    }
-
-    public String getIdentifier() {
-        return job.getIdentifier();
     }
 
     @JsonIgnore
@@ -164,7 +161,21 @@ public class SandboxedJob {
         sandbox.delete();
     }
 
+    /**
+     *
+     * @return Universally unique identifier of job
+     */
+    @JsonIgnore
+    public String getIdentifier() {
+        UUID uuid = job.getUUID();
+        return uuid.toString();
+    }
+
+    /**
+     * @return Returns url of job where it can be deleted and status be fetched.
+     */
     public URI getUrl() {
-        return UriBuilder.fromResource(JobResource.class).build(job.getIdentifier());
+        // TODO make url absolute
+        return UriBuilder.fromResource(JobResource.class).build(getIdentifier());
     }
 }
