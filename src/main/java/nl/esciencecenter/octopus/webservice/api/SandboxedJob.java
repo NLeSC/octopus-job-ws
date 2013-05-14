@@ -1,4 +1,4 @@
-package nl.esciencecenter.octopus.webservice.job;
+package nl.esciencecenter.octopus.webservice.api;
 
 /*
  * #%L
@@ -24,14 +24,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpPut;
-import org.apache.http.entity.StringEntity;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.common.base.Objects;
+import javax.ws.rs.core.UriBuilder;
 
 import nl.esciencecenter.octopus.exceptions.OctopusIOException;
 import nl.esciencecenter.octopus.exceptions.UnsupportedOperationException;
@@ -39,55 +32,87 @@ import nl.esciencecenter.octopus.jobs.Job;
 import nl.esciencecenter.octopus.jobs.JobStatus;
 import nl.esciencecenter.octopus.util.CopyOption;
 import nl.esciencecenter.octopus.util.Sandbox;
+import nl.esciencecenter.octopus.webservice.resources.JobResource;
 
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPut;
+import org.apache.http.entity.StringEntity;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Objects;
+
+/**
+ * Job representation.
+ *
+ * @author verhoes
+ *
+ */
 public class SandboxedJob {
     protected final static Logger logger = LoggerFactory.getLogger(SandboxedJob.class);
 
+    private final JobSubmitRequest request;
     private final Sandbox sandbox;
     private final Job job;
-    private final URI callback;
     private final HttpClient httpClient;
     private JobStatus status = null;
     private int pollIterations = 0;
 
-    public SandboxedJob(Sandbox sandbox, Job job, URI callback, HttpClient httpClient) {
+    public SandboxedJob(Sandbox sandbox, Job job, JobSubmitRequest request, HttpClient httpClient) {
         super();
         this.sandbox = sandbox;
         this.job = job;
-        this.callback = callback;
+        this.request = request;
         this.httpClient = httpClient;
     }
 
-    protected SandboxedJob(Sandbox sandbox, Job job, URI callback, HttpClient httpClient, JobStatus status, int pollIterations) {
+    public SandboxedJob(Sandbox sandbox, Job job, JobSubmitRequest request, HttpClient httpClient, JobStatus status, int pollIterations) {
         super();
         this.sandbox = sandbox;
         this.job = job;
-        this.callback = callback;
+        this.request = request;
         this.httpClient = httpClient;
         this.status = status;
         this.pollIterations = pollIterations;
     }
 
+    public String getIdentifier() {
+        return job.getIdentifier();
+    }
+
+    @JsonIgnore
     public Sandbox getSandbox() {
         return sandbox;
     }
 
+    @JsonIgnore
     public Job getJob() {
         return job;
     }
 
-    public URI getCallback() {
-        return callback;
+    public JobSubmitRequest getRequest() {
+        return request;
     }
 
+    @JsonIgnore
     public HttpClient getHttpClient() {
         return httpClient;
     }
 
+    @JsonIgnore
     public JobStatus getStatus() {
         return status;
     }
 
+    @JsonProperty("status")
+    public JobStatusResponse getStatusResponse() {
+        return new JobStatusResponse(status);
+    }
+
+    @JsonIgnore
     public int getPollIterations() {
         return pollIterations;
     }
@@ -120,6 +145,7 @@ public class SandboxedJob {
     }
 
     private void putState2Callback(String state) throws UnsupportedEncodingException, IOException, ClientProtocolException {
+        URI callback = request.status_callback_url;
         if (callback != null) {
             HttpPut put = new HttpPut(callback);
             put.setEntity(new StringEntity(state));
@@ -136,5 +162,9 @@ public class SandboxedJob {
     public void cleanSandbox() throws OctopusIOException, UnsupportedOperationException {
         sandbox.download(CopyOption.REPLACE_EXISTING);
         sandbox.delete();
+    }
+
+    public URI getUrl() {
+        return UriBuilder.fromResource(JobResource.class).build(job.getIdentifier());
     }
 }

@@ -33,10 +33,9 @@ Install
 3. Make copy of 'joblauncher.yml-dist' to 'joblauncher.yml'
 3.1 Configure Octopus scheduler
 3.2 Configure Octopus sandbox root directory
-3.3 Configure Octopus adaptor directory to dist/ subdirectory of octopus clone.
-3.4 Configure optional MAC id/key
+3.3 Configure optional MAC id/key
 4. Build uber-jar or execute from maven.
-4.1. Uber-jar, to start on other machine the `octopus-job-ws-2.0.jar`, `joblauncher.yml` and `dist/octpus-adaptor-*.jar` files must be copied.
+4.1. Uber-jar, to start on other machine the `octopus-job-ws-2.0.jar` and `joblauncher.yml` files must be copied.
 
 .. code-block:: bash
 
@@ -85,11 +84,29 @@ Then submit it
    curl -H "Content-Type: application/json" -H 'Accept: application/json' -X POST -d @query.json http://localhost:9998/job
 
    {
-      "state":"RUNNING",
-      "exitCode":null,
-      "exception":null,
-      "done":false,
-      "schedulerSpecficInformation":null
+       "request": {
+           "jobdir": "/tmp/jobdir",
+           "executable": "/bin/sh",
+           "stderr": "stderr.txt",
+           "stdout": "stdout.txt",
+           "arguments": [
+               "runme.sh"
+           ],
+           "prestaged": [
+               "runme.sh", "input.dat"
+           ],
+           "poststaged": ["output.dat"],
+           "status_callback_url": "http://localhost/status"
+       },
+       "identifier": "1234",
+       "url": "/job/1234",
+       "status": {
+           "state" : "INITIAL",
+           "exitCode" : null,
+           "exception" : null,
+           "done" : false,
+           "schedulerSpecficInformation" : null
+       }
    }
 
 After a while `output_file`, `stderr.txt` and `stdout.txt` file appear in `myjob` directory.
@@ -105,45 +122,145 @@ The MAC key indentifier and MAC key must be obtained from the provider.
 Status
 ^^^^^^
 
+In the submit response the url is a relative url to the job.
+
 .. code-block:: bash
 
    curl -H "Content-Type: application/json" -H 'Accept: application/json' http://localhost:9998/job/localjob-0
 
-   {
-      "state":"RUNNING",
-      "exitCode":null,
-      "exception":null,
-      "done":false,
-      "schedulerSpecficInformation":null
-   }
+Example response when job is running:
+
+.. code-block:: json
 
    {
-      "state":"DONE",
-      "exitCode":0,
-      "exception":null,
-      "done":true,
-      "schedulerSpecficInformation":null
+       "request": {
+           "jobdir": "/tmp/jobdir",
+           "executable": "/bin/sh",
+           "stderr": "stderr.txt",
+           "stdout": "stdout.txt",
+           "arguments": [
+               "runme.sh"
+           ],
+           "prestaged": [
+               "runme.sh", "input.dat"
+           ],
+           "poststaged": ["output.dat"],
+           "status_callback_url": "http://localhost/status"
+       },
+       "identifier": "1234",
+       "url": "/job/1234",
+       "status":    {
+         "state":"RUNNING",
+         "exitCode":null,
+         "exception":null,
+         "done":false,
+         "schedulerSpecficInformation":null
+      }
    }
 
+Example response when job is done:
+
+.. code-block:: json
+
    {
-      "state":"KILLED",
-      "exitCode":null,
-      "exception": {
-         "cause":null,
-         "stackTrace":[{
-            "methodName":"run",
-            "fileName":"LocalJobExecutor.java",
-            "lineNumber":163,
-            "className":"nl.esciencecenter.octopus.adaptors.local.LocalJobExecutor"
-            ,"nativeMethod":false
-         },{
-            "methodName":"runWorker","fileName":"ThreadPoolExecutor.java","lineNumber":1145,"className":"java.util.concurrent.ThreadPoolExecutor","nativeMethod":false},{"methodName":"run","fileName":"ThreadPoolExecutor.java","lineNumber":615,"className":"java.util.concurrent.ThreadPoolExecutor$Worker","nativeMethod":false},{"methodName":"run","fileName":"Thread.java","lineNumber":722,"className":"java.lang.Thread","nativeMethod":false}],"message":"Process cancelled by user.","localizedMessage":"Process cancelled by user.","suppressed":[]},
-      "done":true,
-      "schedulerSpecficInformation":null
+       "request": {
+           "jobdir": "/tmp/jobdir",
+           "executable": "/bin/sh",
+           "stderr": "stderr.txt",
+           "stdout": "stdout.txt",
+           "arguments": [
+               "runme.sh"
+           ],
+           "prestaged": [
+               "runme.sh", "input.dat"
+           ],
+           "poststaged": ["output.dat"],
+           "status_callback_url": "http://localhost/status"
+       },
+       "identifier": "1234",
+       "url": "/job/1234",
+       "status":    {
+         "state":"DONE",
+         "exitCode":0,
+         "exception":null,
+         "done":true,
+         "schedulerSpecficInformation":null
+      }
+   }
+
+Example response when job has been canceled:
+
+.. code-block:: json
+
+   {
+      "request" : {
+         "jobdir" : "/tmp/myjob",
+         "status_callback_url" : null,
+         "poststaged" : [
+            "output_file"
+         ],
+         "stderr" : "stderr.txt",
+         "executable" : "/bin/sh",
+         "arguments" : [
+            "runme.sh"
+         ],
+         "prestaged" : [
+            "runme.sh",
+            "input_file"
+         ],
+         "stdout" : "stdout.txt"
+      },
+      "identifier" : "localjob-2",
+      "status" : {
+         "done" : true,
+         "exception" : {
+            "suppressed" : [],
+            "stackTrace" : [
+               {
+                  "className" : "nl.esciencecenter.octopus.adaptors.local.LocalJobExecutor",
+                  "nativeMethod" : false,
+                  "methodName" : "run",
+                  "fileName" : "LocalJobExecutor.java",
+                  "lineNumber" : 152
+               },
+               {
+                  "className" : "java.util.concurrent.ThreadPoolExecutor",
+                  "nativeMethod" : false,
+                  "methodName" : "runWorker",
+                  "fileName" : "ThreadPoolExecutor.java",
+                  "lineNumber" : 1145
+               },
+               {
+                  "className" : "java.util.concurrent.ThreadPoolExecutor$Worker",
+                  "nativeMethod" : false,
+                  "methodName" : "run",
+                  "fileName" : "ThreadPoolExecutor.java",
+                  "lineNumber" : 615
+               },
+               {
+                  "className" : "java.lang.Thread",
+                  "nativeMethod" : false,
+                  "methodName" : "run",
+                  "fileName" : "Thread.java",
+                  "lineNumber" : 722
+               }
+            ],
+            "cause" : null,
+            "localizedMessage" : "Process cancelled by user.",
+            "message" : "Process cancelled by user."
+         },
+         "schedulerSpecficInformation" : null,
+         "exitCode" : null,
+         "state" : "KILLED"
+      },
+      "url" : "/job/localjob-2"
    }
 
 Cancel
 ^^^^^^
+
+Cancel a pending or running job.
+
 .. code-block:: bash
 
    curl -H "Content-Type: application/json" -H 'Accept: application/json' -X DELETE http://localhost:9998/job/localjob-0
@@ -158,3 +275,14 @@ A maven site can be generated with
    mvn site
    firefox target/site/index.html
 
+Integration tests
+-----------------
+
+Running the integration tests requires a configuration file called `src/test/resources/integration.props`.
+An example configuration is available as `src/test/resources/integration.props-dist`.
+
+Run integration tests with
+
+.. code-block:: bash
+
+   mvn verify

@@ -28,6 +28,7 @@ import nl.esciencecenter.octopus.Octopus;
 import nl.esciencecenter.octopus.jobs.Job;
 import nl.esciencecenter.octopus.jobs.JobStatus;
 import nl.esciencecenter.octopus.jobs.Jobs;
+import nl.esciencecenter.octopus.webservice.api.SandboxedJob;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

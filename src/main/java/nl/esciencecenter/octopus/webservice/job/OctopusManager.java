@@ -43,8 +43,8 @@ import nl.esciencecenter.octopus.jobs.Job;
 import nl.esciencecenter.octopus.jobs.JobDescription;
 import nl.esciencecenter.octopus.jobs.Scheduler;
 import nl.esciencecenter.octopus.util.Sandbox;
-import nl.esciencecenter.octopus.webservice.api.JobStatusResponse;
 import nl.esciencecenter.octopus.webservice.api.JobSubmitRequest;
+import nl.esciencecenter.octopus.webservice.api.SandboxedJob;
 
 import org.apache.http.client.HttpClient;
 import org.slf4j.Logger;
@@ -127,13 +127,13 @@ public class OctopusManager implements Managed {
      *
      * @param request The job request
      * @param httpClient http client used to reporting status to job callback.
-     * @return Job identifier
+     * @return SandboxedJob job
      *
      * @throws OctopusIOException
      * @throws OctopusException
      * @throws URISyntaxException
      */
-    public Job submitJob(JobSubmitRequest request, HttpClient httpClient) throws OctopusIOException, OctopusException,
+    public SandboxedJob submitJob(JobSubmitRequest request, HttpClient httpClient) throws OctopusIOException, OctopusException,
             URISyntaxException {
         Credential credential = configuration.getCredential();
         // filesystems cant have path in them so strip eg. file:///tmp to file:///
@@ -157,32 +157,12 @@ public class OctopusManager implements Managed {
         Job job = octopus.jobs().submitJob(scheduler, description);
 
         // store job in jobs map
-        URI callback = request.status_callback_url;
-        SandboxedJob sjob = new SandboxedJob(sandbox, job, callback, httpClient);
+        SandboxedJob sjob = new SandboxedJob(sandbox, job, request, httpClient);
         jobs.put(job.getIdentifier(), sjob);
 
         // JobsPoller will poll job status and download sandbox when job is done.
 
-        return job;
-    }
-
-    /**
-     * Get status of job
-     *
-     * @param jobIdentifier
-     * @return Status of job
-     *
-     * @throws OctopusIOException
-     * @throws OctopusException
-     * @throws NoSuchJobException When job is unknown to service
-     */
-    public JobStatusResponse stateOfJob(String jobIdentifier) throws OctopusIOException, OctopusException {
-        SandboxedJob job;
-        if ((job = jobs.get(jobIdentifier)) != null) {
-            return new JobStatusResponse(octopus.jobs().getJobStatus(job.getJob()));
-        } else {
-            throw new NoSuchJobException("", "Job not found");
-        }
+        return sjob;
     }
 
     /**
@@ -197,18 +177,35 @@ public class OctopusManager implements Managed {
      * @throws OctopusException
      */
     public void cancelJob(String jobIdentifier) throws OctopusIOException, OctopusException {
-        SandboxedJob job;
-        if ((job = jobs.get(jobIdentifier)) != null) {
-            // no need to cancel completed jobs
-            if (!job.getStatus().isDone()) {
-                octopus.jobs().cancelJob(job.getJob());
-            }
-        } else {
-            throw new NoSuchJobException("", "Job not found");
+        SandboxedJob job = getJob(jobIdentifier);
+        // no need to cancel completed jobs
+        if (!job.getStatus().isDone()) {
+            octopus.jobs().cancelJob(job.getJob());
         }
     }
 
-    public Collection<SandboxedJob> jobs() {
+    /**
+     * Get list of submitted jobs.
+     *
+     * @return List of submitted jobs.
+     */
+    public Collection<SandboxedJob> getJobs() {
         return jobs.values();
+    }
+
+    /**
+     * Get a job
+     *
+     * @param jobIdentifier
+     * @return the job
+     * @throws NoSuchJobException
+     */
+    public SandboxedJob getJob(String jobIdentifier) throws NoSuchJobException {
+        SandboxedJob job;
+        if ((job = jobs.get(jobIdentifier)) != null) {
+            return job;
+        } else {
+            throw new NoSuchJobException("", "Job not found");
+        }
     }
 }

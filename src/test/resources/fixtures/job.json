@@ -18,6 +18,27 @@
  * #L%
  */
 {
-	"jobid": "1234",
-	"url": "/job/1234"
+    "request": {
+        "jobdir": "/tmp/jobdir",
+        "executable": "/bin/sh",
+        "stderr": "stderr.txt",
+        "stdout": "stdout.txt",
+        "arguments": [
+            "runme.sh"
+        ],
+        "prestaged": [
+            "runme.sh", "input.dat"
+        ],
+        "poststaged": ["output.dat"],
+        "status_callback_url": "http://localhost/status"
+    },
+    "identifier": "1234",
+    "url": "/job/1234",
+    "status": {
+        "state" : "DONE",
+        "exitCode" : 0,
+        "exception" : null,
+        "done" : true,
+        "schedulerSpecficInformation" : null
+    }
 }

@@ -25,6 +25,7 @@ import static org.junit.Assert.*;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Properties;
 
 import nl.esciencecenter.octopus.webservice.JobLauncherService;
 import nl.esciencecenter.octopus.webservice.mac.MacCredential;
@@ -43,34 +44,44 @@ import com.google.common.collect.ImmutableList;
 /**
  * MAC Access Authentication integration test.
  *
- * Requires: Url to test, config
- * file with valid mac credentials and web server with MAC Access
- * Authentication.
+ * Required properties file called "integration.props" in src/test/resources with following keys:
+ * <ol>
+ * <li>integration.callback.url, url to submit status to, must have MAC Access authentication</li>
+ * <li>integration.callback.id, MAC identifier to use for url</li>
+ * <li>integration.callback.key, MAC key to use for url</li>
+ * </ol>
  *
- * @author verhoes
+ * @author stefanv
  *
  */
 public class MacITCase {
 
+    /**
+     * Submit status to a callback server using MAC Access authentication.
+     *
+     * @throws URISyntaxException
+     * @throws ClientProtocolException
+     * @throws IOException
+     */
     @Test
-    public void test() throws URISyntaxException, ClientProtocolException,
-            IOException {
-        // TODO read url to test from somewhere instead of hardcoding
-        URI url = new URI(
-                "http://localhost/magma/status/8a566a5f-565e-4861-8018-128adec07bbe.json");
+    public void test() throws URISyntaxException, ClientProtocolException, IOException {
+        Properties props = new Properties();
+        props.load(MacITCase.class.getClassLoader().getResourceAsStream("integration.props"));
+
+        URI url = new URI(props.getProperty("integration.callback.url"));
+
+        // TODO throw better exception than NullPointerException when property can not be found.
+
         String state = "STOPPED";
         HttpPut request = new HttpPut(url);
         request.setEntity(new StringEntity(state));
 
-        // TODO read mac_id, mac_key, scope from config file or somewhere else
-        String mac_id = "eyJzYWx0IjogImIwN2JlZiIsICJleHBpcmVzIjogMTM4NzEwNjg2NC4wMzMwMTMsICJ1c2VyaWQiOiAiam9ibWFuYWdlciJ9MAagqaCQxnD-pCxCKaowmXz0rUU=";
-        String mac_key = "msr3vIHozDgO1thMYzh89pG8qg0=";
-        URI scope = new URI("http://localhost");
-        ImmutableList<MacCredential> macs = ImmutableList.of(new MacCredential(
-                mac_id, mac_key, scope));
+        String mac_id = props.getProperty("integration.callback.id");
+        String mac_key = props.getProperty("integration.callback.key");
+        URI scope = new URI(url.getScheme(), null, url.getHost(), url.getPort(), null, null, null);
+        ImmutableList<MacCredential> macs = ImmutableList.of(new MacCredential(mac_id, mac_key, scope));
         HttpClient httpClient = new DefaultHttpClient();
-        httpClient = JobLauncherService.macifyHttpClient(
-                (AbstractHttpClient) httpClient, macs);
+        httpClient = JobLauncherService.macifyHttpClient((AbstractHttpClient) httpClient, macs);
 
         HttpResponse response = httpClient.execute(request);
 

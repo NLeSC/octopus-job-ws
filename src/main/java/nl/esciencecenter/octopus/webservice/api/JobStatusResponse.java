@@ -39,11 +39,19 @@ public class JobStatusResponse {
     private final Map<String, String> schedulerSpecficInformation;
 
     public JobStatusResponse(JobStatus jobStatus) {
-        state = jobStatus.getState();
-        exitCode = jobStatus.getExitCode();
-        exception = jobStatus.getException();
-        done = jobStatus.isDone();
-        schedulerSpecficInformation = jobStatus.getSchedulerSpecficInformation();
+        if (jobStatus == null) {
+            state = "INITIAL";
+            exitCode = null;
+            exception = null;
+            done = false;
+            schedulerSpecficInformation = null;
+        } else {
+            state = jobStatus.getState();
+            exitCode = jobStatus.getExitCode();
+            exception = jobStatus.getException();
+            done = jobStatus.isDone();
+            schedulerSpecficInformation = jobStatus.getSchedulerSpecficInformation();
+        }
     }
 
     public JobStatusResponse(String state, boolean done, Integer exitCode, Exception exception,

@@ -50,7 +50,7 @@ import org.slf4j.LoggerFactory;
 /**
  * MAC Access Authentication scheme as defined in https://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-02
  *
- * Sign {@Link HttpRequest} with a MAC key.
+ * Sign {@link HttpRequest} with a MAC key.
  *
  * @author verhoes
  *
@@ -247,12 +247,12 @@ public class MacScheme implements ContextAwareAuthScheme {
 
     /**
      * The MAC Access authentication standard uses different names for algorithms then
-     * {@Link javax.crypto.Mac}
+     * {@link javax.crypto.Mac}
      *
      * This maps from standard 2 java name.
      *
-     * @param standard
-     * @return
+     * @param standard name for algorithm
+     * @return java name for algorithm
      */
     public static String algorithmMapper(String standard) {
         String java = standard;

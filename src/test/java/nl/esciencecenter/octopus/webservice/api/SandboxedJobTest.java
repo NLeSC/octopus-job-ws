@@ -1,4 +1,4 @@
-package nl.esciencecenter.octopus.webservice.job;
+package nl.esciencecenter.octopus.webservice.api;
 
 /*
  * #%L
@@ -20,11 +20,17 @@ package nl.esciencecenter.octopus.webservice.job;
  * #L%
  */
 
+import static com.yammer.dropwizard.testing.JsonHelpers.asJson;
+import static com.yammer.dropwizard.testing.JsonHelpers.jsonFixture;
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Matchers.any;
-import static org.fest.assertions.api.Assertions.assertThat;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -38,6 +44,8 @@ import nl.esciencecenter.octopus.jobs.Job;
 import nl.esciencecenter.octopus.jobs.JobStatus;
 import nl.esciencecenter.octopus.util.CopyOption;
 import nl.esciencecenter.octopus.util.Sandbox;
+import nl.esciencecenter.octopus.webservice.api.JobSubmitRequest;
+import nl.esciencecenter.octopus.webservice.api.SandboxedJob;
 
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
@@ -46,9 +54,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class SandboxedJobTest {
+    JobSubmitRequest request;
     Sandbox sandbox;
     Job ojob;
-    URI callback;
     HttpClient httpClient;
     JobStatus status;
     int pollIterations;
@@ -58,19 +66,25 @@ public class SandboxedJobTest {
     public void setUp() throws URISyntaxException {
         sandbox = mock(Sandbox.class);
         ojob = mock(Job.class);
-        callback = new URI("http://localhost/job/status");
+        request = new JobSubmitRequest();
+        request.status_callback_url = new URI("http://localhost/job/status");
         httpClient = mock(HttpClient.class);
         status = new JobStatusImplementation(ojob, "DONE", 0, null, true, null);
         pollIterations = 10;
-        job = new SandboxedJob(sandbox, ojob, callback, httpClient, status, pollIterations);
+        job = new SandboxedJob(sandbox, ojob, request, httpClient, status, pollIterations);
     }
 
     @Test
     public void testSandboxedJob_Default() {
-        SandboxedJob sjob = new SandboxedJob(sandbox, ojob, callback, httpClient);
+        SandboxedJob sjob = new SandboxedJob(sandbox, ojob, request, httpClient);
 
         assertThat(sjob.getStatus()).isEqualTo(null);
         assertThat(sjob.getPollIterations()).isEqualTo(0);
+    }
+
+    @Test
+    public void getRequest() {
+        assertThat(job.getRequest()).isEqualTo(request);
     }
 
     @Test
@@ -81,12 +95,6 @@ public class SandboxedJobTest {
     @Test
     public void testGetJob() {
         assertThat(job.getJob()).isEqualTo(ojob);
-    }
-
-    @Test
-    public void testGetCallback() throws URISyntaxException {
-        URI expected = new URI("http://localhost/job/status");
-        assertThat(job.getCallback()).isEqualTo(expected);
     }
 
     @Test
@@ -122,18 +130,19 @@ public class SandboxedJobTest {
     public void testSetStatus_ChangedWithCallback_HttpClientExecute() throws UnsupportedEncodingException, ClientProtocolException, IOException {
         JobStatus rstatus = new JobStatusImplementation(ojob, "RUNNING", null, null, false, null);
         pollIterations = 10;
-        job = new SandboxedJob(sandbox, ojob, callback, httpClient, rstatus, pollIterations);
+        job = new SandboxedJob(sandbox, ojob, request, httpClient, rstatus, pollIterations);
 
         job.setStatus(this.status);
 
         assertThat(job.getStatus()).isEqualTo(this.status);
+        // TODO verify to which url was putted and what content
         verify(httpClient).execute(any(HttpUriRequest.class));
     }
 
     @Test
     public void testSetStatus_UnChangedWithCallback_NoHttpClientExecute() throws UnsupportedEncodingException, ClientProtocolException, IOException {
         pollIterations = 10;
-        job = new SandboxedJob(sandbox, ojob, callback, httpClient, status, pollIterations);
+        job = new SandboxedJob(sandbox, ojob, request, httpClient, status, pollIterations);
 
         job.setStatus(this.status);
 
@@ -149,4 +158,13 @@ public class SandboxedJobTest {
         verify(sandbox).delete();
     }
 
+    @Test
+    public void serializesToJSON() throws IOException {
+        JobSubmitRequest request2 = JobSubmitRequestTest.sampleRequest();
+        when(ojob.getIdentifier()).thenReturn("1234");
+        job = new SandboxedJob(sandbox, ojob, request2, httpClient, status, pollIterations);
+
+        assertThat(asJson(job),
+                is(equalTo(jsonFixture("fixtures/job.json"))));
+    }
 }

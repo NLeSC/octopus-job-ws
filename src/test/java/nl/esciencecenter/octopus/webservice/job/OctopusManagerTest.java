@@ -50,8 +50,8 @@ import nl.esciencecenter.octopus.jobs.JobStatus;
 import nl.esciencecenter.octopus.jobs.Jobs;
 import nl.esciencecenter.octopus.jobs.Scheduler;
 import nl.esciencecenter.octopus.util.Sandbox;
-import nl.esciencecenter.octopus.webservice.api.JobStatusResponse;
 import nl.esciencecenter.octopus.webservice.api.JobSubmitRequest;
+import nl.esciencecenter.octopus.webservice.api.SandboxedJob;
 
 import org.apache.http.client.HttpClient;
 import org.junit.Test;
@@ -153,7 +153,7 @@ public class OctopusManagerTest {
         ScheduledExecutorService executor = mock(ScheduledExecutorService.class);
         OctopusManager manager = new OctopusManager(conf, octopus, scheduler, sjobs, poller, executor);
 
-        Job result = manager.submitJob(request, httpClient);
+        SandboxedJob result = manager.submitJob(request, httpClient);
 
         assertThat(result.getIdentifier()).isEqualTo("11111111-1111-1111-1111-111111111111");
         verify(sandbox).upload();
@@ -161,38 +161,23 @@ public class OctopusManagerTest {
     }
 
     @Test
-    public void testStateOfJob_DoneJob_DoneJob() throws URISyntaxException, OctopusIOException, OctopusException {
-        // create manager with stubbed members
-        Octopus octopus = mock(Octopus.class);
-        Jobs jobsEngine= mock(Jobs.class);
-        when(octopus.jobs()).thenReturn(jobsEngine);
+    public void getJob_DoneJob_DoneJob() throws URISyntaxException, OctopusIOException, OctopusException {
         Map<String, SandboxedJob> sjobs = new HashMap<String, SandboxedJob>();
         SandboxedJob sjob = mock(SandboxedJob.class);
-        Job job = mock(Job.class);
-        when(sjob.getJob()).thenReturn(job);
         sjobs.put("11111111-1111-1111-1111-111111111111", sjob);
-        OctopusManager manager = new OctopusManager(null, octopus, null, sjobs, null, null);
-        // created jobstatus stub
-        JobStatus jobstatus = mock(JobStatus.class);
-        when(jobstatus.getState()).thenReturn("DONE");
-        when(jobstatus.isDone()).thenReturn(true);
-        when(jobstatus.getExitCode()).thenReturn(0);
-        when(jobstatus.getException()).thenReturn(null);
-        when(jobstatus.getSchedulerSpecficInformation()).thenReturn(null);
-        when(jobsEngine.getJobStatus(job)).thenReturn(jobstatus);
+        OctopusManager manager = new OctopusManager(null, null, null, sjobs, null, null);
 
-        JobStatusResponse result = manager.stateOfJob("11111111-1111-1111-1111-111111111111");
+        SandboxedJob result = manager.getJob("11111111-1111-1111-1111-111111111111");
 
-        JobStatusResponse expected_status = new JobStatusResponse("DONE", true, 0, null, null);
-        assertThat(result).isEqualTo(expected_status);
+        assertThat(result).isEqualTo(sjob);
     }
 
     @Test(expected=NoSuchJobException.class)
-    public void testStateOfJob_UnknownJob_ThrowsNoSuchJobException() throws OctopusIOException, OctopusException {
+    public void getJob_UnknownJob_ThrowsNoSuchJobException() throws OctopusIOException, OctopusException {
         Map<String, SandboxedJob> sjobs = new HashMap<String, SandboxedJob>();
         OctopusManager manager = new OctopusManager(null, null, null, sjobs, null, null);
 
-        manager.stateOfJob("11111111-1111-1111-1111-111111111111");
+        manager.getJob("11111111-1111-1111-1111-111111111111");
     }
 
     @Test

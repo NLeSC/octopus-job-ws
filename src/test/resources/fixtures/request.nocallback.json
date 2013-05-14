@@ -18,7 +18,7 @@
  * #L%
  */
 {
-    "jobdir": "/tmp/jobdir/",
+    "jobdir": "/tmp/jobdir",
     "executable": "/bin/sh",
     "stderr": "stderr.txt",
     "stdout": "stdout.txt",

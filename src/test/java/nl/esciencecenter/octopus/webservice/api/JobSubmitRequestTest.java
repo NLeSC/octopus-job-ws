@@ -79,7 +79,7 @@ public class JobSubmitRequestTest {
         assertNotNull(new JobSubmitRequest());
     }
 
-    private JobSubmitRequest sampleRequest() {
+    public static JobSubmitRequest sampleRequest() {
         List<String> arguments = new ArrayList<String>();
         arguments.add("runme.sh");
         List<String> prestaged = new ArrayList<String>();
@@ -92,7 +92,7 @@ public class JobSubmitRequestTest {
             cb = new URI("http://localhost/status");
         } catch (URISyntaxException e) {
         }
-        return new JobSubmitRequest("/tmp/jobdir/", "/bin/sh", arguments, prestaged, poststaged, "stderr.txt", "stdout.txt", cb);
+        return new JobSubmitRequest("/tmp/jobdir", "/bin/sh", arguments, prestaged, poststaged, "stderr.txt", "stdout.txt", cb);
     }
 
     @Test
@@ -164,7 +164,7 @@ public class JobSubmitRequestTest {
     @Test
     public void testToString() {
         String s =
-                "JobSubmitRequest{jobdir=/tmp/jobdir/, executable=/bin/sh, stderr=stderr.txt, stdout=stdout.txt, arguments=[runme.sh], prestaged=[runme.sh, input.dat], poststaged=[output.dat], status_callback_url=http://localhost/status}";
+                "JobSubmitRequest{jobdir=/tmp/jobdir, executable=/bin/sh, stderr=stderr.txt, stdout=stdout.txt, arguments=[runme.sh], prestaged=[runme.sh, input.dat], poststaged=[output.dat], status_callback_url=http://localhost/status}";
         assertEquals(s, request.toString());
     }
 
@@ -189,15 +189,15 @@ public class JobSubmitRequestTest {
         Files filesEngine = mock(Files.class);
         when(octopus.files()).thenReturn(filesEngine);
         FileSystem filesystem = mock(FileSystem.class);
-        when(filesEngine.newPath(filesystem, new RelativePath(new String[] { "/tmp/jobdir/", "runme.sh" }))).thenReturn(
+        when(filesEngine.newPath(filesystem, new RelativePath(new String[] { "/tmp/jobdir", "runme.sh" }))).thenReturn(
                 new AbsolutePathImplementation(filesystem, new RelativePath("/tmp/jobdir/runme.sh")));
-        when(filesEngine.newPath(filesystem, new RelativePath(new String[] { "/tmp/jobdir/", "input.dat" }))).thenReturn(
+        when(filesEngine.newPath(filesystem, new RelativePath(new String[] { "/tmp/jobdir", "input.dat" }))).thenReturn(
                 new AbsolutePathImplementation(filesystem, new RelativePath("/tmp/jobdir/input.dat")));
-        when(filesEngine.newPath(filesystem, new RelativePath(new String[] { "/tmp/jobdir/", "stderr.txt" }))).thenReturn(
+        when(filesEngine.newPath(filesystem, new RelativePath(new String[] { "/tmp/jobdir", "stderr.txt" }))).thenReturn(
                 new AbsolutePathImplementation(filesystem, new RelativePath("/tmp/jobdir/stderr.txt")));
-        when(filesEngine.newPath(filesystem, new RelativePath(new String[] { "/tmp/jobdir/", "stdout.txt" }))).thenReturn(
+        when(filesEngine.newPath(filesystem, new RelativePath(new String[] { "/tmp/jobdir", "stdout.txt" }))).thenReturn(
                 new AbsolutePathImplementation(filesystem, new RelativePath("/tmp/jobdir/stdout.txt")));
-        when(filesEngine.newPath(filesystem, new RelativePath(new String[] { "/tmp/jobdir/", "output.dat" }))).thenReturn(
+        when(filesEngine.newPath(filesystem, new RelativePath(new String[] { "/tmp/jobdir", "output.dat" }))).thenReturn(
                 new AbsolutePathImplementation(filesystem, new RelativePath("/tmp/jobdir/output.dat")));
         AbsolutePath sandBoxRoot = new AbsolutePathImplementation(filesystem, new RelativePath("/tmp"));
 

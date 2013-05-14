@@ -20,13 +20,19 @@ package nl.esciencecenter.octopus.webservice.resources;
  * #L%
  */
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
 
-import nl.esciencecenter.octopus.jobs.Job;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Collection;
+import java.util.LinkedList;
+
 import nl.esciencecenter.octopus.webservice.api.JobSubmitRequest;
-import nl.esciencecenter.octopus.webservice.api.JobSubmitResponse;
+import nl.esciencecenter.octopus.webservice.api.SandboxedJob;
 import nl.esciencecenter.octopus.webservice.job.OctopusManager;
 
 import org.apache.http.client.HttpClient;
@@ -39,16 +45,33 @@ public class JobsResourceTest {
     public void testSubmitJob() throws Exception {
         JobSubmitRequest request = mock(JobSubmitRequest.class);
         OctopusManager manager = mock(OctopusManager.class);
-        Job job = mock(Job.class);
+        SandboxedJob job = mock(SandboxedJob.class);
         HttpClient httpClient = new DefaultHttpClient();
         when(manager.submitJob(request, httpClient)).thenReturn(job);
-        when(job.getIdentifier()).thenReturn("1234");
+        when(job.getUrl()).thenReturn(new URI("/job/1234"));
 
         JobsResource resource = new JobsResource(manager, httpClient);
 
-        JobSubmitResponse response = resource.submitJob(request);
+        SandboxedJob response = resource.submitJob(request);
 
-        assertEquals(response.jobid, "1234");
+        assertEquals(response, job);
     }
 
+    @Test
+    public void getJobs() throws URISyntaxException {
+        // mock manager so it returns a list of jobs
+        OctopusManager manager = mock(OctopusManager.class);
+        SandboxedJob job = mock(SandboxedJob.class);
+        when(job.getUrl()).thenReturn(new URI("/job/1234"));
+        Collection<SandboxedJob> jobs = new LinkedList<SandboxedJob>();
+        jobs.add(job);
+        when(manager.getJobs()).thenReturn(jobs);
+        HttpClient httpClient = new DefaultHttpClient();
+        JobsResource resource = new JobsResource(manager, httpClient);
+
+        URI[] response = resource.getJobs();
+
+        URI[] expected = {new URI("/job/1234")};
+        assertThat(response, is(expected));
+    }
 }
