@@ -63,6 +63,14 @@ public class JobLauncherConfiguration extends Configuration {
     private HttpClientConfiguration httpClient = new HttpClientConfiguration();
 
     /**
+     * Http Client can be configured so self signed ssl certificates work.
+     */
+    @Valid
+    @NotNull
+    @JsonProperty
+    private Boolean useInsecureSSL = false;
+
+    /**
      * Constructor
      *
      * @param octopus
@@ -77,6 +85,15 @@ public class JobLauncherConfiguration extends Configuration {
         this.octopusConfiguration = octopus;
         this.macs = macs;
         this.httpClient = httpClient;
+    }
+
+    public JobLauncherConfiguration(OctopusConfiguration octopusConfiguration, final ImmutableList<MacCredential> macs,
+            HttpClientConfiguration httpClient, Boolean useInsecureSSL) {
+        super();
+        this.macs = macs;
+        this.octopusConfiguration = octopusConfiguration;
+        this.httpClient = httpClient;
+        this.useInsecureSSL = useInsecureSSL;
     }
 
     /**
@@ -107,6 +124,10 @@ public class JobLauncherConfiguration extends Configuration {
      */
     public ImmutableList<MacCredential> getMacs() {
         return macs;
+    }
+
+    public Boolean isUseInsecureSSL() {
+        return useInsecureSSL;
     }
 
     @Override

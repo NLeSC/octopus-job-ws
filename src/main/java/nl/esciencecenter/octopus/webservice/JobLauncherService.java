@@ -20,6 +20,12 @@ package nl.esciencecenter.octopus.webservice;
  * #L%
  */
 
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -28,6 +34,10 @@ import org.apache.http.auth.params.AuthPNames;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.params.AuthPolicy;
+import org.apache.http.conn.scheme.Scheme;
+import org.apache.http.conn.scheme.SchemeRegistry;
+import org.apache.http.conn.ssl.SSLSocketFactory;
+import org.apache.http.conn.ssl.TrustStrategy;
 import org.apache.http.impl.client.AbstractHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -79,9 +89,38 @@ public class JobLauncherService extends Service<JobLauncherConfiguration> {
 
         httpClient = macifyHttpClient((AbstractHttpClient) httpClient, configuration.getMacs());
 
+        if (configuration.isUseInsecureSSL()) {
+            useInsecureSSL(httpClient);
+        }
+
         environment.addResource(new JobsResource(octopus, httpClient));
         environment.addResource(new JobResource(octopus));
         environment.addHealthCheck(new JobLauncherHealthCheck("joblauncher"));
+    }
+
+    /**
+     * Enable insecure SSL in http client like self signed certificates.
+     *
+     * @param httpClient
+     * @throws NoSuchAlgorithmException
+     * @throws KeyManagementException
+     * @throws KeyStoreException
+     * @throws UnrecoverableKeyException
+     */
+    public void useInsecureSSL(HttpClient httpClient) throws NoSuchAlgorithmException, KeyManagementException, KeyStoreException,
+            UnrecoverableKeyException {
+        SSLSocketFactory socketFactory;
+        socketFactory = new SSLSocketFactory(new TrustStrategy() {
+
+            public boolean isTrusted(final X509Certificate[] chain, String authType) throws CertificateException {
+                // Oh, I am easy...
+                return true;
+            }
+
+        }, org.apache.http.conn.ssl.SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+
+        SchemeRegistry registry = httpClient.getConnectionManager().getSchemeRegistry();
+        registry.register(new Scheme("https", 443, socketFactory));
     }
 
     /**

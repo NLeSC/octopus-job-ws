@@ -9,9 +9,9 @@ package nl.esciencecenter.octopus.webservice;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -65,16 +65,29 @@ public class JobLauncherConfigurationTest {
         assertThat(conf.getOctopusConfiguration()).isEqualTo(octopusConf);
         assertThat(conf.getMacs()).isEqualTo(macs);
         assertThat(conf.getHttpClientConfiguration()).isEqualTo(httpClient);
+        assertThat(conf.isUseInsecureSSL()).isFalse();
     }
 
     @Test
-    public void testJobLauncherConfigurationNoArgs() {
+    public void testJobLauncherConfiguration_NoArgs() {
         JobLauncherConfiguration conf = new JobLauncherConfiguration();
 
         assertEquals(new OctopusConfiguration(), conf.getOctopusConfiguration());
         assertNotNull(conf.getHttpClientConfiguration());
         ImmutableList<MacCredential> macs = ImmutableList.of();
         assertEquals(macs, conf.getMacs());
+        assertThat(conf.isUseInsecureSSL()).isFalse();
+    }
+
+    @Test
+    public void testJobLauncherConfiguration_UseInsecureSSL() throws URISyntaxException {
+        OctopusConfiguration octopusConf = getSampleOctopusConfiguration();
+        ImmutableList<MacCredential> macs = ImmutableList.of(new MacCredential("id", "key", new URI("http://localhost")));
+        HttpClientConfiguration httpClient = new HttpClientConfiguration();
+
+        JobLauncherConfiguration conf = new JobLauncherConfiguration(octopusConf, macs, httpClient, true);
+
+        assertThat(conf.isUseInsecureSSL()).isTrue();
     }
 
     @Test
@@ -86,6 +99,7 @@ public class JobLauncherConfigurationTest {
 
         assertThat(conf.getOctopusConfiguration()).isEqualTo(octopusConf);
         assertThat(conf.getMacs()).isEqualTo(macs);
+        assertThat(conf.isUseInsecureSSL()).isFalse();
     }
 
 }

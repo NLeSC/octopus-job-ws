@@ -20,20 +20,37 @@ package nl.esciencecenter.octopus.webservice;
  * #L%
  */
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import nl.esciencecenter.octopus.webservice.health.JobLauncherHealthCheck;
+import nl.esciencecenter.octopus.webservice.job.OctopusConfiguration;
+import nl.esciencecenter.octopus.webservice.job.OctopusManager;
+import nl.esciencecenter.octopus.webservice.mac.MacCredential;
+import nl.esciencecenter.octopus.webservice.mac.MacScheme;
+
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.Credentials;
 import org.apache.http.auth.params.AuthPNames;
+import org.apache.http.client.HttpClient;
 import org.apache.http.client.params.AuthPolicy;
+import org.apache.http.conn.scheme.Scheme;
+import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
@@ -41,19 +58,6 @@ import com.google.common.collect.ImmutableMap;
 import com.yammer.dropwizard.client.HttpClientConfiguration;
 import com.yammer.dropwizard.config.Bootstrap;
 import com.yammer.dropwizard.config.Environment;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-
-import nl.esciencecenter.octopus.webservice.JobLauncherConfiguration;
-import nl.esciencecenter.octopus.webservice.JobLauncherService;
-import nl.esciencecenter.octopus.webservice.health.JobLauncherHealthCheck;
-import nl.esciencecenter.octopus.webservice.job.OctopusConfiguration;
-import nl.esciencecenter.octopus.webservice.job.OctopusManager;
-import nl.esciencecenter.octopus.webservice.mac.MacCredential;
-import nl.esciencecenter.octopus.webservice.mac.MacScheme;
-import nl.esciencecenter.octopus.webservice.resources.JobResource;
-import nl.esciencecenter.octopus.webservice.resources.JobsResource;
 
 public class JobLauncherServiceTest {
     private final Environment environment = mock(Environment.class);
@@ -69,7 +73,6 @@ public class JobLauncherServiceTest {
         assertEquals("joblauncher", bootstrap.getName());
     }
 
-    @Ignore("Can't find adaptors")
     @Test
     public void testRun() throws Exception {
         // FIXME Waiting for https://github.com/NLeSC/octopus/issues/38 to be resolved
@@ -77,8 +80,7 @@ public class JobLauncherServiceTest {
 
         service.run(config, environment);
 
-        verify(environment).addResource(any(JobResource.class));
-        verify(environment).addResource(any(JobsResource.class));
+        verify(environment, times(2)).addResource(any(Object.class));
         verify(environment).addHealthCheck(any(JobLauncherHealthCheck.class));
         verify(environment).manage(any(OctopusManager.class));
 
@@ -102,7 +104,6 @@ public class JobLauncherServiceTest {
         return config;
     }
 
-    @Ignore("Can't find adaptors")
     @Test
     public void testMacifyHttpClient() throws URISyntaxException {
         // FIXME Waiting for https://github.com/NLeSC/octopus/issues/38 to be resolved
@@ -128,5 +129,16 @@ public class JobLauncherServiceTest {
         assertEquals(authSchemes,
                 httpClient.getParams()
                         .getParameter(AuthPNames.TARGET_AUTH_PREF));
+    }
+
+    @Test
+    public void useInsecureSSL_NoHostnameVerifier() throws KeyManagementException, UnrecoverableKeyException, NoSuchAlgorithmException, KeyStoreException {
+        HttpClient httpClient = new DefaultHttpClient();
+
+        service.useInsecureSSL(httpClient);
+
+        Scheme scheme = httpClient.getConnectionManager().getSchemeRegistry().get("https");
+        SSLSocketFactory factory = (SSLSocketFactory) scheme.getSchemeSocketFactory();
+        assertEquals(org.apache.http.conn.ssl.SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER, factory.getHostnameVerifier());
     }
 }
