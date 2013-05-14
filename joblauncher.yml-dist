@@ -10,8 +10,8 @@ octopus:
   preferences:
     octopus.adaptors.local.queue.multi.maxConcurrentJobs: 4
   poll:
-   interval: 30000
-   cancelTimeout: 3600000
-   deleteTimeout: 43200000
+   interval: 30000  # 30 seconds
+   cancelTimeout: 3600000  # 1 hour
+   deleteTimeout: 43200000  # 12 hour
 http:
   port: 9998
