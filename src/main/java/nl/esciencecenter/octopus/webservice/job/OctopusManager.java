@@ -149,6 +149,10 @@ public class OctopusManager implements Managed {
         JobDescription description = request.toJobDescription();
         description.setQueueName(configuration.getQueue());
         description.setWorkingDirectory(sandbox.getPath().getPath());
+        long cancelTimeout = configuration.getPollConfiguration().getCancelTimeout();
+        // CancelTimeout is in milliseconds and MaxTime must be in minutes, so convert it
+        int maxTime = (int) TimeUnit.MINUTES.convert(cancelTimeout, TimeUnit.MILLISECONDS);
+        description.setMaxTime(maxTime);
 
         // stage input files
         sandbox.upload();

@@ -140,7 +140,7 @@ public class OctopusManagerTest {
         when(files.newFileSystem(new URI("file:///"), null, null)).thenReturn(filesystem);
         when(files.newPath(filesystem, new RelativePath("/tmp/sandboxes"))).thenReturn(sandboxPath);
         JobSubmitRequest request = mock(JobSubmitRequest.class);
-        JobDescription description = mock(JobDescription.class);
+        JobDescription description = new JobDescription();
         when(request.toJobDescription()).thenReturn(description);
         Sandbox sandbox = mock(Sandbox.class);
         when(request.toSandbox(octopus, sandboxPath, null)).thenReturn(sandbox);
@@ -160,6 +160,11 @@ public class OctopusManagerTest {
         assertThat(result.getIdentifier()).isEqualTo("11111111-1111-1111-1111-111111111111");
         verify(sandbox).upload();
         verify(jobs).submitJob(scheduler, description);
+
+        // assert description configuration
+        assertThat(description.getMaxTime()).isEqualTo(60);
+        assertThat(description.getQueueName()).isEqualTo("multi");
+        assertThat(description.getWorkingDirectory()).isEqualTo("/tmp/sandboxes");
     }
 
     @Test
