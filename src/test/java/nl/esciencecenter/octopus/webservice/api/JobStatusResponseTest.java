@@ -23,39 +23,164 @@ package nl.esciencecenter.octopus.webservice.api;
 import static com.yammer.dropwizard.testing.JsonHelpers.asJson;
 import static com.yammer.dropwizard.testing.JsonHelpers.jsonFixture;
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 
+import nl.esciencecenter.octopus.engine.jobs.JobStatusImplementation;
+import nl.esciencecenter.octopus.jobs.Job;
+import nl.esciencecenter.octopus.jobs.JobStatus;
+
 import org.junit.Test;
 
 public class JobStatusResponseTest {
-    /**
-     * @param state
-     * @param exitCode
-     * @param exception
-     * @param scheduler_status
-     * @param done
-     * @return
-     * @throws URISyntaxException
-     */
-    public JobStatusResponse sampleStatus(String state, int exitCode, Exception exception, String scheduler_status, Boolean done)
-            throws URISyntaxException {
+    private JobStatusResponse getRunningJobStatus() {
         Map<String, String> info = new HashMap<String, String>();
-        info.put("status", scheduler_status);
-        return new JobStatusResponse(state, done, exitCode, exception, info);
+        info.put("status", "EXECUTING");
+        JobStatusResponse status = new JobStatusResponse("RUNNING", true, false, null, null, info);
+        return status;
+    }
+
+    @Test
+    public void construct_JobStatus() {
+        Job job = mock(Job.class);
+        JobStatus jobstatus = new JobStatusImplementation(job, "PENDING", null, null, false, false, null);
+        JobStatusResponse status = new JobStatusResponse(jobstatus);
+
+        JobStatusResponse expected = new JobStatusResponse("PENDING", false, false, null, null, null);
+        assertThat(status).isEqualTo(expected);
+    }
+
+    @Test
+    public void construct_Null() {
+        JobStatusResponse status = new JobStatusResponse(null);
+
+        assertThat(status.getState()).isEqualTo("INITIAL");
+        assertThat(status.getException()).isNull();
+        assertThat(status.getSchedulerSpecficInformation()).isNull();
+        assertThat(status.getExitCode()).isNull();
+        assertThat(status.isDone()).isFalse();
+        assertThat(status.isRunning()).isFalse();
+    }
+
+    @Test
+    public void test_hashCode() {
+        JobStatusResponse status = getRunningJobStatus();
+
+        assertThat(status.hashCode()).isEqualTo(-481497476);
+    }
+
+    @Test
+    public void testEqual_null_false() {
+        JobStatusResponse status = getRunningJobStatus();
+
+        assertThat(status.equals(null)).isFalse();
+    }
+
+    @Test
+    public void testEqual_sameInstance_true() {
+        JobStatusResponse status = getRunningJobStatus();
+
+        assertThat(status.equals(status)).isTrue();
+    }
+
+    @Test
+    public void testEqual_sameConstruct_true() {
+        JobStatusResponse status = getRunningJobStatus();
+        JobStatusResponse expected = getRunningJobStatus();
+
+        assertThat(status.equals(expected)).isTrue();
+    }
+
+    @Test
+    public void testEqual_diffClass_false() {
+        JobStatusResponse status = getRunningJobStatus();
+
+        assertThat(status.equals(42)).isFalse();
+    }
+
+    @Test
+    public void testEqual_otherState_false() {
+        JobStatusResponse status = getRunningJobStatus();
+        Map<String, String> info = new HashMap<String, String>();
+        info.put("status", "EXECUTING");
+        JobStatusResponse expected = new JobStatusResponse("EXECUTING", true, false, null, null, info);
+
+        assertThat(status.equals(expected)).isFalse();
+    }
+
+    @Test
+    public void testEqual_otherNotRunning_false() {
+        JobStatusResponse status = getRunningJobStatus();
+        Map<String, String> info = new HashMap<String, String>();
+        info.put("status", "EXECUTING");
+        JobStatusResponse expected = new JobStatusResponse("RUNNING", false, false, null, null, info);
+
+        assertThat(status.equals(expected)).isFalse();
+    }
+
+    @Test
+    public void testEqual_otherDone_false() {
+        JobStatusResponse status = getRunningJobStatus();
+        Map<String, String> info = new HashMap<String, String>();
+        info.put("status", "EXECUTING");
+        JobStatusResponse expected = new JobStatusResponse("RUNNING", true, true, null, null, info);
+
+        assertThat(status.equals(expected)).isFalse();
+    }
+
+    @Test
+    public void testEqual_otherExitCode_false() {
+        JobStatusResponse status = getRunningJobStatus();
+        Map<String, String> info = new HashMap<String, String>();
+        info.put("status", "EXECUTING");
+        JobStatusResponse expected = new JobStatusResponse("RUNNING", true, false, 0, null, info);
+
+        assertThat(status.equals(expected)).isFalse();
+    }
+
+    @Test
+    public void testEqual_otherException_false() {
+        JobStatusResponse status = getRunningJobStatus();
+        Map<String, String> info = new HashMap<String, String>();
+        info.put("status", "EXECUTING");
+        Exception exception = new Exception();
+        JobStatusResponse expected = new JobStatusResponse("RUNNING", true, false, null, exception, info);
+
+        assertThat(status.equals(expected)).isFalse();
+    }
+
+    @Test
+    public void testEqual_otherSchedulerInfo_false() {
+        JobStatusResponse status = getRunningJobStatus();
+        Map<String, String> info = new HashMap<String, String>();
+        info.put("status", "r");
+        JobStatusResponse expected = new JobStatusResponse("RUNNING", true, false, null, null, info);
+
+        assertThat(status.equals(expected)).isFalse();
+    }
+
+    @Test
+    public void test_toString() {
+        JobStatusResponse status = getRunningJobStatus();
+
+        String expected = "JobStatusResponse{RUNNING, true, false, null, null, {status=EXECUTING}}";
+        assertThat(status.toString()).isEqualTo(expected);
     }
 
     @Test
     public void serializesToJSON_Done() throws IOException, URISyntaxException {
         String state = "DONE";
+        Boolean done = true;
         int exitCode = 0;
         Exception exception = null;
         String scheduler_status = "STOPPED";
-        Boolean done = true;
-        JobStatusResponse status = sampleStatus(state, exitCode, exception, scheduler_status, done);
+        Map<String, String> info = new HashMap<String, String>();
+        info.put("status", scheduler_status);
+        JobStatusResponse status = new JobStatusResponse(state, false, done, exitCode, exception, info);
         assertThat(asJson(status)).isEqualTo(jsonFixture("fixtures/status.done.json"));
     }
 

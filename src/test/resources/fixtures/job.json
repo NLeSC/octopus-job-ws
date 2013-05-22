@@ -37,6 +37,7 @@
         "state" : "DONE",
         "exitCode" : 0,
         "exception" : null,
+        "running" : false,
         "done" : true,
         "schedulerSpecficInformation" : null
     }

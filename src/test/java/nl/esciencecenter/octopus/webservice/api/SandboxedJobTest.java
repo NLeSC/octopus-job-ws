@@ -72,7 +72,7 @@ public class SandboxedJobTest {
         request = new JobSubmitRequest();
         request.status_callback_url = new URI("http://localhost/job/status");
         httpClient = mock(HttpClient.class);
-        status = new JobStatusImplementation(ojob, "DONE", 0, null, true, null);
+        status = new JobStatusImplementation(ojob, "DONE", 0, null, false, true, null);
         pollIterations = 10;
         job = new SandboxedJob(sandbox, ojob, request, httpClient, status, pollIterations);
     }
@@ -131,7 +131,7 @@ public class SandboxedJobTest {
 
     @Test
     public void testSetStatus_ChangedWithCallback_HttpClientExecute() throws UnsupportedEncodingException, ClientProtocolException, IOException {
-        JobStatus rstatus = new JobStatusImplementation(ojob, "RUNNING", null, null, false, null);
+        JobStatus rstatus = new JobStatusImplementation(ojob, "RUNNING", null, null, true, false, null);
         pollIterations = 10;
         job = new SandboxedJob(sandbox, ojob, request, httpClient, rstatus, pollIterations);
 
