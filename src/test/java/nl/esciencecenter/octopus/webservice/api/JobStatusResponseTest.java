@@ -20,7 +20,6 @@ package nl.esciencecenter.octopus.webservice.api;
  * #L%
  */
 
-import static com.yammer.dropwizard.testing.JsonHelpers.asJson;
 import static com.yammer.dropwizard.testing.JsonHelpers.jsonFixture;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -172,7 +171,7 @@ public class JobStatusResponseTest {
     }
 
     @Test
-    public void serializesToJSON_Done() throws IOException, URISyntaxException {
+    public void toJson_Done() throws IOException, URISyntaxException {
         String state = "DONE";
         Boolean done = true;
         int exitCode = 0;
@@ -181,14 +180,20 @@ public class JobStatusResponseTest {
         Map<String, String> info = new HashMap<String, String>();
         info.put("status", scheduler_status);
         JobStatusResponse status = new JobStatusResponse(state, false, done, exitCode, exception, info);
-        assertThat(asJson(status)).isEqualTo(jsonFixture("fixtures/status.done.json"));
+        assertThat(status.toJson()).isEqualTo(jsonFixture("fixtures/status.done.json"));
     }
 
     @Test
-    public void serializeToJson_Null() throws IOException {
+    public void toJson_Null() throws IOException {
         JobStatusResponse status = new JobStatusResponse(null);
 
-        assertThat(asJson(status)).isEqualTo(jsonFixture("fixtures/status.initial.json"));
+        assertThat(status.toJson()).isEqualTo(jsonFixture("fixtures/status.initial.json"));
     }
 
+    @Test
+    public void toJson_Exception() throws IOException, URISyntaxException {
+        Exception exception = new Exception("Process cancelled by user.");
+        JobStatusResponse status = new JobStatusResponse("KILLED", false, true, null, exception , null);
+        assertThat(status.toJson()).isEqualTo(jsonFixture("fixtures/status.exception.json"));
+    }
 }

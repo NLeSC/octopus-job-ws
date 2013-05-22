@@ -26,6 +26,10 @@ import javax.validation.constraints.NotNull;
 
 import nl.esciencecenter.octopus.jobs.JobStatus;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Objects;
 
 public class JobStatusResponse {
@@ -77,8 +81,20 @@ public class JobStatusResponse {
         return state;
     }
 
+    /*
+     * During serialization don't serialize exception, but return exception message.
+     */
+    @JsonIgnore
     public Exception getException() {
         return exception;
+    }
+
+    @JsonProperty("exception")
+    public String getExceptionMessage() {
+        if (exception == null) {
+            return null;
+        }
+        return exception.getMessage();
     }
 
     public boolean isDone() {
@@ -123,5 +139,10 @@ public class JobStatusResponse {
                 .addValue(this.exception)
                 .addValue(this.schedulerSpecficInformation)
                 .toString();
+    }
+
+    public String toJson() throws JsonProcessingException {
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.writeValueAsString(this);
     }
 }

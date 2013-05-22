@@ -18,12 +18,10 @@
  * #L%
  */
 {
-	"state" : "DONE",
-	"exitCode" : 0,
+	"state" : "KILLED",
+	"exitCode" : null,
     "running": false,
 	"done" : true,
-	"schedulerSpecficInformation" : {
-		"status" : "STOPPED"
-	},
-    "exception" : null
+	"schedulerSpecficInformation" : null,
+    "exception" : "Process cancelled by user."
 }

@@ -26,16 +26,17 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 import nl.esciencecenter.octopus.engine.jobs.JobStatusImplementation;
@@ -45,14 +46,15 @@ import nl.esciencecenter.octopus.jobs.Job;
 import nl.esciencecenter.octopus.jobs.JobStatus;
 import nl.esciencecenter.octopus.util.CopyOption;
 import nl.esciencecenter.octopus.util.Sandbox;
-import nl.esciencecenter.octopus.webservice.api.JobSubmitRequest;
-import nl.esciencecenter.octopus.webservice.api.SandboxedJob;
 
+import org.apache.http.Consts;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.client.methods.HttpPut;
+import org.apache.http.util.EntityUtils;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 
 public class SandboxedJobTest {
     JobSubmitRequest request;
@@ -72,7 +74,9 @@ public class SandboxedJobTest {
         request = new JobSubmitRequest();
         request.status_callback_url = new URI("http://localhost/job/status");
         httpClient = mock(HttpClient.class);
-        status = new JobStatusImplementation(ojob, "DONE", 0, null, false, true, null);
+        Map<String, String> info = new HashMap<String, String>();
+        info.put("status", "STOPPED");
+        status = new JobStatusImplementation(ojob, "DONE", 0, null, false, true, info);
         pollIterations = 10;
         job = new SandboxedJob(sandbox, ojob, request, httpClient, status, pollIterations);
     }
@@ -130,7 +134,7 @@ public class SandboxedJobTest {
     }
 
     @Test
-    public void testSetStatus_ChangedWithCallback_HttpClientExecute() throws UnsupportedEncodingException, ClientProtocolException, IOException {
+    public void testSetStatus_ChangedWithCallback_HttpClientExecute() throws UnsupportedEncodingException, ClientProtocolException, IOException, URISyntaxException {
         JobStatus rstatus = new JobStatusImplementation(ojob, "RUNNING", null, null, true, false, null);
         pollIterations = 10;
         job = new SandboxedJob(sandbox, ojob, request, httpClient, rstatus, pollIterations);
@@ -138,8 +142,24 @@ public class SandboxedJobTest {
         job.setStatus(this.status);
 
         assertThat(job.getStatus()).isEqualTo(this.status);
-        // TODO verify to which url was putted and what content
-        verify(httpClient).execute(any(HttpUriRequest.class));
+        ArgumentCaptor<HttpPut> argument = ArgumentCaptor.forClass(HttpPut.class);
+        verify(httpClient).execute(argument.capture());
+        HttpPut callback_request = argument.getValue();
+        assertThat(callback_request.getURI()).isEqualTo(new URI("http://localhost/job/status"));
+        assertThat(callback_request.getEntity().getContentType().getValue()).isEqualTo("application/json; charset=UTF-8");
+        String body = EntityUtils.toString(callback_request.getEntity(), Consts.UTF_8);
+        assertThat(body).isEqualTo(jsonFixture("fixtures/status.done.json"));
+    }
+
+    @Test
+    public void testSetStatus_ChangedWithoutCallback_NoHttpClientExecute() throws UnsupportedEncodingException, ClientProtocolException, IOException {
+        request.status_callback_url = null;
+        JobStatus rstatus = new JobStatusImplementation(ojob, "RUNNING", null, null, true, false, null);
+        pollIterations = 10;
+        job = new SandboxedJob(sandbox, ojob, request, httpClient, rstatus, pollIterations);
+
+        job.setStatus(this.status);
+        verifyNoMoreInteractions(httpClient);
     }
 
     @Test

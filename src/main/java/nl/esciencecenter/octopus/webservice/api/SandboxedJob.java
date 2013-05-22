@@ -21,7 +21,6 @@ package nl.esciencecenter.octopus.webservice.api;
  */
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.util.UUID;
 
@@ -35,16 +34,17 @@ import nl.esciencecenter.octopus.util.CopyOption;
 import nl.esciencecenter.octopus.util.Sandbox;
 import nl.esciencecenter.octopus.webservice.resources.JobResource;
 
-import org.apache.http.client.ClientProtocolException;
+import org.apache.http.HttpEntity;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPut;
+import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.Objects;
+import com.fasterxml.jackson.core.JsonProcessingException;
 
 /**
  * Job representation.
@@ -127,25 +127,25 @@ public class SandboxedJob {
 
     /**
      * Sets status.
-     * If callback is set then sends PUT request with status.getState() to callback URL.
+     * If status has changed and callback is set then sends PUT request with {@link JobStatusResponse JobStatusResponse} as JSON to callback URL.
      *
      * @param status
-     * @throws UnsupportedEncodingException
-     * @throws ClientProtocolException
-     * @throws IOException
+     * @throws JsonProcessingException when job status can not be converted to JSON.
+     * @throws IOException when callback fails.
      */
-    public void setStatus(JobStatus status) throws UnsupportedEncodingException, ClientProtocolException, IOException {
-        if (!Objects.equal(this.status, status)) {
+    public void setStatus(JobStatus status) throws IOException {
+        if (!status.equals(this.status)) {
             this.status = status;
-            putState2Callback(status.getState());
+            putState2Callback();
         }
     }
 
-    private void putState2Callback(String state) throws UnsupportedEncodingException, IOException, ClientProtocolException {
-        URI callback = request.status_callback_url;
-        if (callback != null) {
-            HttpPut put = new HttpPut(callback);
-            put.setEntity(new StringEntity(state));
+    private void putState2Callback() throws IOException {
+        if (request.status_callback_url != null) {
+            String body = getStatusResponse().toJson();
+            HttpPut put = new HttpPut(request.status_callback_url);
+            HttpEntity entity = new StringEntity(body, ContentType.APPLICATION_JSON);
+            put.setEntity(entity);
             httpClient.execute(put);
         }
     }
