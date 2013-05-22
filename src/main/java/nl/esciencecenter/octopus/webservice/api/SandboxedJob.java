@@ -141,7 +141,7 @@ public class SandboxedJob {
     }
 
     private void putState2Callback() throws IOException {
-        if (request.status_callback_url != null) {
+        if (request != null && request.status_callback_url != null) {
             String body = getStatusResponse().toJson();
             HttpPut put = new HttpPut(request.status_callback_url);
             HttpEntity entity = new StringEntity(body, ContentType.APPLICATION_JSON);
@@ -151,13 +151,17 @@ public class SandboxedJob {
     }
 
     /**
-     * Downloads sandbox and delete it's contents
+     * Downloads sandbox and delete it's contents.
+     *
+     * Only downloads sandbox when job status has no exception.
      *
      * @throws OctopusIOException
      * @throws UnsupportedOperationException
      */
     public void cleanSandbox() throws OctopusIOException, UnsupportedOperationException {
-        sandbox.download(CopyOption.REPLACE_EXISTING);
+        if (!status.hasException()) {
+            sandbox.download(CopyOption.REPLACE_EXISTING);
+        }
         sandbox.delete();
     }
 

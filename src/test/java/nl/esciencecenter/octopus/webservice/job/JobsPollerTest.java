@@ -169,17 +169,16 @@ public class JobsPollerTest {
         Octopus octopus = mock(Octopus.class);
         Jobs jobsEngine = mock(Jobs.class);
         when(octopus.jobs()).thenReturn(jobsEngine);
-        JobStatus new_jobstatus = new JobStatusImplementation(job, "RUNNING", 0, null, true, false, null);
-        JobStatus[] statuses = { new_jobstatus };
-        // use `doReturn` instead of `when` as argument matching fails
-        doReturn(statuses).when(jobsEngine).getJobStatuses((Job[]) any());
+        JobStatus timeout_jobstatus = new JobStatusImplementation(job, "KILLED", null, new Exception("Process timed out"), false, true, null);
+        when(jobsEngine.getJobStatus(job)).thenReturn(timeout_jobstatus);
         JobsPoller poller = new JobsPoller(jobs, pollConf, octopus);
 
         poller.run();
 
         verify(jobsEngine).cancelJob(job);
-        verify(sb).download(CopyOption.REPLACE_EXISTING);
+        verify(sb, never()).download(CopyOption.REPLACE_EXISTING);
         verify(sb).delete();
+        assertThat(sjob.getStatus()).isEqualTo(timeout_jobstatus);
     }
 
     @Test
@@ -196,16 +195,14 @@ public class JobsPollerTest {
         Octopus octopus = mock(Octopus.class);
         Jobs jobsEngine = mock(Jobs.class);
         when(octopus.jobs()).thenReturn(jobsEngine);
-        JobStatus new_jobstatus = new JobStatusImplementation(job, "RUNNING", 0, null, true, false, null);
-        JobStatus[] statuses = { new_jobstatus };
-        // use `doReturn` instead of `when` as argument matching fails
-        doReturn(statuses).when(jobsEngine).getJobStatuses((Job[]) any());
+        JobStatus timeout_jobstatus = new JobStatusImplementation(job, "KILLED", null, new Exception("Process timed out"), false, true, null);
+        when(jobsEngine.getJobStatus(job)).thenReturn(timeout_jobstatus);
         JobsPoller poller = new JobsPoller(jobs, pollConf, octopus);
 
         poller.run();
 
         verify(jobsEngine).cancelJob(job);
-        verify(sb).download(CopyOption.REPLACE_EXISTING);
+        verify(sb, never()).download(CopyOption.REPLACE_EXISTING);
         verify(sb).delete();
         assertThat(jobs).doesNotContainKey(identifier);
     }

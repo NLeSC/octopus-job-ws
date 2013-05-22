@@ -27,6 +27,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.io.IOException;
+
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response.Status;
 
@@ -71,7 +73,7 @@ public class JobResourceTest {
     }
 
     @Test
-    public void cancelJob_KnownJob_JobCanceled() throws OctopusIOException, OctopusException {
+    public void cancelJob_KnownJob_JobCanceled() throws OctopusException, IOException {
         String request = "1234";
         OctopusManager manager = mock(OctopusManager.class);
 
@@ -83,7 +85,7 @@ public class JobResourceTest {
     }
 
     @Test
-    public void cancelJob_UnknownJob_ThrowsWebApplicationException() throws OctopusIOException, OctopusException {
+    public void cancelJob_UnknownJob_ThrowsWebApplicationException() throws OctopusException, IOException {
         String request = "1234";
         OctopusManager manager = mock(OctopusManager.class);
         doThrow(new NoSuchJobException("", "Job not found")).when(manager).cancelJob("1234");
