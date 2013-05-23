@@ -100,11 +100,12 @@ Then submit it
        },
        "url": "/job/1234",
        "status": {
-           "state" : "INITIAL",
-           "exitCode" : null,
-           "exception" : null,
-           "done" : false,
-           "schedulerSpecficInformation" : null
+           "state": "INITIAL",
+           "exitCode": null,
+           "exception": null,
+           "running": false,
+           "done": false,
+           "schedulerSpecficInformation": null
        }
    }
 
@@ -147,12 +148,13 @@ Example response when job is running:
            "status_callback_url": "http://localhost/status"
        },
        "url": "/job/1234",
-       "status":    {
-         "state":"RUNNING",
-         "exitCode":null,
-         "exception":null,
-         "done":false,
-         "schedulerSpecficInformation":null
+       "status": {
+         "state": "RUNNING",
+         "exitCode": null,
+         "exception": null,
+         "running": true,
+         "done": false,
+         "schedulerSpecficInformation": null
       }
    }
 
@@ -176,12 +178,13 @@ Example response when job is done:
            "status_callback_url": "http://localhost/status"
        },
        "url": "/job/1234",
-       "status":    {
-         "state":"DONE",
-         "exitCode":0,
-         "exception":null,
-         "done":true,
-         "schedulerSpecficInformation":null
+       "status": {
+         "state": "DONE",
+         "exitCode": 0,
+         "exception": null,
+         "running": false,
+         "done": true,
+         "schedulerSpecficInformation": null
       }
    }
 
@@ -190,65 +193,31 @@ Example response when job has been canceled (see below for cancel command):
 .. code-block:: json
 
    {
-      "request" : {
-         "jobdir" : "/tmp/myjob",
-         "status_callback_url" : null,
-         "poststaged" : [
+      "request": {
+         "jobdir": "/tmp/myjob",
+         "status_callback_url": null,
+         "poststaged": [
             "output_file"
          ],
-         "stderr" : "stderr.txt",
-         "executable" : "/bin/sh",
-         "arguments" : [
+         "stderr": "stderr.txt",
+         "executable": "/bin/sh",
+         "arguments": [
             "runme.sh"
          ],
-         "prestaged" : [
+         "prestaged": [
             "runme.sh",
             "input_file"
          ],
-         "stdout" : "stdout.txt"
+         "stdout": "stdout.txt"
       },
       "url": "/job/1234",
-      "status" : {
-         "done" : true,
-         "exception" : {
-            "suppressed" : [],
-            "stackTrace" : [
-               {
-                  "className" : "nl.esciencecenter.octopus.adaptors.local.LocalJobExecutor",
-                  "nativeMethod" : false,
-                  "methodName" : "run",
-                  "fileName" : "LocalJobExecutor.java",
-                  "lineNumber" : 152
-               },
-               {
-                  "className" : "java.util.concurrent.ThreadPoolExecutor",
-                  "nativeMethod" : false,
-                  "methodName" : "runWorker",
-                  "fileName" : "ThreadPoolExecutor.java",
-                  "lineNumber" : 1145
-               },
-               {
-                  "className" : "java.util.concurrent.ThreadPoolExecutor$Worker",
-                  "nativeMethod" : false,
-                  "methodName" : "run",
-                  "fileName" : "ThreadPoolExecutor.java",
-                  "lineNumber" : 615
-               },
-               {
-                  "className" : "java.lang.Thread",
-                  "nativeMethod" : false,
-                  "methodName" : "run",
-                  "fileName" : "Thread.java",
-                  "lineNumber" : 722
-               }
-            ],
-            "cause" : null,
-            "localizedMessage" : "Process cancelled by user.",
-            "message" : "Process cancelled by user."
-         },
-         "schedulerSpecficInformation" : null,
-         "exitCode" : null,
-         "state" : "KILLED"
+      "status": {
+         "running": false,
+         "done": true,
+         "exception": "Process cancelled by user."
+         "schedulerSpecficInformation": null,
+         "exitCode": null,
+         "state": "KILLED"
       }
    }
 

@@ -20,7 +20,8 @@
 {
 	"state" : "INITIAL",
 	"exitCode" : null,
-	"exception" : null,
+	"running": false,
 	"done" : false,
-	"schedulerSpecficInformation" : null
+	"schedulerSpecficInformation" : null,
+    "exception" : null
 }

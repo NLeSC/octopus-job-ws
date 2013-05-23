@@ -67,7 +67,7 @@ public class JobsPollerTest {
         Octopus octopus = mock(Octopus.class);
         Jobs jobsEngine = mock(Jobs.class);
         when(octopus.jobs()).thenReturn(jobsEngine);
-        JobStatus jobstatus = new JobStatusImplementation(job, "RUNNING", 0, null, false, null);
+        JobStatus jobstatus = new JobStatusImplementation(job, "RUNNING", 0, null, true, false, null);
         JobStatus[] statuses = { jobstatus };
         // use `doReturn` instead of `when` as argument matching fails
         doReturn(statuses).when(jobsEngine).getJobStatuses((Job[]) any());
@@ -86,7 +86,7 @@ public class JobsPollerTest {
         String identifier = "11111111-1111-1111-1111-111111111111";
         UUID uuid = UUID.fromString(identifier);
         Job job = new JobImplementation(mock(JobDescription.class), mock(Scheduler.class), uuid, identifier, false, false);
-        JobStatus jobstatus = new JobStatusImplementation(job, "RUNNING", 0, null, false, null);
+        JobStatus jobstatus = new JobStatusImplementation(job, "RUNNING", 0, null, true, false, null);
         SandboxedJob sjob = new SandboxedJob(null, job, null, null, jobstatus, 5);
         jobs.put(identifier, sjob);
         PollConfiguration pollConf = new PollConfiguration();
@@ -110,14 +110,14 @@ public class JobsPollerTest {
         String identifier = "11111111-1111-1111-1111-111111111111";
         UUID uuid = UUID.fromString(identifier);
         Job job = new JobImplementation(mock(JobDescription.class), mock(Scheduler.class), uuid, identifier, false, false);
-        JobStatus jobstatus = new JobStatusImplementation(job, "PENDING", 0, null, false, null);
+        JobStatus jobstatus = new JobStatusImplementation(job, "PENDING", 0, null, false, false, null);
         SandboxedJob sjob = new SandboxedJob(null, job, null, null, jobstatus, 5);
         jobs.put(identifier, sjob);
         PollConfiguration pollConf = new PollConfiguration();
         Octopus octopus = mock(Octopus.class);
         Jobs jobsEngine = mock(Jobs.class);
         when(octopus.jobs()).thenReturn(jobsEngine);
-        JobStatus new_jobstatus = new JobStatusImplementation(job, "RUNNING", 0, null, false, null);
+        JobStatus new_jobstatus = new JobStatusImplementation(job, "RUNNING", 0, null, false, false, null);
         JobStatus[] statuses = { new_jobstatus };
         // use `doReturn` instead of `when` as argument matching fails
         doReturn(statuses).when(jobsEngine).getJobStatuses((Job[]) any());
@@ -135,7 +135,7 @@ public class JobsPollerTest {
         String identifier = "11111111-1111-1111-1111-111111111111";
         UUID uuid = UUID.fromString(identifier);
         Job job = new JobImplementation(mock(JobDescription.class), mock(Scheduler.class), uuid, identifier, false, false);
-        JobStatus jobstatus = new JobStatusImplementation(job, "RUNNING", 0, null, false, null);
+        JobStatus jobstatus = new JobStatusImplementation(job, "RUNNING", 0, null, true, false, null);
         Sandbox sb = mock(Sandbox.class);
         SandboxedJob sjob = new SandboxedJob(sb, job, null, null, jobstatus, 5);
         jobs.put(identifier, sjob);
@@ -143,7 +143,7 @@ public class JobsPollerTest {
         Octopus octopus = mock(Octopus.class);
         Jobs jobsEngine = mock(Jobs.class);
         when(octopus.jobs()).thenReturn(jobsEngine);
-        JobStatus new_jobstatus = new JobStatusImplementation(job, "Done", 0, null, true, null);
+        JobStatus new_jobstatus = new JobStatusImplementation(job, "Done", 0, null, false, true, null);
         JobStatus[] statuses = { new_jobstatus };
         // use `doReturn` instead of `when` as argument matching fails
         doReturn(statuses).when(jobsEngine).getJobStatuses((Job[]) any());
@@ -161,7 +161,7 @@ public class JobsPollerTest {
         String identifier = "11111111-1111-1111-1111-111111111111";
         UUID uuid = UUID.fromString(identifier);
         Job job = new JobImplementation(mock(JobDescription.class), mock(Scheduler.class), uuid, identifier, false, false);
-        JobStatus jobstatus = new JobStatusImplementation(job, "PENDING", 0, null, false, null);
+        JobStatus jobstatus = new JobStatusImplementation(job, "PENDING", 0, null, false, false, null);
         Sandbox sb = mock(Sandbox.class);
         SandboxedJob sjob = new SandboxedJob(sb, job, null, null, jobstatus, 5);
         jobs.put(identifier, sjob);
@@ -169,17 +169,16 @@ public class JobsPollerTest {
         Octopus octopus = mock(Octopus.class);
         Jobs jobsEngine = mock(Jobs.class);
         when(octopus.jobs()).thenReturn(jobsEngine);
-        JobStatus new_jobstatus = new JobStatusImplementation(job, "RUNNING", 0, null, false, null);
-        JobStatus[] statuses = { new_jobstatus };
-        // use `doReturn` instead of `when` as argument matching fails
-        doReturn(statuses).when(jobsEngine).getJobStatuses((Job[]) any());
+        JobStatus timeout_jobstatus = new JobStatusImplementation(job, "KILLED", null, new Exception("Process timed out"), false, true, null);
+        when(jobsEngine.getJobStatus(job)).thenReturn(timeout_jobstatus);
         JobsPoller poller = new JobsPoller(jobs, pollConf, octopus);
 
         poller.run();
 
         verify(jobsEngine).cancelJob(job);
-        verify(sb).download(CopyOption.REPLACE_EXISTING);
+        verify(sb, never()).download(CopyOption.REPLACE_EXISTING);
         verify(sb).delete();
+        assertThat(sjob.getStatus()).isEqualTo(timeout_jobstatus);
     }
 
     @Test
@@ -188,7 +187,7 @@ public class JobsPollerTest {
         String identifier = "11111111-1111-1111-1111-111111111111";
         UUID uuid = UUID.fromString(identifier);
         Job job = new JobImplementation(mock(JobDescription.class), mock(Scheduler.class), uuid, identifier, false, false);
-        JobStatus jobstatus = new JobStatusImplementation(job, "PENDING", 0, null, false, null);
+        JobStatus jobstatus = new JobStatusImplementation(job, "PENDING", 0, null, false, false, null);
         Sandbox sb = mock(Sandbox.class);
         SandboxedJob sjob = new SandboxedJob(sb, job, null, null, jobstatus, 5);
         jobs.put(identifier, sjob);
@@ -196,16 +195,14 @@ public class JobsPollerTest {
         Octopus octopus = mock(Octopus.class);
         Jobs jobsEngine = mock(Jobs.class);
         when(octopus.jobs()).thenReturn(jobsEngine);
-        JobStatus new_jobstatus = new JobStatusImplementation(job, "RUNNING", 0, null, false, null);
-        JobStatus[] statuses = { new_jobstatus };
-        // use `doReturn` instead of `when` as argument matching fails
-        doReturn(statuses).when(jobsEngine).getJobStatuses((Job[]) any());
+        JobStatus timeout_jobstatus = new JobStatusImplementation(job, "KILLED", null, new Exception("Process timed out"), false, true, null);
+        when(jobsEngine.getJobStatus(job)).thenReturn(timeout_jobstatus);
         JobsPoller poller = new JobsPoller(jobs, pollConf, octopus);
 
         poller.run();
 
         verify(jobsEngine).cancelJob(job);
-        verify(sb).download(CopyOption.REPLACE_EXISTING);
+        verify(sb, never()).download(CopyOption.REPLACE_EXISTING);
         verify(sb).delete();
         assertThat(jobs).doesNotContainKey(identifier);
     }
@@ -216,7 +213,7 @@ public class JobsPollerTest {
         String identifier = "11111111-1111-1111-1111-111111111111";
         UUID uuid = UUID.fromString(identifier);
         Job job = new JobImplementation(mock(JobDescription.class), mock(Scheduler.class), uuid, identifier, false, false);
-        JobStatus jobstatus = new JobStatusImplementation(job, "DONE", 0, null, true, null);
+        JobStatus jobstatus = new JobStatusImplementation(job, "DONE", 0, null, false, true, null);
         SandboxedJob sjob = new SandboxedJob(null, job, null, null, jobstatus, 5);
         jobs.put(identifier, sjob);
         PollConfiguration pollConf = new PollConfiguration();

@@ -27,6 +27,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collection;
@@ -39,6 +40,7 @@ import java.util.concurrent.TimeUnit;
 
 import nl.esciencecenter.octopus.Octopus;
 import nl.esciencecenter.octopus.OctopusFactory;
+import nl.esciencecenter.octopus.engine.jobs.JobStatusImplementation;
 import nl.esciencecenter.octopus.exceptions.NoSuchJobException;
 import nl.esciencecenter.octopus.exceptions.OctopusException;
 import nl.esciencecenter.octopus.exceptions.OctopusIOException;
@@ -140,7 +142,7 @@ public class OctopusManagerTest {
         when(files.newFileSystem(new URI("file:///"), null, null)).thenReturn(filesystem);
         when(files.newPath(filesystem, new RelativePath("/tmp/sandboxes"))).thenReturn(sandboxPath);
         JobSubmitRequest request = mock(JobSubmitRequest.class);
-        JobDescription description = mock(JobDescription.class);
+        JobDescription description = new JobDescription();
         when(request.toJobDescription()).thenReturn(description);
         Sandbox sandbox = mock(Sandbox.class);
         when(request.toSandbox(octopus, sandboxPath, null)).thenReturn(sandbox);
@@ -160,6 +162,11 @@ public class OctopusManagerTest {
         assertThat(result.getIdentifier()).isEqualTo("11111111-1111-1111-1111-111111111111");
         verify(sandbox).upload();
         verify(jobs).submitJob(scheduler, description);
+
+        // assert description configuration
+        assertThat(description.getMaxTime()).isEqualTo(60);
+        assertThat(description.getQueueName()).isEqualTo("multi");
+        assertThat(description.getWorkingDirectory()).isEqualTo("/tmp/sandboxes");
     }
 
     @Test
@@ -183,7 +190,7 @@ public class OctopusManagerTest {
     }
 
     @Test
-    public void testCancelJob_NonDoneJob_JobCanceled() throws OctopusIOException, OctopusException {
+    public void testCancelJob_NonDoneJob_JobCanceled() throws OctopusException, IOException {
         // create manager with mocked Jobs and other members stubbed
         Octopus octopus = mock(Octopus.class);
         Jobs jobsEngine= mock(Jobs.class);
@@ -196,15 +203,18 @@ public class OctopusManagerTest {
         when(status.isDone()).thenReturn(false); // Job is not done
         when(sjob.getStatus()).thenReturn(status);
         sjobs.put("11111111-1111-1111-1111-111111111111", sjob);
+        JobStatus timeout_jobstatus = new JobStatusImplementation(job, "KILLED", null, new Exception("Process timed out"), false, true, null);
+        when(jobsEngine.getJobStatus(job)).thenReturn(timeout_jobstatus);
         OctopusManager manager = new OctopusManager(null, octopus, null, sjobs, null, null);
 
         manager.cancelJob("11111111-1111-1111-1111-111111111111");
 
         verify(jobsEngine).cancelJob(job);
+        verify(sjob).setStatus(timeout_jobstatus);
     }
 
     @Test
-    public void testCancelJob_DoneJob_JobNotCanceled() throws OctopusIOException, OctopusException {
+    public void testCancelJob_DoneJob_JobNotCanceled() throws OctopusException, IOException {
         // create manager with mocked Jobs and other members stubbed
         Octopus octopus = mock(Octopus.class);
         Jobs jobsEngine= mock(Jobs.class);
@@ -225,7 +235,7 @@ public class OctopusManagerTest {
     }
 
     @Test(expected=NoSuchJobException.class)
-    public void testCancelJob_UnknownJob_ThrowsNoSuchJobException() throws OctopusIOException, OctopusException {
+    public void testCancelJob_UnknownJob_ThrowsNoSuchJobException() throws OctopusException, IOException {
         Map<String, SandboxedJob> sjobs = new HashMap<String, SandboxedJob>();
         OctopusManager manager = new OctopusManager(null, null, null, sjobs, null, null);
 

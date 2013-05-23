@@ -26,6 +26,10 @@ import javax.validation.constraints.NotNull;
 
 import nl.esciencecenter.octopus.jobs.JobStatus;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Objects;
 
 public class JobStatusResponse {
@@ -35,6 +39,8 @@ public class JobStatusResponse {
     @NotNull
     private final Exception exception;
     @NotNull
+    private final boolean running;
+    @NotNull
     private final boolean done;
     private final Map<String, String> schedulerSpecficInformation;
 
@@ -43,21 +49,24 @@ public class JobStatusResponse {
             state = "INITIAL";
             exitCode = null;
             exception = null;
+            running = false;
             done = false;
             schedulerSpecficInformation = null;
         } else {
             state = jobStatus.getState();
             exitCode = jobStatus.getExitCode();
             exception = jobStatus.getException();
+            running = jobStatus.isRunning();
             done = jobStatus.isDone();
             schedulerSpecficInformation = jobStatus.getSchedulerSpecficInformation();
         }
     }
 
-    public JobStatusResponse(String state, boolean done, Integer exitCode, Exception exception,
+    public JobStatusResponse(String state, boolean running, boolean done, Integer exitCode, Exception exception,
             Map<String, String> schedulerSpecficInformation) {
         super();
         this.state = state;
+        this.running = running;
         this.done = done;
         this.exitCode = exitCode;
         this.exception = exception;
@@ -72,12 +81,28 @@ public class JobStatusResponse {
         return state;
     }
 
+    /*
+     * During serialization don't serialize exception, but return exception message.
+     */
+    @JsonIgnore
     public Exception getException() {
         return exception;
     }
 
+    @JsonProperty("exception")
+    public String getExceptionMessage() {
+        if (exception == null) {
+            return null;
+        }
+        return exception.getMessage();
+    }
+
     public boolean isDone() {
         return done;
+    }
+
+    public boolean isRunning() {
+        return running;
     }
 
     public Map<String, String> getSchedulerSpecficInformation() {
@@ -86,7 +111,7 @@ public class JobStatusResponse {
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(state, done, exitCode, exception, schedulerSpecficInformation);
+        return Objects.hashCode(state, running, done, exitCode, exception, schedulerSpecficInformation);
     }
 
     @Override
@@ -96,8 +121,11 @@ public class JobStatusResponse {
         if (getClass() != obj.getClass())
             return false;
         JobStatusResponse other = (JobStatusResponse) obj;
-        return Objects.equal(this.state, other.state) && Objects.equal(this.done, other.done)
-                && Objects.equal(this.exitCode, other.exitCode) && Objects.equal(this.exception, other.exception)
+        return Objects.equal(this.state, other.state)
+                && Objects.equal(this.running, other.running)
+                && Objects.equal(this.done, other.done)
+                && Objects.equal(this.exitCode, other.exitCode)
+                && Objects.equal(this.exception, other.exception)
                 && Objects.equal(this.schedulerSpecficInformation, other.schedulerSpecficInformation);
     }
 
@@ -105,10 +133,16 @@ public class JobStatusResponse {
     public String toString() {
         return Objects.toStringHelper(this)
                 .addValue(this.state)
+                .addValue(this.running)
                 .addValue(this.done)
                 .addValue(this.exitCode)
                 .addValue(this.exception)
                 .addValue(this.schedulerSpecficInformation)
                 .toString();
+    }
+
+    public String toJson() throws JsonProcessingException {
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.writeValueAsString(this);
     }
 }

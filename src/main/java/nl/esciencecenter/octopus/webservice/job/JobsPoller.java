@@ -88,7 +88,7 @@ public class JobsPoller implements Runnable {
             // else dont need to fetch status of jobs that are done
         }
 
-        logger.debug("Fetching job statuses");
+        logger.debug("Fetching job statuses of " + jjobs.size() + " jobs");
 
         // fetch statuses of all jobs
         Job[] jobarray = jjobs.toArray(new Job[0]);
@@ -101,12 +101,12 @@ public class JobsPoller implements Runnable {
 
                 // when state changed then commit
                 if (job.getStatus() == null || !status.getState().equals(job.getStatus().getState())) {
-                    logger.debug("Status changed");
-                    commitStatus(status, job);
                     if (status.isDone()) {
                         logger.debug("Emptying sandbox");
                         this.cleanSandbox(job);
                     }
+                    logger.debug("Status changed");
+                    commitStatus(status, job);
                 }
             }
         }
@@ -120,7 +120,7 @@ public class JobsPoller implements Runnable {
         try {
             job.setStatus(status);
         } catch (Exception e) {
-            logger.info(e.toString());
+            logger.error(e.getMessage(), e);
         }
     }
 
@@ -128,15 +128,16 @@ public class JobsPoller implements Runnable {
         try {
             job.cleanSandbox();
         } catch (Exception e) {
-            logger.info(e.toString());
+            logger.error(e.getMessage(), e);
         }
     }
 
     protected void cancelJob(SandboxedJob job) {
         try {
             octopus.jobs().cancelJob(job.getJob());
+            job.setStatus(octopus.jobs().getJobStatus(job.getJob()));
         } catch (Exception e) {
-            logger.info(e.toString());
+            logger.error(e.getMessage(), e);
         }
     }
 }

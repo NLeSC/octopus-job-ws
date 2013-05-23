@@ -20,6 +20,8 @@ package nl.esciencecenter.octopus.webservice.resources;
  * #L%
  */
 
+import java.io.IOException;
+
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -67,7 +69,7 @@ public class JobResource {
 
     @DELETE
     @Timed
-    public void cancelJob(@PathParam("jobidentifier") String jobIdentifier) throws OctopusIOException, OctopusException {
+    public void cancelJob(@PathParam("jobidentifier") String jobIdentifier) throws OctopusException, IOException {
         try {
             octopusmanager.cancelJob(jobIdentifier);
         } catch (NoSuchJobException e) {

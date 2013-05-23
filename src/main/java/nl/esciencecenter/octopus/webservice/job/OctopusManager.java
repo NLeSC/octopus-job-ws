@@ -20,6 +20,7 @@ package nl.esciencecenter.octopus.webservice.job;
  * #L%
  */
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collection;
@@ -41,6 +42,7 @@ import nl.esciencecenter.octopus.files.FileSystem;
 import nl.esciencecenter.octopus.files.RelativePath;
 import nl.esciencecenter.octopus.jobs.Job;
 import nl.esciencecenter.octopus.jobs.JobDescription;
+import nl.esciencecenter.octopus.jobs.JobStatus;
 import nl.esciencecenter.octopus.jobs.Scheduler;
 import nl.esciencecenter.octopus.util.Sandbox;
 import nl.esciencecenter.octopus.webservice.api.JobSubmitRequest;
@@ -149,6 +151,10 @@ public class OctopusManager implements Managed {
         JobDescription description = request.toJobDescription();
         description.setQueueName(configuration.getQueue());
         description.setWorkingDirectory(sandbox.getPath().getPath());
+        long cancelTimeout = configuration.getPollConfiguration().getCancelTimeout();
+        // CancelTimeout is in milliseconds and MaxTime must be in minutes, so convert it
+        int maxTime = (int) TimeUnit.MINUTES.convert(cancelTimeout, TimeUnit.MILLISECONDS);
+        description.setMaxTime(maxTime);
 
         // stage input files
         sandbox.upload();
@@ -168,19 +174,23 @@ public class OctopusManager implements Managed {
     /**
      * Cancel job, cancels pending job and kills running job.
      *
-     * If job is DONE then nothing happens.
+     * Stores canceled state.
+     *
+     * If job is done then nothing happens.
      *
      * @param jobIdentifier The identifier of the job.
      *
      * @throws NoSuchJobException When job with jobIdentifier could not be found.
-     * @throws OctopusIOException
      * @throws OctopusException
+     * @throws IOException
      */
-    public void cancelJob(String jobIdentifier) throws OctopusIOException, OctopusException {
+    public void cancelJob(String jobIdentifier) throws OctopusException, IOException {
         SandboxedJob job = getJob(jobIdentifier);
         // no need to cancel completed jobs
         if (!job.getStatus().isDone()) {
             octopus.jobs().cancelJob(job.getJob());
+            JobStatus canceledStatus = octopus.jobs().getJobStatus(job.getJob());
+            job.setStatus(canceledStatus);
         }
     }
 
