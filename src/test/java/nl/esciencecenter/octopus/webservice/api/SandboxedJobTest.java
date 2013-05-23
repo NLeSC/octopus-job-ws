@@ -39,6 +39,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+import javax.ws.rs.core.UriBuilder;
+
 import nl.esciencecenter.octopus.engine.jobs.JobStatusImplementation;
 import nl.esciencecenter.octopus.exceptions.OctopusIOException;
 import nl.esciencecenter.octopus.exceptions.UnsupportedOperationException;
@@ -199,14 +201,6 @@ public class SandboxedJobTest {
 
         String expected = "11111111-1111-1111-1111-111111111111";
         assertThat(id).isEqualTo(expected);
-    }
-
-    @Test
-    public void getUrl() throws URISyntaxException {
-        URI url = job.getUrl();
-
-        URI expected = new URI("/job/11111111-1111-1111-1111-111111111111");
-        assertThat(url).isEqualTo(expected);
     }
 
     @Test

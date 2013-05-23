@@ -30,7 +30,11 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriBuilder;
+import javax.ws.rs.core.UriInfo;
 
 import nl.esciencecenter.octopus.webservice.api.JobSubmitRequest;
 import nl.esciencecenter.octopus.webservice.api.SandboxedJob;
@@ -44,7 +48,6 @@ import com.yammer.metrics.annotation.Timed;
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class JobsResource {
-
     /**
      * Broker to submit jobs with
      */
@@ -55,14 +58,37 @@ public class JobsResource {
     private final HttpClient httpClient;
 
     /**
+     * Use to make absolute URI to job.
+     * Will get injected by JSR311
+     */
+    @Context
+    public UriInfo uriInfo = null;
+
+    /**
      * Constructor
      *
      * @param octopusmanager
      * @param httpClient
+     * @param uriInfo
      */
     public JobsResource(OctopusManager octopusmanager, HttpClient httpClient) {
+        super();
         this.octopusmanager = octopusmanager;
         this.httpClient = httpClient;
+    }
+
+    /**
+     * Constructor
+     *
+     * @param octopusmanager
+     * @param httpClient
+     * @param uriInfo
+     */
+    public JobsResource(OctopusManager octopusmanager, HttpClient httpClient, UriInfo uriInfo) {
+        super();
+        this.octopusmanager = octopusmanager;
+        this.httpClient = httpClient;
+        this.uriInfo = uriInfo;
     }
 
     /**
@@ -70,15 +96,19 @@ public class JobsResource {
      *
      * @param request
      *            A job submission request
-     * @return a job submission response
+     * @return Response with element URI in Location header
      * @throws Exception
      * @throws GATInvocationException
      * @throws GATObjectCreationException
      */
     @POST
     @Timed
-    public SandboxedJob submitJob(@Valid JobSubmitRequest request) throws Exception {
-        return octopusmanager.submitJob(request, httpClient);
+    public Response submitJob(@Valid JobSubmitRequest request) throws Exception {
+        SandboxedJob job = octopusmanager.submitJob(request, httpClient);
+        UriBuilder builder = uriInfo.getAbsolutePathBuilder();
+        URI location = builder.path(job.getIdentifier()).build();
+        Response response = Response.created(location).build();
+        return response;
     }
 
     /**
@@ -88,8 +118,9 @@ public class JobsResource {
     @Timed
     public URI[] getJobs() {
         List<URI> uris = new LinkedList<URI>();
+        UriBuilder builder = uriInfo.getAbsolutePathBuilder();
         for (SandboxedJob job : octopusmanager.getJobs()) {
-            uris.add(job.getUrl());
+            uris.add(builder.path(job.getIdentifier()).build());
         }
         return uris.toArray(new URI[0]);
     }

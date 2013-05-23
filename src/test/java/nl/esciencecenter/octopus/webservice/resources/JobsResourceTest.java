@@ -31,6 +31,11 @@ import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.LinkedList;
 
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.UriBuilder;
+import javax.ws.rs.core.UriInfo;
+
 import nl.esciencecenter.octopus.webservice.api.JobSubmitRequest;
 import nl.esciencecenter.octopus.webservice.api.SandboxedJob;
 import nl.esciencecenter.octopus.webservice.job.OctopusManager;
@@ -46,15 +51,19 @@ public class JobsResourceTest {
         JobSubmitRequest request = mock(JobSubmitRequest.class);
         OctopusManager manager = mock(OctopusManager.class);
         SandboxedJob job = mock(SandboxedJob.class);
+        when(job.getIdentifier()).thenReturn("11111111-1111-1111-1111-111111111111");
         HttpClient httpClient = new DefaultHttpClient();
         when(manager.submitJob(request, httpClient)).thenReturn(job);
-        when(job.getUrl()).thenReturn(new URI("/job/1234"));
+        UriInfo uriInfo = mock(UriInfo.class);
+        UriBuilder builder = UriBuilder.fromUri("http://localhost/job/");
+        when(uriInfo.getAbsolutePathBuilder()).thenReturn(builder);
+        JobsResource resource = new JobsResource(manager, httpClient, uriInfo);
 
-        JobsResource resource = new JobsResource(manager, httpClient);
+        Response response = resource.submitJob(request);
 
-        SandboxedJob response = resource.submitJob(request);
-
-        assertEquals(response, job);
+        assertEquals(201, response.getStatus());
+        URI expected = new URI("http://localhost/job/11111111-1111-1111-1111-111111111111");
+        assertEquals(expected, response.getMetadata().getFirst("Location"));
     }
 
     @Test
@@ -62,16 +71,19 @@ public class JobsResourceTest {
         // mock manager so it returns a list of jobs
         OctopusManager manager = mock(OctopusManager.class);
         SandboxedJob job = mock(SandboxedJob.class);
-        when(job.getUrl()).thenReturn(new URI("/job/1234"));
+        when(job.getIdentifier()).thenReturn("11111111-1111-1111-1111-111111111111");
         Collection<SandboxedJob> jobs = new LinkedList<SandboxedJob>();
         jobs.add(job);
         when(manager.getJobs()).thenReturn(jobs);
         HttpClient httpClient = new DefaultHttpClient();
-        JobsResource resource = new JobsResource(manager, httpClient);
+        UriInfo uriInfo = mock(UriInfo.class);
+        UriBuilder builder = UriBuilder.fromUri("http://localhost/job/");
+        when(uriInfo.getAbsolutePathBuilder()).thenReturn(builder);
+        JobsResource resource = new JobsResource(manager, httpClient, uriInfo);
 
         URI[] response = resource.getJobs();
 
-        URI[] expected = {new URI("/job/1234")};
+        URI[] expected = {new URI("http://localhost/job/11111111-1111-1111-1111-111111111111")};
         assertThat(response, is(expected));
     }
 

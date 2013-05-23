@@ -77,41 +77,23 @@ Create a json file (query.json)
       "status_callback_url": "http://localhost/job/myjob/status"
    }
 
+The `status_callback_url` value is the url where the web service will send the job status with a http PUT request.
+Can be used as an alternative for polling the job status.
+
 Then submit it
 
 .. code-block:: bash
 
-   curl -H "Content-Type: application/json" -H 'Accept: application/json' -X POST -d @query.json http://localhost:9998/job
+   curl -H "Content-Type: application/json" -H 'Accept: application/json' -i -X POST -d @query.json http://localhost:9998/job
 
-   {
-       "request": {
-           "jobdir": "/tmp/jobdir",
-           "executable": "/bin/sh",
-           "stderr": "stderr.txt",
-           "stdout": "stdout.txt",
-           "arguments": [
-               "runme.sh"
-           ],
-           "prestaged": [
-               "runme.sh", "input.dat"
-           ],
-           "poststaged": ["output.dat"],
-           "status_callback_url": "http://localhost/status"
-       },
-       "url": "/job/1234",
-       "status": {
-           "state": "INITIAL",
-           "exitCode": null,
-           "exception": null,
-           "running": false,
-           "done": false,
-           "schedulerSpecficInformation": null
-       }
-   }
+   HTTP/1.1 201 Created
+   Date: Thu, 23 May 2013 11:50:28 GMT
+   Location: http://localhost:9998/job/bc66cd43-9d16-4270-813f-734e864e3552
+   Content-Type: application/json
+   Content-Length: 0
 
-After a while `output_file`, `stderr.txt` and `stdout.txt` file appear in `myjob` directory.
-"http://localhost/job/myjob/status" will have several PUT HTTP requests send to it.
-The PUT requestes contain job statuses like PRE_STAGING, RUNNING, POST_STAGING, STOPPED.
+The submit response contains no content only headers.
+The `Location` header value is the url where the job can be queried for it's status or where it can be canceled.
 
 Callback authentication
 ^^^^^^^^^^^^^^^^^^^^^^^
@@ -126,7 +108,7 @@ In the submit response the url is a relative url to the job.
 
 .. code-block:: bash
 
-   curl -H "Content-Type: application/json" -H 'Accept: application/json' http://localhost:9998/job/localjob-0
+   curl -H "Content-Type: application/json" -H 'Accept: application/json' http://localhost:9998/job/bc66cd43-9d16-4270-813f-734e864e3552
 
 Example response when job is running:
 
@@ -147,7 +129,6 @@ Example response when job is running:
            "poststaged": ["output.dat"],
            "status_callback_url": "http://localhost/status"
        },
-       "url": "/job/1234",
        "status": {
          "state": "RUNNING",
          "exitCode": null,
@@ -177,7 +158,6 @@ Example response when job is done:
            "poststaged": ["output.dat"],
            "status_callback_url": "http://localhost/status"
        },
-       "url": "/job/1234",
        "status": {
          "state": "DONE",
          "exitCode": 0,
@@ -210,11 +190,10 @@ Example response when job has been canceled (see below for cancel command):
          ],
          "stdout": "stdout.txt"
       },
-      "url": "/job/1234",
       "status": {
          "running": false,
          "done": true,
-         "exception": "Process cancelled by user."
+         "exception": "Process cancelled by user.",
          "schedulerSpecficInformation": null,
          "exitCode": null,
          "state": "KILLED"
@@ -225,10 +204,11 @@ Cancel
 ^^^^^^
 
 Cancel a pending or running job.
+Deletes any generated output in the sandbox where the job was running.
 
 .. code-block:: bash
 
-   curl -H "Content-Type: application/json" -H 'Accept: application/json' -X DELETE http://localhost:9998/job/1234
+   curl -H "Content-Type: application/json" -H 'Accept: application/json' -X DELETE http://localhost:9998/job/bc66cd43-9d16-4270-813f-734e864e3552
 
 Documentation
 -------------

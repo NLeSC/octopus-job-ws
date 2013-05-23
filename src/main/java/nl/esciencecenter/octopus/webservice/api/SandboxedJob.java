@@ -174,12 +174,4 @@ public class SandboxedJob {
         UUID uuid = job.getUUID();
         return uuid.toString();
     }
-
-    /**
-     * @return Returns url of job where it can be deleted and status be fetched.
-     */
-    public URI getUrl() {
-        // TODO make url absolute
-        return UriBuilder.fromResource(JobResource.class).build(getIdentifier());
-    }
 }
