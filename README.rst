@@ -6,6 +6,9 @@ Web service to submit jobs via a Octopus supported scheduler.
 Submit job to web service using a HTTP POST request.
 Reports status of job to submitter using a callback url.
 
+.. image:: http://jenkins.esciencetest.nl/job/OctopusJobWebservice/badge/icon
+   :target: http://jenkins.esciencetest.nl/job/OctopusJobWebservice/
+
 Requirements
 ------------
 
