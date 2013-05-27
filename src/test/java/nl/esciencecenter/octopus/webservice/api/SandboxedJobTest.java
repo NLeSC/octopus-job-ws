@@ -44,9 +44,9 @@ import javax.ws.rs.core.UriBuilder;
 import nl.esciencecenter.octopus.engine.jobs.JobStatusImplementation;
 import nl.esciencecenter.octopus.exceptions.OctopusIOException;
 import nl.esciencecenter.octopus.exceptions.UnsupportedOperationException;
+import nl.esciencecenter.octopus.files.CopyOption;
 import nl.esciencecenter.octopus.jobs.Job;
 import nl.esciencecenter.octopus.jobs.JobStatus;
-import nl.esciencecenter.octopus.util.CopyOption;
 import nl.esciencecenter.octopus.util.Sandbox;
 
 import org.apache.http.Consts;
@@ -179,7 +179,7 @@ public class SandboxedJobTest {
     public void testCleanSandbox() throws URISyntaxException, OctopusIOException, UnsupportedOperationException {
         job.cleanSandbox();
 
-        verify(sandbox).download(CopyOption.REPLACE_EXISTING);
+        verify(sandbox).download(CopyOption.REPLACE);
         verify(sandbox).delete();
     }
 

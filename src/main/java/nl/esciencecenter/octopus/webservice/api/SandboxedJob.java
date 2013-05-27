@@ -30,7 +30,7 @@ import nl.esciencecenter.octopus.exceptions.OctopusIOException;
 import nl.esciencecenter.octopus.exceptions.UnsupportedOperationException;
 import nl.esciencecenter.octopus.jobs.Job;
 import nl.esciencecenter.octopus.jobs.JobStatus;
-import nl.esciencecenter.octopus.util.CopyOption;
+import nl.esciencecenter.octopus.files.CopyOption;
 import nl.esciencecenter.octopus.util.Sandbox;
 import nl.esciencecenter.octopus.webservice.resources.JobResource;
 
@@ -160,7 +160,7 @@ public class SandboxedJob {
      */
     public void cleanSandbox() throws OctopusIOException, UnsupportedOperationException {
         if (!status.hasException()) {
-            sandbox.download(CopyOption.REPLACE_EXISTING);
+            sandbox.download(CopyOption.REPLACE);
         }
         sandbox.delete();
     }

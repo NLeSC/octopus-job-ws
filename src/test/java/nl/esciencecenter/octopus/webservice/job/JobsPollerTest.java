@@ -41,12 +41,12 @@ import nl.esciencecenter.octopus.engine.jobs.JobStatusImplementation;
 import nl.esciencecenter.octopus.exceptions.OctopusException;
 import nl.esciencecenter.octopus.exceptions.OctopusIOException;
 import nl.esciencecenter.octopus.exceptions.UnsupportedOperationException;
+import nl.esciencecenter.octopus.files.CopyOption;
 import nl.esciencecenter.octopus.jobs.Job;
 import nl.esciencecenter.octopus.jobs.JobDescription;
 import nl.esciencecenter.octopus.jobs.JobStatus;
 import nl.esciencecenter.octopus.jobs.Jobs;
 import nl.esciencecenter.octopus.jobs.Scheduler;
-import nl.esciencecenter.octopus.util.CopyOption;
 import nl.esciencecenter.octopus.util.Sandbox;
 import nl.esciencecenter.octopus.webservice.api.SandboxedJob;
 
@@ -151,7 +151,7 @@ public class JobsPollerTest {
 
         poller.run();
 
-        verify(sb).download(CopyOption.REPLACE_EXISTING);
+        verify(sb).download(CopyOption.REPLACE);
         verify(sb).delete();
     }
 
@@ -176,7 +176,7 @@ public class JobsPollerTest {
         poller.run();
 
         verify(jobsEngine).cancelJob(job);
-        verify(sb, never()).download(CopyOption.REPLACE_EXISTING);
+        verify(sb, never()).download(CopyOption.REPLACE);
         verify(sb).delete();
         assertThat(sjob.getStatus()).isEqualTo(timeout_jobstatus);
     }
@@ -202,7 +202,7 @@ public class JobsPollerTest {
         poller.run();
 
         verify(jobsEngine).cancelJob(job);
-        verify(sb, never()).download(CopyOption.REPLACE_EXISTING);
+        verify(sb, never()).download(CopyOption.REPLACE);
         verify(sb).delete();
         assertThat(jobs).doesNotContainKey(identifier);
     }
