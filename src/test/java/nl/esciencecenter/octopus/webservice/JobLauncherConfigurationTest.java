@@ -102,4 +102,12 @@ public class JobLauncherConfigurationTest {
         assertThat(conf.isUseInsecureSSL()).isFalse();
     }
 
+    @Test
+    public void testHashCode() throws URISyntaxException {
+        OctopusConfiguration octopusConf = getSampleOctopusConfiguration();
+
+        int hashcode = octopusConf.hashCode();
+
+        assertThat(hashcode).isEqualTo(-1729381738);
+    }
 }
