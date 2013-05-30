@@ -6,15 +6,19 @@
 	<version>2.0</version>
 	<name>Octopus Job Webservice</name>
 	<description>REST based job submission using Octopus</description>
+	<inceptionYear>2013</inceptionYear>
+
 	<issueManagement>
 		<system>GitHub</system>
 		<url>https://github.com/sverhoeven/octopus-job-ws/issues</url>
 	</issueManagement>
+
 	<scm>
 		<url>scm:git:https://github.com/sverhoeven/octopus-job-ws</url>
 		<connection>scm:git:https://github.com/sverhoeven/octopus-job-ws</connection>
 		<developerConnection>scm:git:https://github.com/sverhoeven/octopus-job-ws</developerConnection>
 	</scm>
+
 	<developers>
 		<developer>
 			<id>stefanv</id>
@@ -27,10 +31,12 @@
 			<timezone>+1</timezone>
 		</developer>
 	</developers>
+
 	<organization>
 		<name>Nederlands eScience Center</name>
 		<url>http://www.esciencecenter.nl</url>
 	</organization>
+
 	<licenses>
 		<license>
 			<name>The Apache Software License, Version 2.0</name>
@@ -230,6 +236,15 @@
 						</goals>
 					</execution>
 				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>license-maven-plugin</artifactId>
+				<version>1.5</version>
+				<configuration>
+					<licenseName>apache_v2</licenseName>
+				</configuration>
 			</plugin>
 
 			<plugin>
