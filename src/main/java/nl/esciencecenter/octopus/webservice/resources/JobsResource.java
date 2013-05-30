@@ -69,7 +69,6 @@ public class JobsResource {
      *
      * @param octopusmanager
      * @param httpClient
-     * @param uriInfo
      */
     public JobsResource(OctopusManager octopusmanager, HttpClient httpClient) {
         super();

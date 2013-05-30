@@ -32,6 +32,7 @@ import java.net.URISyntaxException;
 
 import nl.esciencecenter.octopus.webservice.JobLauncherConfiguration;
 import nl.esciencecenter.octopus.webservice.job.OctopusConfiguration;
+import nl.esciencecenter.octopus.webservice.job.PollConfiguration;
 import nl.esciencecenter.octopus.webservice.mac.MacCredential;
 
 import org.junit.Test;
@@ -42,7 +43,8 @@ import com.yammer.dropwizard.client.HttpClientConfiguration;
 
 public class JobLauncherConfigurationTest {
     /**
-     * @return
+     *
+     * @return Configuration with local job and file adaptor configured.
      * @throws URISyntaxException
      */
     public OctopusConfiguration getSampleOctopusConfiguration() throws URISyntaxException {
@@ -50,7 +52,8 @@ public class JobLauncherConfigurationTest {
         String queue = "multi";
         URI sandboxRoot = new URI("file:///tmp/sandboxes");
         ImmutableMap<String, Object> prefs = ImmutableMap.of("octopus.adaptors.local.queue.multi.maxConcurrentJobs", (Object) 4);
-        OctopusConfiguration octopusConf = new OctopusConfiguration(scheduler, queue, sandboxRoot, prefs);
+        PollConfiguration pollConf = new PollConfiguration(10, 50, 100);
+        OctopusConfiguration octopusConf = new OctopusConfiguration(scheduler, queue, sandboxRoot, prefs, pollConf);
         return octopusConf;
     }
 
@@ -95,6 +98,7 @@ public class JobLauncherConfigurationTest {
         JobLauncherConfiguration conf = fromJson(jsonFixture("fixtures/joblauncher.config.json"), JobLauncherConfiguration.class);
 
         OctopusConfiguration octopusConf = getSampleOctopusConfiguration();
+        octopusConf.setPollConfiguration(new PollConfiguration());
         ImmutableList<MacCredential> macs = ImmutableList.of(new MacCredential("id", "key", new URI("http://localhost")));
 
         assertThat(conf.getOctopusConfiguration()).isEqualTo(octopusConf);
@@ -108,6 +112,17 @@ public class JobLauncherConfigurationTest {
 
         int hashcode = octopusConf.hashCode();
 
-        assertThat(hashcode).isEqualTo(-1729381738);
+        assertThat(hashcode).isEqualTo(-1913000478);
+    }
+
+    @Test
+    public void testToString() throws URISyntaxException {
+        OctopusConfiguration octopusConf = getSampleOctopusConfiguration();
+
+        String self = octopusConf.toString();
+
+        String expected = "OctopusConfiguration{local:///, multi, file:///tmp/sandboxes, {octopus.adaptors.local.queue.multi.maxConcurrentJobs=4}, PollConfiguration{10, 50, 100}}";
+        assertThat(self).isEqualTo(expected);
+
     }
 }

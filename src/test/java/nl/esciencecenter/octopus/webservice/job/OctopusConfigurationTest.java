@@ -9,9 +9,9 @@ package nl.esciencecenter.octopus.webservice.job;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -49,13 +49,13 @@ public class OctopusConfigurationTest {
         URI sandbox = new URI("file:///tmp");
         ImmutableMap<String, Object> prefs = ImmutableMap.of(
                 "octopus.adaptors.local.queue.multi.maxConcurrentJobs", (Object) 1);
+        PollConfiguration pollConf = new PollConfiguration();
+        OctopusConfiguration config = new OctopusConfiguration(scheduler, queue, sandbox, prefs, pollConf);
 
-        OctopusConfiguration g = new OctopusConfiguration(scheduler, queue, sandbox, prefs);
-
-        assertThat(g.getScheduler()).isEqualTo(scheduler);
-        assertThat(g.getQueue()).isEqualTo(queue);
-        assertThat(g.getSandboxRoot()).isEqualTo(sandbox);
-        assertThat(g.getPreferences()).isEqualTo(prefs);
+        assertThat(config.getScheduler()).isEqualTo(scheduler);
+        assertThat(config.getQueue()).isEqualTo(queue);
+        assertThat(config.getSandboxRoot()).isEqualTo(sandbox);
+        assertThat(config.getPreferences()).isEqualTo(prefs);
     }
 
     @Test
@@ -96,7 +96,8 @@ public class OctopusConfigurationTest {
         URI sandbox = new URI("file:///tmp");
         ImmutableMap<String, Object> prefs = ImmutableMap.of(
                 "octopus.adaptors.local.queue.multi.maxConcurrentJobs", (Object) 1);
-        OctopusConfiguration conf = new OctopusConfiguration(scheduler, queue, sandbox, prefs);
+        PollConfiguration pollConf = new PollConfiguration();
+        OctopusConfiguration conf = new OctopusConfiguration(scheduler, queue, sandbox, prefs, pollConf);
 
         Properties props = conf.getPreferencesAsProperties();
         Properties expected_props = new Properties();

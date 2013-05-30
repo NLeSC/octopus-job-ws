@@ -85,8 +85,9 @@ public class OctopusManagerTest {
         when(OctopusFactory.newOctopus(any(Properties.class))).thenReturn(octopus);
 
         ImmutableMap<String, Object> prefs = ImmutableMap.of("octopus.adaptors.local.queue.multi.maxConcurrentJobs", (Object) 1);
+        PollConfiguration pollConf = new PollConfiguration();
         OctopusConfiguration conf =
-                new OctopusConfiguration(new URI("local:///"), "multi", new URI("file:///tmp/sandboxes"), prefs);
+                new OctopusConfiguration(new URI("local:///"), "multi", new URI("file:///tmp/sandboxes"), prefs, pollConf);
 
         new OctopusManager(conf);
 
@@ -108,7 +109,7 @@ public class OctopusManagerTest {
 
         manager.start();
 
-        verify(executor).scheduleAtFixedRate(poller, 0, 30*1000, TimeUnit.MILLISECONDS);
+        verify(executor).scheduleAtFixedRate(poller, 0, 30 * 1000, TimeUnit.MILLISECONDS);
     }
 
     @Test
@@ -129,8 +130,9 @@ public class OctopusManagerTest {
         Properties props = new Properties();
         props.put("octopus.adaptors.local.queue.multi.maxConcurrentJobs", "4");
         ImmutableMap<String, Object> prefs = ImmutableMap.of("octopus.adaptors.local.queue.multi.maxConcurrentJobs", (Object) 1);
+        PollConfiguration pollConf = new PollConfiguration();
         OctopusConfiguration conf =
-                new OctopusConfiguration(new URI("local:///"), "multi", new URI("file:///tmp/sandboxes"), prefs);
+                new OctopusConfiguration(new URI("local:///"), "multi", new URI("file:///tmp/sandboxes"), prefs, pollConf);
         Octopus octopus = mock(Octopus.class);
         Scheduler scheduler = mock(Scheduler.class);
         Jobs jobs = mock(Jobs.class);
@@ -181,7 +183,7 @@ public class OctopusManagerTest {
         assertThat(result).isEqualTo(sjob);
     }
 
-    @Test(expected=NoSuchJobException.class)
+    @Test(expected = NoSuchJobException.class)
     public void getJob_UnknownJob_ThrowsNoSuchJobException() throws OctopusIOException, OctopusException {
         Map<String, SandboxedJob> sjobs = new HashMap<String, SandboxedJob>();
         OctopusManager manager = new OctopusManager(null, null, null, sjobs, null, null);
@@ -193,7 +195,7 @@ public class OctopusManagerTest {
     public void testCancelJob_NonDoneJob_JobCanceled() throws OctopusException, IOException {
         // create manager with mocked Jobs and other members stubbed
         Octopus octopus = mock(Octopus.class);
-        Jobs jobsEngine= mock(Jobs.class);
+        Jobs jobsEngine = mock(Jobs.class);
         when(octopus.jobs()).thenReturn(jobsEngine);
         Map<String, SandboxedJob> sjobs = new HashMap<String, SandboxedJob>();
         SandboxedJob sjob = mock(SandboxedJob.class);
@@ -203,7 +205,8 @@ public class OctopusManagerTest {
         when(status.isDone()).thenReturn(false); // Job is not done
         when(sjob.getStatus()).thenReturn(status);
         sjobs.put("11111111-1111-1111-1111-111111111111", sjob);
-        JobStatus timeout_jobstatus = new JobStatusImplementation(job, "KILLED", null, new Exception("Process timed out"), false, true, null);
+        JobStatus timeout_jobstatus =
+                new JobStatusImplementation(job, "KILLED", null, new Exception("Process timed out"), false, true, null);
         when(jobsEngine.getJobStatus(job)).thenReturn(timeout_jobstatus);
         OctopusManager manager = new OctopusManager(null, octopus, null, sjobs, null, null);
 
@@ -217,7 +220,7 @@ public class OctopusManagerTest {
     public void testCancelJob_DoneJob_JobNotCanceled() throws OctopusException, IOException {
         // create manager with mocked Jobs and other members stubbed
         Octopus octopus = mock(Octopus.class);
-        Jobs jobsEngine= mock(Jobs.class);
+        Jobs jobsEngine = mock(Jobs.class);
         when(octopus.jobs()).thenReturn(jobsEngine);
         Map<String, SandboxedJob> sjobs = new HashMap<String, SandboxedJob>();
         SandboxedJob sjob = mock(SandboxedJob.class);
@@ -234,7 +237,7 @@ public class OctopusManagerTest {
         verifyNoMoreInteractions(jobsEngine);
     }
 
-    @Test(expected=NoSuchJobException.class)
+    @Test(expected = NoSuchJobException.class)
     public void testCancelJob_UnknownJob_ThrowsNoSuchJobException() throws OctopusException, IOException {
         Map<String, SandboxedJob> sjobs = new HashMap<String, SandboxedJob>();
         OctopusManager manager = new OctopusManager(null, null, null, sjobs, null, null);

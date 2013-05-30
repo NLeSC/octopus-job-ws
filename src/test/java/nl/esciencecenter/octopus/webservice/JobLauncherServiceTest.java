@@ -40,6 +40,7 @@ import java.util.List;
 import nl.esciencecenter.octopus.webservice.health.JobLauncherHealthCheck;
 import nl.esciencecenter.octopus.webservice.job.OctopusConfiguration;
 import nl.esciencecenter.octopus.webservice.job.OctopusManager;
+import nl.esciencecenter.octopus.webservice.job.PollConfiguration;
 import nl.esciencecenter.octopus.webservice.mac.MacCredential;
 import nl.esciencecenter.octopus.webservice.mac.MacScheme;
 
@@ -94,7 +95,8 @@ public class JobLauncherServiceTest {
                 "octopus.adaptors.local.queue.multi.maxConcurrentJobs", (Object) 1);
         URI scheduler = new URI("local:///");
         URI sandboxRoot = new URI("file:///tmp/sandboxes");
-        OctopusConfiguration octopus = new OctopusConfiguration(scheduler, "multi", sandboxRoot, prefs);
+        PollConfiguration pollConf = new PollConfiguration();
+        OctopusConfiguration octopus = new OctopusConfiguration(scheduler, "multi", sandboxRoot, prefs, pollConf);
         ImmutableList<MacCredential> macs = ImmutableList.of(new MacCredential(
                 "id", "key", new URI("http://localhost")));
         HttpClientConfiguration httpClient = new HttpClientConfiguration();
