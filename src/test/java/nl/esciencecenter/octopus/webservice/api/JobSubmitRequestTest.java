@@ -53,7 +53,6 @@ import nl.esciencecenter.octopus.jobs.JobDescription;
 import nl.esciencecenter.octopus.util.Sandbox;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class JobSubmitRequestTest {
@@ -180,14 +179,15 @@ public class JobSubmitRequestTest {
         assertThat(description.toString()).isEqualTo(expected_description.toString());
     }
 
-    @Ignore("Test is ignored because Sandbox is missing equals() method")
     @Test
-    public void toSandbox() throws OctopusIOException, OctopusException {
+    public void toSandbox() throws OctopusIOException, OctopusException, URISyntaxException {
         String sandboxId = "octopus-sandbox-1234567890";
         Octopus octopus = mock(Octopus.class);
         Files filesEngine = mock(Files.class);
         when(octopus.files()).thenReturn(filesEngine);
         FileSystem filesystem = mock(FileSystem.class);
+        when(filesystem.getAdaptorName()).thenReturn("local");
+        when(filesystem.getUri()).thenReturn(new URI("local:///"));
         when(filesEngine.newPath(filesystem, new RelativePath(new String[] { "/tmp/jobdir", "runme.sh" }))).thenReturn(
                 new AbsolutePathImplementation(filesystem, new RelativePath("/tmp/jobdir/runme.sh")));
         when(filesEngine.newPath(filesystem, new RelativePath(new String[] { "/tmp/jobdir", "input.dat" }))).thenReturn(
@@ -205,14 +205,13 @@ public class JobSubmitRequestTest {
         Sandbox expected = new Sandbox(octopus, sandBoxRoot, sandboxId);
         expected.addUploadFile(new AbsolutePathImplementation(filesystem, new RelativePath("/tmp/jobdir/runme.sh")), "runme.sh");
         expected.addUploadFile(new AbsolutePathImplementation(filesystem, new RelativePath("/tmp/jobdir/input.dat")), "input.dat");
-        expected.addDownloadFile("output.dat", new AbsolutePathImplementation(filesystem, new RelativePath(
-                "/tmp/jobdir/output.dat")));
-        expected.addDownloadFile("stderr.txt", new AbsolutePathImplementation(filesystem, new RelativePath(
-                "/tmp/jobdir/stderr.txt")));
         expected.addDownloadFile("stdout.txt", new AbsolutePathImplementation(filesystem, new RelativePath(
                 "/tmp/jobdir/stdout.txt")));
+        expected.addDownloadFile("stderr.txt", new AbsolutePathImplementation(filesystem, new RelativePath(
+                "/tmp/jobdir/stderr.txt")));
+        expected.addDownloadFile("output.dat", new AbsolutePathImplementation(filesystem, new RelativePath(
+                "/tmp/jobdir/output.dat")));
 
-        // FIXME when https://github.com/NLeSC/octopus/issues/53 is resolved then remove ignore
         assertThat(sandbox).isEqualTo(expected);
     }
 }
