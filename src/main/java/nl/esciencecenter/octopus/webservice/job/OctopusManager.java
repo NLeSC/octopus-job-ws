@@ -188,8 +188,7 @@ public class OctopusManager implements Managed {
         SandboxedJob job = getJob(jobIdentifier);
         // no need to cancel completed jobs
         if (!job.getStatus().isDone()) {
-            octopus.jobs().cancelJob(job.getJob());
-            JobStatus canceledStatus = octopus.jobs().getJobStatus(job.getJob());
+            JobStatus canceledStatus = octopus.jobs().cancelJob(job.getJob());
             job.setStatus(canceledStatus);
         }
     }
