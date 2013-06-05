@@ -67,14 +67,14 @@ Create a json file (query.json)
 .. code-block:: json
 
    {
-      "jobdir": "<absolute path to myjob directory>/",
+      "jobdir": "<absolute path to myjob directory>",
       "executable": "/bin/sh",
       "prestaged": ["runme.sh", "input_file"],
       "poststaged": ["output_file"],
       "stderr": "stderr.txt",
       "stdout": "stdout.txt",
       "arguments": ["runme.sh"],
-      "status_callback_url": "http://localhost/job/myjob/status"
+      "status_callback_url": "<optional url where job status is PUT to>"
    }
 
 The `status_callback_url` value is the url where the web service will send the job status with a http PUT request.
