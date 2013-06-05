@@ -39,8 +39,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-import javax.ws.rs.core.UriBuilder;
-
 import nl.esciencecenter.octopus.engine.jobs.JobStatusImplementation;
 import nl.esciencecenter.octopus.exceptions.OctopusIOException;
 import nl.esciencecenter.octopus.exceptions.UnsupportedOperationException;
@@ -181,18 +179,6 @@ public class SandboxedJobTest {
 
         verify(sandbox).download(CopyOption.REPLACE);
         verify(sandbox).delete();
-    }
-
-    @Test
-    public void testCleanSandbox_KilledJob_NoCopy() throws URISyntaxException, UnsupportedOperationException, IOException {
-        Exception error = new Exception("Job killed");
-        status = new JobStatusImplementation(ojob, "ERROR", null, error, false, true, null);
-        job.setStatus(status);
-
-        job.cleanSandbox();
-
-        verify(sandbox).delete();
-        verifyNoMoreInteractions(sandbox);
     }
 
     @Test
