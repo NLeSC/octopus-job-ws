@@ -21,18 +21,14 @@ package nl.esciencecenter.octopus.webservice.api;
  */
 
 import java.io.IOException;
-import java.net.URI;
 import java.util.UUID;
-
-import javax.ws.rs.core.UriBuilder;
 
 import nl.esciencecenter.octopus.exceptions.OctopusIOException;
 import nl.esciencecenter.octopus.exceptions.UnsupportedOperationException;
+import nl.esciencecenter.octopus.files.CopyOption;
 import nl.esciencecenter.octopus.jobs.Job;
 import nl.esciencecenter.octopus.jobs.JobStatus;
-import nl.esciencecenter.octopus.files.CopyOption;
 import nl.esciencecenter.octopus.util.Sandbox;
-import nl.esciencecenter.octopus.webservice.resources.JobResource;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.client.HttpClient;
