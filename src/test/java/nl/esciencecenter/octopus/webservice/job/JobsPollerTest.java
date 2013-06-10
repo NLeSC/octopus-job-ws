@@ -176,7 +176,7 @@ public class JobsPollerTest {
         poller.run();
 
         verify(jobsEngine).cancelJob(job);
-        verify(sb, never()).download(CopyOption.REPLACE);
+        verify(sb).download(CopyOption.REPLACE);
         verify(sb).delete();
         assertThat(sjob.getStatus()).isEqualTo(timeout_jobstatus);
     }
@@ -202,7 +202,7 @@ public class JobsPollerTest {
         poller.run();
 
         verify(jobsEngine).cancelJob(job);
-        verify(sb, never()).download(CopyOption.REPLACE);
+        verify(sb).download(CopyOption.REPLACE);
         verify(sb).delete();
         assertThat(jobs).doesNotContainKey(identifier);
     }

@@ -58,8 +58,7 @@ public class JobsResource {
     private final HttpClient httpClient;
 
     /**
-     * Use to make absolute URI to job.
-     * Will get injected by JSR311
+     * Use to make absolute URI to job. Will get injected by JSR311
      */
     @Context
     public UriInfo uriInfo = null;
@@ -117,9 +116,9 @@ public class JobsResource {
     @Timed
     public URI[] getJobs() {
         List<URI> uris = new LinkedList<URI>();
-        UriBuilder builder = uriInfo.getAbsolutePathBuilder();
+        UriBuilder builder = uriInfo.getAbsolutePathBuilder().path("{jobidentifier}");
         for (SandboxedJob job : octopusmanager.getJobs()) {
-            uris.add(builder.path(job.getIdentifier()).build());
+            uris.add(builder.build(job.getIdentifier()));
         }
         return uris.toArray(new URI[0]);
     }

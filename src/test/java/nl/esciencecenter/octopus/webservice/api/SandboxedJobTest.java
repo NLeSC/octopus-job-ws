@@ -182,18 +182,6 @@ public class SandboxedJobTest {
     }
 
     @Test
-    public void testCleanSandbox_KilledJob_NoCopy() throws URISyntaxException, UnsupportedOperationException, IOException {
-        Exception error = new Exception("Job killed");
-        status = new JobStatusImplementation(ojob, "ERROR", null, error, false, true, null);
-        job.setStatus(status);
-
-        job.cleanSandbox();
-
-        verify(sandbox).delete();
-        verifyNoMoreInteractions(sandbox);
-    }
-
-    @Test
     public void getIdentifier() {
         String id = job.getIdentifier();
 

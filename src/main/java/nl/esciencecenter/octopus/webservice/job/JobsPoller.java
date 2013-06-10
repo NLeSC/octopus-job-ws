@@ -88,7 +88,7 @@ public class JobsPoller implements Runnable {
             // else dont need to fetch status of jobs that are done
         }
 
-        logger.debug("Fetching job statuses of " + jjobs.size() + " jobs");
+        logger.trace("Fetching job statuses of " + jjobs.toString());
 
         // fetch statuses of all jobs
         Job[] jobarray = jjobs.toArray(new Job[0]);

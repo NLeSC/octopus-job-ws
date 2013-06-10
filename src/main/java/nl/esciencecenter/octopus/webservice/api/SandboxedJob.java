@@ -149,15 +149,11 @@ public class SandboxedJob {
     /**
      * Downloads sandbox and delete it's contents.
      *
-     * Only downloads sandbox when job status has no exception.
-     *
      * @throws OctopusIOException
      * @throws UnsupportedOperationException
      */
     public void cleanSandbox() throws OctopusIOException, UnsupportedOperationException {
-        if (!status.hasException()) {
-            sandbox.download(CopyOption.REPLACE);
-        }
+        sandbox.download(CopyOption.REPLACE);
         sandbox.delete();
     }
 

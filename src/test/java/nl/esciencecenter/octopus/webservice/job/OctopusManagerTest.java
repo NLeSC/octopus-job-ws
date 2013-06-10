@@ -207,7 +207,7 @@ public class OctopusManagerTest {
         sjobs.put("11111111-1111-1111-1111-111111111111", sjob);
         JobStatus timeout_jobstatus =
                 new JobStatusImplementation(job, "KILLED", null, new Exception("Process timed out"), false, true, null);
-        when(jobsEngine.getJobStatus(job)).thenReturn(timeout_jobstatus);
+        when(jobsEngine.cancelJob(job)).thenReturn(timeout_jobstatus);
         OctopusManager manager = new OctopusManager(null, octopus, null, sjobs, null, null);
 
         manager.cancelJob("11111111-1111-1111-1111-111111111111");

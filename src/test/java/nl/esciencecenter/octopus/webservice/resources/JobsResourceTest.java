@@ -82,7 +82,33 @@ public class JobsResourceTest {
 
         URI[] response = resource.getJobs();
 
-        URI[] expected = {new URI("http://localhost/job/11111111-1111-1111-1111-111111111111")};
+        URI[] expected = { new URI("http://localhost/job/11111111-1111-1111-1111-111111111111") };
+        assertThat(response, is(expected));
+    }
+
+    @Test
+    public void getJobs_2Jobs() throws URISyntaxException {
+        // mock manager so it returns a list of jobs
+        OctopusManager manager = mock(OctopusManager.class);
+        Collection<SandboxedJob> jobs = new LinkedList<SandboxedJob>();
+        SandboxedJob job = mock(SandboxedJob.class);
+        when(job.getIdentifier()).thenReturn("11111111-1111-1111-1111-111111111111");
+        jobs.add(job);
+        SandboxedJob job2 = mock(SandboxedJob.class);
+        when(job2.getIdentifier()).thenReturn("22222222-2222-2222-2222-222222222222");
+        jobs.add(job2);
+        when(manager.getJobs()).thenReturn(jobs);
+        HttpClient httpClient = new DefaultHttpClient();
+        UriInfo uriInfo = mock(UriInfo.class);
+        UriBuilder builder = UriBuilder.fromUri("http://localhost/job/");
+        when(uriInfo.getAbsolutePathBuilder()).thenReturn(builder);
+        JobsResource resource = new JobsResource(manager, httpClient, uriInfo);
+
+        URI[] response = resource.getJobs();
+
+        URI[] expected =
+                { new URI("http://localhost/job/11111111-1111-1111-1111-111111111111"),
+                        new URI("http://localhost/job/22222222-2222-2222-2222-222222222222") };
         assertThat(response, is(expected));
     }
 
