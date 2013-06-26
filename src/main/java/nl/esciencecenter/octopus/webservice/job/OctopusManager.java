@@ -117,7 +117,6 @@ public class OctopusManager implements Managed {
      * Terminates any running Octopus processes and stops the job poller.
      */
     public void stop() throws Exception {
-        // TODO should I call OctopusFactory.endAll() or the octopus.end()
         octopus.end();
         executor.shutdown();
         // JobsPoller can be in middle of fetching job statuses so give it 1 minute to finish before interrupting it

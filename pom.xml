@@ -10,13 +10,13 @@
 
 	<issueManagement>
 		<system>GitHub</system>
-		<url>https://github.com/sverhoeven/octopus-job-ws/issues</url>
+		<url>https://github.com/NLeSC/octopus-job-ws/issues</url>
 	</issueManagement>
 
 	<scm>
-		<url>scm:git:https://github.com/sverhoeven/octopus-job-ws</url>
-		<connection>scm:git:https://github.com/sverhoeven/octopus-job-ws</connection>
-		<developerConnection>scm:git:https://github.com/sverhoeven/octopus-job-ws</developerConnection>
+		<url>scm:git:https://github.com/NLeSC/octopus-job-ws</url>
+		<connection>scm:git:https://github.com/NLeSC/octopus-job-ws</connection>
+		<developerConnection>scm:git:https://github.com/NLeSC/octopus-job-ws</developerConnection>
 	</scm>
 
 	<developers>
