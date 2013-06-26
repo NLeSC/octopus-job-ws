@@ -34,7 +34,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
-import java.util.UUID;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -152,7 +151,7 @@ public class OctopusManagerTest {
         when(sandboxPath.getPath()).thenReturn("/tmp/sandboxes");
         HttpClient httpClient = mock(HttpClient.class);
         Job job = mock(Job.class);
-        when(job.getUUID()).thenReturn(UUID.fromString("11111111-1111-1111-1111-111111111111"));
+        when(job.getIdentifier()).thenReturn("1234");
         when(jobs.submitJob(scheduler, description)).thenReturn(job);
         Map<String, SandboxedJob> sjobs = new HashMap<String, SandboxedJob>();
         JobsPoller poller = mock(JobsPoller.class);
@@ -161,7 +160,7 @@ public class OctopusManagerTest {
 
         SandboxedJob result = manager.submitJob(request, httpClient);
 
-        assertThat(result.getIdentifier()).isEqualTo("11111111-1111-1111-1111-111111111111");
+        assertThat(result.getIdentifier()).isEqualTo("1234");
         verify(sandbox).upload();
         verify(jobs).submitJob(scheduler, description);
 
@@ -175,10 +174,10 @@ public class OctopusManagerTest {
     public void getJob_DoneJob_DoneJob() throws URISyntaxException, OctopusIOException, OctopusException {
         Map<String, SandboxedJob> sjobs = new HashMap<String, SandboxedJob>();
         SandboxedJob sjob = mock(SandboxedJob.class);
-        sjobs.put("11111111-1111-1111-1111-111111111111", sjob);
+        sjobs.put("1234", sjob);
         OctopusManager manager = new OctopusManager(null, null, null, sjobs, null, null);
 
-        SandboxedJob result = manager.getJob("11111111-1111-1111-1111-111111111111");
+        SandboxedJob result = manager.getJob("1234");
 
         assertThat(result).isEqualTo(sjob);
     }
@@ -188,7 +187,7 @@ public class OctopusManagerTest {
         Map<String, SandboxedJob> sjobs = new HashMap<String, SandboxedJob>();
         OctopusManager manager = new OctopusManager(null, null, null, sjobs, null, null);
 
-        manager.getJob("11111111-1111-1111-1111-111111111111");
+        manager.getJob("1234");
     }
 
     @Test
@@ -204,13 +203,13 @@ public class OctopusManagerTest {
         JobStatus status = mock(JobStatus.class);
         when(status.isDone()).thenReturn(false); // Job is not done
         when(sjob.getStatus()).thenReturn(status);
-        sjobs.put("11111111-1111-1111-1111-111111111111", sjob);
+        sjobs.put("1234", sjob);
         JobStatus timeout_jobstatus =
                 new JobStatusImplementation(job, "KILLED", null, new Exception("Process timed out"), false, true, null);
         when(jobsEngine.cancelJob(job)).thenReturn(timeout_jobstatus);
         OctopusManager manager = new OctopusManager(null, octopus, null, sjobs, null, null);
 
-        manager.cancelJob("11111111-1111-1111-1111-111111111111");
+        manager.cancelJob("1234");
 
         verify(jobsEngine).cancelJob(job);
         verify(sjob).setStatus(timeout_jobstatus);
@@ -229,10 +228,10 @@ public class OctopusManagerTest {
         JobStatus status = mock(JobStatus.class);
         when(status.isDone()).thenReturn(true); // Job is done
         when(sjob.getStatus()).thenReturn(status);
-        sjobs.put("11111111-1111-1111-1111-111111111111", sjob);
+        sjobs.put("1234", sjob);
         OctopusManager manager = new OctopusManager(null, octopus, null, sjobs, null, null);
 
-        manager.cancelJob("11111111-1111-1111-1111-111111111111");
+        manager.cancelJob("1234");
 
         verifyNoMoreInteractions(jobsEngine);
     }
@@ -242,14 +241,14 @@ public class OctopusManagerTest {
         Map<String, SandboxedJob> sjobs = new HashMap<String, SandboxedJob>();
         OctopusManager manager = new OctopusManager(null, null, null, sjobs, null, null);
 
-        manager.cancelJob("11111111-1111-1111-1111-111111111111");
+        manager.cancelJob("1234");
     }
 
     @Test
     public void getJobs() {
         Map<String, SandboxedJob> sjobs = new HashMap<String, SandboxedJob>();
         SandboxedJob sjob = mock(SandboxedJob.class);
-        when(sjob.getIdentifier()).thenReturn("11111111-1111-1111-1111-111111111111");
+        when(sjob.getIdentifier()).thenReturn("1234");
         sjobs.put(sjob.getIdentifier(), sjob);
         OctopusManager manager = new OctopusManager(null, null, null, sjobs, null, null);
 

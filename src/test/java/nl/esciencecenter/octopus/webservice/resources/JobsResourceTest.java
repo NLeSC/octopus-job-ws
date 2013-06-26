@@ -50,7 +50,7 @@ public class JobsResourceTest {
         JobSubmitRequest request = mock(JobSubmitRequest.class);
         OctopusManager manager = mock(OctopusManager.class);
         SandboxedJob job = mock(SandboxedJob.class);
-        when(job.getIdentifier()).thenReturn("11111111-1111-1111-1111-111111111111");
+        when(job.getIdentifier()).thenReturn("1234");
         HttpClient httpClient = new DefaultHttpClient();
         when(manager.submitJob(request, httpClient)).thenReturn(job);
         UriInfo uriInfo = mock(UriInfo.class);
@@ -61,7 +61,7 @@ public class JobsResourceTest {
         Response response = resource.submitJob(request);
 
         assertEquals(201, response.getStatus());
-        URI expected = new URI("http://localhost/job/11111111-1111-1111-1111-111111111111");
+        URI expected = new URI("http://localhost/job/1234");
         assertEquals(expected, response.getMetadata().getFirst("Location"));
     }
 
@@ -70,7 +70,7 @@ public class JobsResourceTest {
         // mock manager so it returns a list of jobs
         OctopusManager manager = mock(OctopusManager.class);
         SandboxedJob job = mock(SandboxedJob.class);
-        when(job.getIdentifier()).thenReturn("11111111-1111-1111-1111-111111111111");
+        when(job.getIdentifier()).thenReturn("1234");
         Collection<SandboxedJob> jobs = new LinkedList<SandboxedJob>();
         jobs.add(job);
         when(manager.getJobs()).thenReturn(jobs);
@@ -82,7 +82,7 @@ public class JobsResourceTest {
 
         URI[] response = resource.getJobs();
 
-        URI[] expected = { new URI("http://localhost/job/11111111-1111-1111-1111-111111111111") };
+        URI[] expected = { new URI("http://localhost/job/1234") };
         assertThat(response, is(expected));
     }
 
@@ -92,10 +92,10 @@ public class JobsResourceTest {
         OctopusManager manager = mock(OctopusManager.class);
         Collection<SandboxedJob> jobs = new LinkedList<SandboxedJob>();
         SandboxedJob job = mock(SandboxedJob.class);
-        when(job.getIdentifier()).thenReturn("11111111-1111-1111-1111-111111111111");
+        when(job.getIdentifier()).thenReturn("1234");
         jobs.add(job);
         SandboxedJob job2 = mock(SandboxedJob.class);
-        when(job2.getIdentifier()).thenReturn("22222222-2222-2222-2222-222222222222");
+        when(job2.getIdentifier()).thenReturn("4567");
         jobs.add(job2);
         when(manager.getJobs()).thenReturn(jobs);
         HttpClient httpClient = new DefaultHttpClient();
@@ -107,8 +107,8 @@ public class JobsResourceTest {
         URI[] response = resource.getJobs();
 
         URI[] expected =
-                { new URI("http://localhost/job/11111111-1111-1111-1111-111111111111"),
-                        new URI("http://localhost/job/22222222-2222-2222-2222-222222222222") };
+                { new URI("http://localhost/job/1234"),
+                        new URI("http://localhost/job/4567") };
         assertThat(response, is(expected));
     }
 

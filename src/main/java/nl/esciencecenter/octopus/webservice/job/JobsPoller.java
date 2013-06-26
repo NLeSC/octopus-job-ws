@@ -97,7 +97,7 @@ public class JobsPoller implements Runnable {
 
         if (statuses != null) {
             for (JobStatus status : statuses) {
-                SandboxedJob job = jobs.get(status.getJob().getUUID().toString());
+                SandboxedJob job = jobs.get(status.getJob().getIdentifier());
 
                 // when state changed then commit
                 if (job.getStatus() == null || !status.getState().equals(job.getStatus().getState())) {

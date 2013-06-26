@@ -21,7 +21,6 @@ package nl.esciencecenter.octopus.webservice.api;
  */
 
 import java.io.IOException;
-import java.util.UUID;
 
 import nl.esciencecenter.octopus.exceptions.OctopusIOException;
 import nl.esciencecenter.octopus.exceptions.UnsupportedOperationException;
@@ -159,11 +158,16 @@ public class SandboxedJob {
 
     /**
      *
-     * @return Universally unique identifier of job
+     * @return Unique identifier of job
+     *
      */
     @JsonIgnore
     public String getIdentifier() {
-        UUID uuid = job.getUUID();
-        return uuid.toString();
+        // Current adaptors return web safe identifiers.
+        // If a new Octopus adaptor returns identifier which
+        // is not web safe then the job can not be mapped to resource url.
+        // eg. id is "slow/3456" then a GET /job/slow/3456 will
+        // try to fetch job with id "slow" which will fail.
+        return job.getIdentifier();
     }
 }

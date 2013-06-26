@@ -29,7 +29,6 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -37,14 +36,15 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
+import nl.esciencecenter.octopus.engine.jobs.JobImplementation;
 import nl.esciencecenter.octopus.engine.jobs.JobStatusImplementation;
 import nl.esciencecenter.octopus.exceptions.OctopusIOException;
 import nl.esciencecenter.octopus.exceptions.UnsupportedOperationException;
 import nl.esciencecenter.octopus.files.CopyOption;
 import nl.esciencecenter.octopus.jobs.Job;
 import nl.esciencecenter.octopus.jobs.JobStatus;
+import nl.esciencecenter.octopus.jobs.Scheduler;
 import nl.esciencecenter.octopus.util.Sandbox;
 
 import org.apache.http.Consts;
@@ -68,9 +68,7 @@ public class SandboxedJobTest {
     @Before
     public void setUp() throws URISyntaxException {
         sandbox = mock(Sandbox.class);
-        ojob = mock(Job.class);
-        UUID uuid = UUID.fromString("11111111-1111-1111-1111-111111111111");
-        when(ojob.getUUID()).thenReturn(uuid);
+        ojob = new JobImplementation(mock(Scheduler.class), "1234", null, false, false);
         request = new JobSubmitRequest();
         request.status_callback_url = new URI("http://localhost/job/status");
         httpClient = mock(HttpClient.class);
@@ -185,7 +183,7 @@ public class SandboxedJobTest {
     public void getIdentifier() {
         String id = job.getIdentifier();
 
-        String expected = "11111111-1111-1111-1111-111111111111";
+        String expected = "1234";
         assertThat(id).isEqualTo(expected);
     }
 
