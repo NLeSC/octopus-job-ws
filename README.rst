@@ -88,7 +88,7 @@ Then submit it
 
    HTTP/1.1 201 Created
    Date: Thu, 23 May 2013 11:50:28 GMT
-   Location: http://localhost:9998/job/bc66cd43-9d16-4270-813f-734e864e3552
+   Location: http://localhost:9998/job/local-1234
    Content-Type: application/json
    Content-Length: 0
 
@@ -108,7 +108,7 @@ In the submit response the url is a relative url to the job.
 
 .. code-block:: bash
 
-   curl -H "Content-Type: application/json" -H 'Accept: application/json' http://localhost:9998/job/bc66cd43-9d16-4270-813f-734e864e3552
+   curl -H "Content-Type: application/json" -H 'Accept: application/json' http://localhost:9998/job/local-1234
 
 Example response when job is running:
 
@@ -208,7 +208,7 @@ Deletes any generated output in the sandbox where the job was running.
 
 .. code-block:: bash
 
-   curl -H "Content-Type: application/json" -H 'Accept: application/json' -X DELETE http://localhost:9998/job/bc66cd43-9d16-4270-813f-734e864e3552
+   curl -H "Content-Type: application/json" -H 'Accept: application/json' -X DELETE http://localhost:9998/job/local-1234
 
 Documentation
 -------------
