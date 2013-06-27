@@ -43,6 +43,7 @@ import java.util.List;
 
 import nl.esciencecenter.octopus.Octopus;
 import nl.esciencecenter.octopus.engine.files.AbsolutePathImplementation;
+import nl.esciencecenter.octopus.engine.files.FileSystemImplementation;
 import nl.esciencecenter.octopus.exceptions.OctopusException;
 import nl.esciencecenter.octopus.exceptions.OctopusIOException;
 import nl.esciencecenter.octopus.files.AbsolutePath;
@@ -57,10 +58,20 @@ import org.junit.Test;
 
 public class JobSubmitRequestTest {
     private JobSubmitRequest request;
+    private FileSystem filesystem;
+    private Octopus octopus;
+    private Files filesEngine;
 
     @Before
-    public void setUp() {
+    public void setUp() throws URISyntaxException, OctopusIOException, OctopusException {
         request = sampleRequest();
+        filesystem = new FileSystemImplementation("local", "local-1", new URI("file:///"), new RelativePath(), null, null);
+        octopus = mock(Octopus.class);
+        filesEngine = mock(Files.class);
+        when(octopus.files()).thenReturn(filesEngine);
+        when(filesEngine.newFileSystem(new URI("file:///"), null, null)).thenReturn(filesystem);
+        AbsolutePath path = new AbsolutePathImplementation(filesystem, new RelativePath());
+        when(filesEngine.newPath(filesystem, new RelativePath())).thenReturn(path);
     }
 
     @Test
@@ -161,6 +172,11 @@ public class JobSubmitRequestTest {
     }
 
     @Test
+    public void testHashCode() {
+        assertThat(request.hashCode()).isEqualTo(-1597450360);
+    }
+
+    @Test
     public void testToString() {
         String s =
                 "JobSubmitRequest{jobdir=/tmp/jobdir, executable=/bin/sh, stderr=stderr.txt, stdout=stdout.txt, arguments=[runme.sh], prestaged=[runme.sh, input.dat], poststaged=[output.dat], status_callback_url=http://localhost/status}";
@@ -182,36 +198,106 @@ public class JobSubmitRequestTest {
     @Test
     public void toSandbox() throws OctopusIOException, OctopusException, URISyntaxException {
         String sandboxId = "octopus-sandbox-1234567890";
-        Octopus octopus = mock(Octopus.class);
-        Files filesEngine = mock(Files.class);
-        when(octopus.files()).thenReturn(filesEngine);
-        FileSystem filesystem = mock(FileSystem.class);
-        when(filesystem.getAdaptorName()).thenReturn("local");
-        when(filesystem.getUri()).thenReturn(new URI("local:///"));
-        when(filesEngine.newPath(filesystem, new RelativePath(new String[] { "/tmp/jobdir", "runme.sh" }))).thenReturn(
-                new AbsolutePathImplementation(filesystem, new RelativePath("/tmp/jobdir/runme.sh")));
-        when(filesEngine.newPath(filesystem, new RelativePath(new String[] { "/tmp/jobdir", "input.dat" }))).thenReturn(
-                new AbsolutePathImplementation(filesystem, new RelativePath("/tmp/jobdir/input.dat")));
-        when(filesEngine.newPath(filesystem, new RelativePath(new String[] { "/tmp/jobdir", "stderr.txt" }))).thenReturn(
-                new AbsolutePathImplementation(filesystem, new RelativePath("/tmp/jobdir/stderr.txt")));
-        when(filesEngine.newPath(filesystem, new RelativePath(new String[] { "/tmp/jobdir", "stdout.txt" }))).thenReturn(
-                new AbsolutePathImplementation(filesystem, new RelativePath("/tmp/jobdir/stdout.txt")));
-        when(filesEngine.newPath(filesystem, new RelativePath(new String[] { "/tmp/jobdir", "output.dat" }))).thenReturn(
-                new AbsolutePathImplementation(filesystem, new RelativePath("/tmp/jobdir/output.dat")));
-        AbsolutePath sandBoxRoot = new AbsolutePathImplementation(filesystem, new RelativePath("/tmp"));
+        AbsolutePath sandBoxRoot = makePath("/tmp/sandboxes");
 
         Sandbox sandbox = request.toSandbox(octopus, sandBoxRoot, sandboxId);
 
         Sandbox expected = new Sandbox(octopus, sandBoxRoot, sandboxId);
-        expected.addUploadFile(new AbsolutePathImplementation(filesystem, new RelativePath("/tmp/jobdir/runme.sh")), "runme.sh");
-        expected.addUploadFile(new AbsolutePathImplementation(filesystem, new RelativePath("/tmp/jobdir/input.dat")), "input.dat");
-        expected.addDownloadFile("stdout.txt", new AbsolutePathImplementation(filesystem, new RelativePath(
-                "/tmp/jobdir/stdout.txt")));
-        expected.addDownloadFile("stderr.txt", new AbsolutePathImplementation(filesystem, new RelativePath(
-                "/tmp/jobdir/stderr.txt")));
-        expected.addDownloadFile("output.dat", new AbsolutePathImplementation(filesystem, new RelativePath(
-                "/tmp/jobdir/output.dat")));
+        expected.addUploadFile(makePath("/tmp/jobdir/runme.sh"), "runme.sh");
+        expected.addUploadFile(makePath("/tmp/jobdir/input.dat"), "input.dat");
+        expected.addDownloadFile("stdout.txt", makePath("/tmp/jobdir/stdout.txt"));
+        expected.addDownloadFile("stderr.txt", makePath("/tmp/jobdir/stderr.txt"));
+        expected.addDownloadFile("output.dat", makePath("/tmp/jobdir/output.dat"));
 
         assertThat(sandbox).isEqualTo(expected);
     }
+
+    private AbsolutePath makePath(String path) {
+        return filesystem.getEntryPath().resolve(new RelativePath(path));
+    }
+
+    @Test
+    public void postStage2Sandbox_AbsolutePrestage_keepAbsolute() throws URISyntaxException, OctopusIOException, OctopusException {
+        String sandboxId = "octopus-sandbox-1234567890";
+        AbsolutePath sandBoxRoot = makePath("/tmp/sandboxes");
+
+        List<String> prestaged = new ArrayList<String>();
+        prestaged.add("/data/uniprot.fasta");
+        JobSubmitRequest req =
+                new JobSubmitRequest("/tmp/jobdir", "/usr/bin/mail", new ArrayList<String>(), prestaged, new ArrayList<String>(),
+                        "stderr.txt", "stdout.txt", null);
+
+        Sandbox sandbox = req.toSandbox(octopus, sandBoxRoot, sandboxId);
+
+        Sandbox expected = new Sandbox(octopus, sandBoxRoot, sandboxId);
+        expected.addUploadFile(makePath("/data/uniprot.fasta"), "uniprot.fasta");
+        expected.addDownloadFile("stdout.txt", makePath("/tmp/jobdir/stdout.txt"));
+        expected.addDownloadFile("stderr.txt", makePath("/tmp/jobdir/stderr.txt"));
+
+        assertThat(sandbox).isEqualTo(expected);
+    }
+
+    @Test
+    public void toSandbox_NestedPreStage_flattened() throws OctopusIOException, OctopusException, URISyntaxException {
+        String sandboxId = "octopus-sandbox-1234567890";
+        AbsolutePath sandBoxRoot = makePath("/tmp/sandboxes");
+
+        List<String> prestaged = new ArrayList<String>();
+        prestaged.add("data/uniprot.fasta");
+        JobSubmitRequest req =
+                new JobSubmitRequest("/tmp/jobdir", "/usr/bin/mail", new ArrayList<String>(), prestaged, new ArrayList<String>(),
+                        "stderr.txt", "stdout.txt", null);
+
+        Sandbox sandbox = req.toSandbox(octopus, sandBoxRoot, sandboxId);
+
+        Sandbox expected = new Sandbox(octopus, sandBoxRoot, sandboxId);
+        expected.addUploadFile(makePath("/tmp/jobdir/data/uniprot.fasta"), "uniprot.fasta");
+        expected.addDownloadFile("stdout.txt", makePath("/tmp/jobdir/stdout.txt"));
+        expected.addDownloadFile("stderr.txt", makePath("/tmp/jobdir/stderr.txt"));
+
+        assertThat(sandbox).isEqualTo(expected);
+    }
+
+    @Test
+    public void toSandbox_AbsolutePoststage_keepAbsolute() throws URISyntaxException, OctopusIOException, OctopusException {
+        String sandboxId = "octopus-sandbox-1234567890";
+        AbsolutePath sandBoxRoot = makePath("/tmp/sandboxes");
+
+        List<String> poststaged = new ArrayList<String>();
+        poststaged.add("/data/uniprot.fasta");
+        JobSubmitRequest req =
+                new JobSubmitRequest("/tmp/jobdir", "/usr/bin/mail", new ArrayList<String>(), new ArrayList<String>(),
+                        poststaged, "stderr.txt", "stdout.txt", null);
+
+        Sandbox sandbox = req.toSandbox(octopus, sandBoxRoot, sandboxId);
+
+        Sandbox expected = new Sandbox(octopus, sandBoxRoot, sandboxId);
+        expected.addDownloadFile("stdout.txt", makePath("/tmp/jobdir/stdout.txt"));
+        expected.addDownloadFile("stderr.txt", makePath("/tmp/jobdir/stderr.txt"));
+        expected.addDownloadFile("uniprot.fasta", makePath("/tmp/jobdir/data/uniprot.fasta"));
+
+        assertThat(sandbox).isEqualTo(expected);
+    }
+
+    @Test
+    public void toSandbox_NestedPoststage_Flattened() throws URISyntaxException, OctopusIOException, OctopusException {
+        String sandboxId = "octopus-sandbox-1234567890";
+        AbsolutePath sandBoxRoot = makePath("/tmp/sandboxes");
+
+        List<String> poststaged = new ArrayList<String>();
+        poststaged.add("data/uniprot.fasta");
+        JobSubmitRequest req =
+                new JobSubmitRequest("/tmp/jobdir", "/usr/bin/mail", new ArrayList<String>(), new ArrayList<String>(),
+                        poststaged, "stderr.txt", "stdout.txt", null);
+
+        Sandbox sandbox = req.toSandbox(octopus, sandBoxRoot, sandboxId);
+
+        Sandbox expected = new Sandbox(octopus, sandBoxRoot, sandboxId);
+        expected.addDownloadFile("stdout.txt", makePath("/tmp/jobdir/stdout.txt"));
+        expected.addDownloadFile("stderr.txt", makePath("/tmp/jobdir/stderr.txt"));
+        expected.addDownloadFile("uniprot.fasta", makePath("/tmp/jobdir/data/uniprot.fasta"));
+
+        assertThat(sandbox).isEqualTo(expected);
+    }
+
 }

@@ -56,11 +56,11 @@ import com.yammer.dropwizard.lifecycle.Managed;
 
 /**
  * Octopus manager.
- *
+ * 
  * Responsible for submitting jobs, polling their status and cleaning jobs up.
- *
+ * 
  * @author verhoes
- *
+ * 
  */
 public class OctopusManager implements Managed {
     protected final static Logger logger = LoggerFactory.getLogger(OctopusManager.class);
@@ -74,7 +74,7 @@ public class OctopusManager implements Managed {
 
     /**
      * Sets preferences in GAT context and initializes a broker.
-     *
+     * 
      * @param configuration
      * @throws URISyntaxException
      * @throws OctopusException
@@ -117,19 +117,22 @@ public class OctopusManager implements Managed {
      * Terminates any running Octopus processes and stops the job poller.
      */
     public void stop() throws Exception {
-        octopus.end();
         executor.shutdown();
         // JobsPoller can be in middle of fetching job statuses so give it 1 minute to finish before interrupting it
         executor.awaitTermination(1, TimeUnit.MINUTES);
+        poller.stop();
+        octopus.end();
     }
 
     /**
      * Submit a job request.
-     *
-     * @param request The job request
-     * @param httpClient http client used to reporting status to job callback.
+     * 
+     * @param request
+     *            The job request
+     * @param httpClient
+     *            http client used to reporting status to job callback.
      * @return SandboxedJob job
-     *
+     * 
      * @throws OctopusIOException
      * @throws OctopusException
      * @throws URISyntaxException
@@ -172,14 +175,16 @@ public class OctopusManager implements Managed {
 
     /**
      * Cancel job, cancels pending job and kills running job.
-     *
+     * 
      * Stores canceled state.
-     *
+     * 
      * If job is done then nothing happens.
-     *
-     * @param jobIdentifier The identifier of the job.
-     *
-     * @throws NoSuchJobException When job with jobIdentifier could not be found.
+     * 
+     * @param jobIdentifier
+     *            The identifier of the job.
+     * 
+     * @throws NoSuchJobException
+     *             When job with jobIdentifier could not be found.
      * @throws OctopusException
      * @throws IOException
      */
@@ -188,13 +193,14 @@ public class OctopusManager implements Managed {
         // no need to cancel completed jobs
         if (!job.getStatus().isDone()) {
             JobStatus canceledStatus = octopus.jobs().cancelJob(job.getJob());
+            job.cleanSandbox();
             job.setStatus(canceledStatus);
         }
     }
 
     /**
      * Get list of submitted jobs.
-     *
+     * 
      * @return List of submitted jobs.
      */
     public Collection<SandboxedJob> getJobs() {
@@ -203,7 +209,7 @@ public class OctopusManager implements Managed {
 
     /**
      * Get a job
-     *
+     * 
      * @param jobIdentifier
      * @return the job
      * @throws NoSuchJobException

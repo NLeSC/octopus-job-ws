@@ -27,6 +27,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verifyZeroInteractions;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -163,14 +165,15 @@ public class JobsPollerTest {
         Octopus octopus = mock(Octopus.class);
         Jobs jobsEngine = mock(Jobs.class);
         when(octopus.jobs()).thenReturn(jobsEngine);
-        JobStatus timeout_jobstatus = new JobStatusImplementation(job, "KILLED", null, new Exception("Process timed out"), false, true, null);
-        when(jobsEngine.getJobStatus(job)).thenReturn(timeout_jobstatus);
+        JobStatus timeout_jobstatus =
+                new JobStatusImplementation(job, "KILLED", null, new Exception("Process timed out"), false, true, null);
+        when(jobsEngine.cancelJob(job)).thenReturn(timeout_jobstatus);
         JobsPoller poller = new JobsPoller(jobs, pollConf, octopus);
 
         poller.run();
 
         verify(jobsEngine).cancelJob(job);
-        verify(sb).download(CopyOption.REPLACE);
+        verify(sb, times(0)).download(CopyOption.REPLACE);
         verify(sb).delete();
         assertThat(sjob.getStatus()).isEqualTo(timeout_jobstatus);
     }
@@ -188,14 +191,15 @@ public class JobsPollerTest {
         Octopus octopus = mock(Octopus.class);
         Jobs jobsEngine = mock(Jobs.class);
         when(octopus.jobs()).thenReturn(jobsEngine);
-        JobStatus timeout_jobstatus = new JobStatusImplementation(job, "KILLED", null, new Exception("Process timed out"), false, true, null);
-        when(jobsEngine.getJobStatus(job)).thenReturn(timeout_jobstatus);
+        JobStatus timeout_jobstatus =
+                new JobStatusImplementation(job, "KILLED", null, new Exception("Process timed out"), false, true, null);
+        when(jobsEngine.cancelJob(job)).thenReturn(timeout_jobstatus);
         JobsPoller poller = new JobsPoller(jobs, pollConf, octopus);
 
         poller.run();
 
         verify(jobsEngine).cancelJob(job);
-        verify(sb).download(CopyOption.REPLACE);
+        verify(sb, times(0)).download(CopyOption.REPLACE);
         verify(sb).delete();
         assertThat(jobs).doesNotContainKey(identifier);
     }
@@ -258,4 +262,50 @@ public class JobsPollerTest {
         verify(job).setStatus(status);
     }
 
+    @Test
+    public void testStop_NoJobs_nocancel() throws OctopusIOException, OctopusException {
+        Octopus octopus = mock(Octopus.class);
+        Map<String, SandboxedJob> jobs = new HashMap<String, SandboxedJob>();
+        JobsPoller poller = new JobsPoller(jobs, null, octopus);
+
+        poller.stop();
+
+        verifyZeroInteractions(octopus);
+    }
+
+    @Test
+    public void testStop_DoneJobs_nocancel() throws OctopusIOException, OctopusException {
+        Octopus octopus = mock(Octopus.class);
+        Map<String, SandboxedJob> jobs = new HashMap<String, SandboxedJob>();
+        String identifier = "1234";
+        Job job = new JobImplementation(mock(Scheduler.class), identifier, mock(JobDescription.class), false, false);
+        JobStatus jobstatus = new JobStatusImplementation(job, "DONE", 0, null, false, true, null);
+        SandboxedJob sjob = new SandboxedJob(null, job, null, null, jobstatus, 5);
+        jobs.put(identifier, sjob);
+        JobsPoller poller = new JobsPoller(jobs, null, octopus);
+
+        poller.stop();
+
+        verifyZeroInteractions(octopus);
+    }
+
+    @Test
+    public void testStop_runningjobs_cancelanddelete() throws OctopusIOException, OctopusException {
+        Octopus octopus = mock(Octopus.class);
+        Jobs jobsEngine = mock(Jobs.class);
+        when(octopus.jobs()).thenReturn(jobsEngine);
+        Map<String, SandboxedJob> jobs = new HashMap<String, SandboxedJob>();
+        String identifier = "1234";
+        Job job = new JobImplementation(mock(Scheduler.class), identifier, mock(JobDescription.class), false, false);
+        JobStatus jobstatus = new JobStatusImplementation(job, "RUNNING", null, null, true, false, null);
+        Sandbox sandbox = mock(Sandbox.class);
+        SandboxedJob sjob = new SandboxedJob(sandbox, job, null, null, jobstatus, 5);
+        jobs.put(identifier, sjob);
+        JobsPoller poller = new JobsPoller(jobs, null, octopus);
+
+        poller.stop();
+
+        verify(jobsEngine).cancelJob(job);
+        verify(sandbox).delete();
+    }
 }

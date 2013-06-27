@@ -132,7 +132,8 @@ public class SandboxedJobTest {
     }
 
     @Test
-    public void testSetStatus_ChangedWithCallback_HttpClientExecute() throws UnsupportedEncodingException, ClientProtocolException, IOException, URISyntaxException {
+    public void testSetStatus_ChangedWithCallback_HttpClientExecute() throws UnsupportedEncodingException,
+            ClientProtocolException, IOException, URISyntaxException {
         JobStatus rstatus = new JobStatusImplementation(ojob, "RUNNING", null, null, true, false, null);
         pollIterations = 10;
         job = new SandboxedJob(sandbox, ojob, request, httpClient, rstatus, pollIterations);
@@ -150,7 +151,8 @@ public class SandboxedJobTest {
     }
 
     @Test
-    public void testSetStatus_ChangedWithoutCallback_NoHttpClientExecute() throws UnsupportedEncodingException, ClientProtocolException, IOException {
+    public void testSetStatus_ChangedWithoutCallback_NoHttpClientExecute() throws UnsupportedEncodingException,
+            ClientProtocolException, IOException {
         request.status_callback_url = null;
         JobStatus rstatus = new JobStatusImplementation(ojob, "RUNNING", null, null, true, false, null);
         pollIterations = 10;
@@ -161,7 +163,8 @@ public class SandboxedJobTest {
     }
 
     @Test
-    public void testSetStatus_UnChangedWithCallback_NoHttpClientExecute() throws UnsupportedEncodingException, ClientProtocolException, IOException {
+    public void testSetStatus_UnChangedWithCallback_NoHttpClientExecute() throws UnsupportedEncodingException,
+            ClientProtocolException, IOException {
         pollIterations = 10;
         job = new SandboxedJob(sandbox, ojob, request, httpClient, status, pollIterations);
 
@@ -175,8 +178,14 @@ public class SandboxedJobTest {
     public void testCleanSandbox() throws URISyntaxException, OctopusIOException, UnsupportedOperationException {
         job.cleanSandbox();
 
-        verify(sandbox).download(CopyOption.REPLACE);
         verify(sandbox).delete();
+    }
+
+    @Test
+    public void testDownloadSandbox() throws URISyntaxException, OctopusIOException, UnsupportedOperationException {
+        job.downloadSandbox();
+
+        verify(sandbox).download(CopyOption.REPLACE);
     }
 
     @Test
@@ -192,7 +201,6 @@ public class SandboxedJobTest {
         JobSubmitRequest request2 = JobSubmitRequestTest.sampleRequest();
         job = new SandboxedJob(sandbox, ojob, request2, httpClient, status, pollIterations);
 
-        assertThat(asJson(job),
-                is(equalTo(jsonFixture("fixtures/job.json"))));
+        assertThat(asJson(job), is(equalTo(jsonFixture("fixtures/job.json"))));
     }
 }

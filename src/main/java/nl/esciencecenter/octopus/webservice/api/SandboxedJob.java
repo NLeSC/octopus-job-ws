@@ -43,9 +43,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 
 /**
  * Job representation.
- *
+ * 
  * @author verhoes
- *
+ * 
  */
 public class SandboxedJob {
     protected final static Logger logger = LoggerFactory.getLogger(SandboxedJob.class);
@@ -65,7 +65,8 @@ public class SandboxedJob {
         this.httpClient = httpClient;
     }
 
-    public SandboxedJob(Sandbox sandbox, Job job, JobSubmitRequest request, HttpClient httpClient, JobStatus status, int pollIterations) {
+    public SandboxedJob(Sandbox sandbox, Job job, JobSubmitRequest request, HttpClient httpClient, JobStatus status,
+            int pollIterations) {
         super();
         this.sandbox = sandbox;
         this.job = job;
@@ -121,12 +122,15 @@ public class SandboxedJob {
     }
 
     /**
-     * Sets status.
-     * If status has changed and callback is set then sends PUT request with {@link JobStatusResponse JobStatusResponse} as JSON to callback URL.
-     *
+     * Sets status. If status has changed and callback is set then sends PUT request with {@link JobStatusResponse
+     * JobStatusResponse} as JSON to callback URL.
+     * 
      * @param status
-     * @throws JsonProcessingException when job status can not be converted to JSON.
-     * @throws IOException when callback fails.
+     *            new Job status
+     * @throws JsonProcessingException
+     *             when job status can not be converted to JSON.
+     * @throws IOException
+     *             when callback fails.
      */
     public void setStatus(JobStatus status) throws IOException {
         if (!status.equals(this.status)) {
@@ -146,20 +150,30 @@ public class SandboxedJob {
     }
 
     /**
-     * Downloads sandbox and delete it's contents.
-     *
+     * Deletes sandbox.
+     * 
      * @throws OctopusIOException
      * @throws UnsupportedOperationException
      */
     public void cleanSandbox() throws OctopusIOException, UnsupportedOperationException {
-        sandbox.download(CopyOption.REPLACE);
         sandbox.delete();
     }
 
     /**
-     *
+     * Downloads sandbox contents.
+     * 
+     * @throws UnsupportedOperationException
+     * @throws OctopusIOException
+     * 
+     */
+    public void downloadSandbox() throws OctopusIOException, UnsupportedOperationException {
+        sandbox.download(CopyOption.REPLACE);
+    }
+
+    /**
+     * 
      * @return Unique identifier of job
-     *
+     * 
      */
     @JsonIgnore
     public String getIdentifier() {

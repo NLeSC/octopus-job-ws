@@ -115,13 +115,15 @@ public class OctopusManagerTest {
     public void testStop() throws Exception {
         Octopus octopus = mock(Octopus.class);
         ScheduledExecutorService executor = mock(ScheduledExecutorService.class);
-        OctopusManager manager = new OctopusManager(null, octopus, null, null, null, executor);
+        JobsPoller poller = mock(JobsPoller.class);
+        OctopusManager manager = new OctopusManager(null, octopus, null, null, poller, executor);
 
         manager.stop();
 
-        verify(octopus).end();
         verify(executor).shutdown();
         verify(executor).awaitTermination(1, TimeUnit.MINUTES);
+        verify(poller).stop();
+        verify(octopus).end();
     }
 
     @Test

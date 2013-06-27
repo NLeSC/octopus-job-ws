@@ -20,11 +20,15 @@ package nl.esciencecenter.octopus.webservice.job;
  * #L%
  */
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import nl.esciencecenter.octopus.Octopus;
+import nl.esciencecenter.octopus.exceptions.OctopusException;
+import nl.esciencecenter.octopus.exceptions.OctopusIOException;
+import nl.esciencecenter.octopus.exceptions.UnsupportedOperationException;
 import nl.esciencecenter.octopus.jobs.Job;
 import nl.esciencecenter.octopus.jobs.JobStatus;
 import nl.esciencecenter.octopus.jobs.Jobs;
@@ -92,6 +96,7 @@ public class JobsPoller implements Runnable {
 
         // fetch statuses of all jobs
         Job[] jobarray = jjobs.toArray(new Job[0]);
+
         Jobs jobsEngine = octopus.jobs();
         JobStatus[] statuses = jobsEngine.getJobStatuses(jobarray);
 
@@ -102,10 +107,11 @@ public class JobsPoller implements Runnable {
                 // when state changed then commit
                 if (job.getStatus() == null || !status.getState().equals(job.getStatus().getState())) {
                     if (status.isDone()) {
-                        logger.debug("Emptying sandbox");
-                        this.cleanSandbox(job);
+                        logger.debug("Job is done: " + job.getIdentifier());
+                        downloadSandbox(job);
+                        cleanSandbox(job);
                     }
-                    logger.debug("Status changed");
+                    logger.debug("Status changed of " + job.getIdentifier() + " to " + status.getState());
                     commitStatus(status, job);
                 }
             }
@@ -119,7 +125,17 @@ public class JobsPoller implements Runnable {
     protected void commitStatus(JobStatus status, SandboxedJob job) {
         try {
             job.setStatus(status);
-        } catch (Exception e) {
+        } catch (IOException e) {
+            logger.error(e.getMessage(), e);
+        }
+    }
+
+    protected void downloadSandbox(SandboxedJob job) {
+        try {
+            job.downloadSandbox();
+        } catch (OctopusIOException e) {
+            logger.error(e.getMessage(), e);
+        } catch (UnsupportedOperationException e) {
             logger.error(e.getMessage(), e);
         }
     }
@@ -127,17 +143,37 @@ public class JobsPoller implements Runnable {
     protected void cleanSandbox(SandboxedJob job) {
         try {
             job.cleanSandbox();
-        } catch (Exception e) {
+        } catch (OctopusIOException e) {
+            logger.error(e.getMessage(), e);
+        } catch (UnsupportedOperationException e) {
             logger.error(e.getMessage(), e);
         }
     }
 
     protected void cancelJob(SandboxedJob job) {
+        logger.debug("Cancelling job:" + job.getIdentifier());
         try {
-            octopus.jobs().cancelJob(job.getJob());
-            job.setStatus(octopus.jobs().getJobStatus(job.getJob()));
+            JobStatus status = octopus.jobs().cancelJob(job.getJob());
+            job.setStatus(status);
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
+        }
+        logger.debug("Cancelled job:" + job.getIdentifier());
+    }
+
+    /**
+     * Cancels all not done jobs and cleans sandboxes of those jobs.
+     *
+     * @throws OctopusException
+     * @throws OctopusIOException
+     */
+    public void stop() throws OctopusIOException, OctopusException {
+        logger.debug("Cancelling jobs and cleaning their sandboxes");
+        for (SandboxedJob job : jobs.values()) {
+            if (!job.getStatus().isDone()) {
+                octopus.jobs().cancelJob(job.getJob());
+                job.cleanSandbox();
+            }
         }
     }
 }
