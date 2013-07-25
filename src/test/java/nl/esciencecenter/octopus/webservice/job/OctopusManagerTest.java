@@ -66,9 +66,9 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import com.google.common.collect.ImmutableMap;
 
 /**
- *
+ * 
  * @author verhoes
- *
+ * 
  */
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(OctopusFactory.class)
@@ -113,6 +113,8 @@ public class OctopusManagerTest {
 
     @Test
     public void testStop() throws Exception {
+        // Use powermock mockito to mock OctopusFactory.endOctopus()
+        PowerMockito.mockStatic(OctopusFactory.class);
         Octopus octopus = mock(Octopus.class);
         ScheduledExecutorService executor = mock(ScheduledExecutorService.class);
         JobsPoller poller = mock(JobsPoller.class);
@@ -123,7 +125,8 @@ public class OctopusManagerTest {
         verify(executor).shutdown();
         verify(executor).awaitTermination(1, TimeUnit.MINUTES);
         verify(poller).stop();
-        verify(octopus).end();
+        PowerMockito.verifyStatic();
+        OctopusFactory.endOctopus(octopus);
     }
 
     @Test

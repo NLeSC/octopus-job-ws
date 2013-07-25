@@ -121,7 +121,7 @@ public class OctopusManager implements Managed {
         // JobsPoller can be in middle of fetching job statuses so give it 1 minute to finish before interrupting it
         executor.awaitTermination(1, TimeUnit.MINUTES);
         poller.stop();
-        octopus.end();
+        OctopusFactory.endOctopus(octopus);
     }
 
     /**

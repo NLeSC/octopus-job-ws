@@ -43,6 +43,7 @@ import nl.esciencecenter.octopus.exceptions.OctopusIOException;
 import nl.esciencecenter.octopus.exceptions.UnsupportedOperationException;
 import nl.esciencecenter.octopus.files.CopyOption;
 import nl.esciencecenter.octopus.jobs.Job;
+import nl.esciencecenter.octopus.jobs.JobDescription;
 import nl.esciencecenter.octopus.jobs.JobStatus;
 import nl.esciencecenter.octopus.jobs.Scheduler;
 import nl.esciencecenter.octopus.util.Sandbox;
@@ -68,7 +69,7 @@ public class SandboxedJobTest {
     @Before
     public void setUp() throws URISyntaxException {
         sandbox = mock(Sandbox.class);
-        ojob = new JobImplementation(mock(Scheduler.class), "1234", null, false, false);
+        ojob = new JobImplementation(mock(Scheduler.class), "1234", mock(JobDescription.class), false, false);
         request = new JobSubmitRequest();
         request.status_callback_url = new URI("http://localhost/job/status");
         httpClient = mock(HttpClient.class);
