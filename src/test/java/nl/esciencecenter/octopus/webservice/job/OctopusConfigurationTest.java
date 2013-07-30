@@ -27,7 +27,6 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Properties;
 import java.util.Set;
 
 import javax.validation.ConstraintViolation;
@@ -47,8 +46,8 @@ public class OctopusConfigurationTest {
         URI scheduler = new URI("local:///");
         String queue = null;
         URI sandbox = new URI("file:///tmp");
-        ImmutableMap<String, Object> prefs = ImmutableMap.of(
-                "octopus.adaptors.local.queue.multi.maxConcurrentJobs", (Object) 1);
+        ImmutableMap<String, String> prefs = ImmutableMap.of(
+                "octopus.adaptors.local.queue.multi.maxConcurrentJobs", "1");
         PollConfiguration pollConf = new PollConfiguration();
         OctopusConfiguration config = new OctopusConfiguration(scheduler, queue, sandbox, prefs, pollConf);
 
@@ -61,15 +60,14 @@ public class OctopusConfigurationTest {
     @Test
     public void testGetPreferences() {
         OctopusConfiguration g = new OctopusConfiguration();
-        ImmutableMap<String, Object> expected = ImmutableMap.of();
+        ImmutableMap<String, String> expected = ImmutableMap.of();
         assertThat(g.getPreferences()).isEqualTo(expected);
     }
 
     @Test
     public void testSetPreferences() {
         OctopusConfiguration g = new OctopusConfiguration();
-        ImmutableMap<String, Object> prefs = ImmutableMap.of("mykey",
-                (Object) "myval");
+        ImmutableMap<String, String> prefs = ImmutableMap.of("mykey", "myval");
         g.setPreferences(prefs);
         assertThat(g.getPreferences()).isEqualTo(prefs);
     }
@@ -82,27 +80,11 @@ public class OctopusConfigurationTest {
         assertThat(actual.getScheduler()).isEqualTo(new URI("local:///"));
         assertThat(actual.getQueue()).isEqualTo("multi");
         assertThat(actual.getSandboxRoot()).isEqualTo(new URI("file:///tmp/sandboxes"));
-        ImmutableMap<String, Object> prefs = ImmutableMap.of(
-                "octopus.adaptors.local.queue.multi.maxConcurrentJobs", (Object) 4);
+        ImmutableMap<String, String> prefs = ImmutableMap.of(
+                "octopus.adaptors.local.queue.multi.maxConcurrentJobs", "4");
         assertThat(actual.getPreferences()).isEqualTo(prefs);
         PollConfiguration expected_poll = new PollConfiguration(500, 3600000, 43200000);
         assertThat(actual.getPollConfiguration()).isEqualTo(expected_poll);
-    }
-
-    @Test
-    public void getPreferencesAsProperties() throws URISyntaxException {
-        URI scheduler = new URI("local:///");
-        String queue = null;
-        URI sandbox = new URI("file:///tmp");
-        ImmutableMap<String, Object> prefs = ImmutableMap.of(
-                "octopus.adaptors.local.queue.multi.maxConcurrentJobs", (Object) 1);
-        PollConfiguration pollConf = new PollConfiguration();
-        OctopusConfiguration conf = new OctopusConfiguration(scheduler, queue, sandbox, prefs, pollConf);
-
-        Properties props = conf.getPreferencesAsProperties();
-        Properties expected_props = new Properties();
-        expected_props.put("octopus.adaptors.local.queue.multi.maxConcurrentJobs", "1");
-        assertThat(props).isEqualTo(expected_props);
     }
 
     @Test

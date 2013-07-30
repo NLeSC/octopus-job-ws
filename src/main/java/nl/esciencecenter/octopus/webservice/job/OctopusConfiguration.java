@@ -21,8 +21,6 @@ package nl.esciencecenter.octopus.webservice.job;
  */
 
 import java.net.URI;
-import java.util.Properties;
-import java.util.Set;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -69,7 +67,7 @@ public class OctopusConfiguration {
      * Octopus preferences, these could also be put octopus.properties file, but I like scheduler together with it's preferences
      */
     @JsonProperty
-    private ImmutableMap<String, Object> preferences = ImmutableMap.of();
+    private ImmutableMap<String, String> preferences = ImmutableMap.of();
 
     /**
      * Fields required for polling the state of a job.
@@ -78,7 +76,7 @@ public class OctopusConfiguration {
     @JsonProperty("poll")
     private PollConfiguration pollConfiguration = new PollConfiguration();
 
-    public OctopusConfiguration(URI scheduler, String queue, URI sandboxRoot, ImmutableMap<String, Object> preferences, PollConfiguration pollConfiguration) {
+    public OctopusConfiguration(URI scheduler, String queue, URI sandboxRoot, ImmutableMap<String, String> preferences, PollConfiguration pollConfiguration) {
         this.scheduler = scheduler;
         this.queue = queue;
         this.sandboxRoot = sandboxRoot;
@@ -98,11 +96,11 @@ public class OctopusConfiguration {
         this.scheduler = scheduler;
     }
 
-    public ImmutableMap<String, Object> getPreferences() {
+    public ImmutableMap<String, String> getPreferences() {
         return preferences;
     }
 
-    public void setPreferences(ImmutableMap<String, Object> preferences) {
+    public void setPreferences(ImmutableMap<String, String> preferences) {
         this.preferences = preferences;
     }
 
@@ -161,16 +159,5 @@ public class OctopusConfiguration {
     public Credential getCredential() {
         // TODO Auto-generated method stub
         return null;
-    }
-
-    public Properties getPreferencesAsProperties() {
-        // copy over preferences from config to default GAT context
-        Properties properties = new Properties();
-        Set<String> keys = preferences.keySet();
-        for (String key : keys) {
-            String value = preferences.get(key).toString();
-            properties.setProperty(key, value);
-        }
-        return properties;
     }
 }

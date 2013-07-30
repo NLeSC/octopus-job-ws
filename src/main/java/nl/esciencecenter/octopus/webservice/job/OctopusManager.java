@@ -25,7 +25,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.Map;
-import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -56,11 +55,11 @@ import com.yammer.dropwizard.lifecycle.Managed;
 
 /**
  * Octopus manager.
- * 
+ *
  * Responsible for submitting jobs, polling their status and cleaning jobs up.
- * 
+ *
  * @author verhoes
- * 
+ *
  */
 public class OctopusManager implements Managed {
     protected final static Logger logger = LoggerFactory.getLogger(OctopusManager.class);
@@ -74,7 +73,7 @@ public class OctopusManager implements Managed {
 
     /**
      * Sets preferences in GAT context and initializes a broker.
-     * 
+     *
      * @param configuration
      * @throws URISyntaxException
      * @throws OctopusException
@@ -82,8 +81,7 @@ public class OctopusManager implements Managed {
      */
     public OctopusManager(OctopusConfiguration configuration) throws URISyntaxException, OctopusException, OctopusIOException {
         this.configuration = configuration;
-        Properties props = configuration.getPreferencesAsProperties();
-        octopus = OctopusFactory.newOctopus(props);
+        octopus = OctopusFactory.newOctopus(configuration.getPreferences());
         URI schedulerURI = configuration.getScheduler();
         Credential credential = configuration.getCredential();
         // TODO prompt user for password/passphrases
@@ -126,13 +124,13 @@ public class OctopusManager implements Managed {
 
     /**
      * Submit a job request.
-     * 
+     *
      * @param request
      *            The job request
      * @param httpClient
      *            http client used to reporting status to job callback.
      * @return SandboxedJob job
-     * 
+     *
      * @throws OctopusIOException
      * @throws OctopusException
      * @throws URISyntaxException
@@ -175,14 +173,14 @@ public class OctopusManager implements Managed {
 
     /**
      * Cancel job, cancels pending job and kills running job.
-     * 
+     *
      * Stores canceled state.
-     * 
+     *
      * If job is done then nothing happens.
-     * 
+     *
      * @param jobIdentifier
      *            The identifier of the job.
-     * 
+     *
      * @throws NoSuchJobException
      *             When job with jobIdentifier could not be found.
      * @throws OctopusException
@@ -193,6 +191,9 @@ public class OctopusManager implements Managed {
         // no need to cancel completed jobs
         if (!job.getStatus().isDone()) {
             JobStatus canceledStatus = octopus.jobs().cancelJob(job.getJob());
+            if (!canceledStatus.isDone()) {
+                canceledStatus = octopus.jobs().waitUntilDone(job.getJob(), 4000);
+            }
             job.cleanSandbox();
             job.setStatus(canceledStatus);
         }
@@ -200,7 +201,7 @@ public class OctopusManager implements Managed {
 
     /**
      * Get list of submitted jobs.
-     * 
+     *
      * @return List of submitted jobs.
      */
     public Collection<SandboxedJob> getJobs() {
@@ -209,7 +210,7 @@ public class OctopusManager implements Managed {
 
     /**
      * Get a job
-     * 
+     *
      * @param jobIdentifier
      * @return the job
      * @throws NoSuchJobException

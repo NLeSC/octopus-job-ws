@@ -21,7 +21,6 @@ package nl.esciencecenter.octopus.webservice.job;
  */
 
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -66,9 +65,9 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import com.google.common.collect.ImmutableMap;
 
 /**
- * 
+ *
  * @author verhoes
- * 
+ *
  */
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(OctopusFactory.class)
@@ -81,9 +80,9 @@ public class OctopusManagerTest {
         Octopus octopus = mock(Octopus.class);
         Jobs jobs = mock(Jobs.class);
         when(octopus.jobs()).thenReturn(jobs);
-        when(OctopusFactory.newOctopus(any(Properties.class))).thenReturn(octopus);
+        ImmutableMap<String, String> prefs = ImmutableMap.of("octopus.adaptors.local.queue.multi.maxConcurrentJobs", "1");
+        when(OctopusFactory.newOctopus(prefs)).thenReturn(octopus);
 
-        ImmutableMap<String, Object> prefs = ImmutableMap.of("octopus.adaptors.local.queue.multi.maxConcurrentJobs", (Object) 1);
         PollConfiguration pollConf = new PollConfiguration();
         OctopusConfiguration conf =
                 new OctopusConfiguration(new URI("local:///"), "multi", new URI("file:///tmp/sandboxes"), prefs, pollConf);
@@ -92,11 +91,9 @@ public class OctopusManagerTest {
 
         // verify octopus created
         PowerMockito.verifyStatic();
-        Properties expected_props = new Properties();
-        expected_props.setProperty("octopus.adaptors.local.queue.multi.maxConcurrentJobs", "1");
-        OctopusFactory.newOctopus(expected_props);
+        OctopusFactory.newOctopus(prefs);
         // verify scheduler created
-        when(jobs.newScheduler(new URI("local:///"), null, expected_props));
+        when(jobs.newScheduler(new URI("local:///"), null, prefs));
     }
 
     @Test
@@ -133,7 +130,7 @@ public class OctopusManagerTest {
     public void testSubmitJob() throws OctopusIOException, OctopusException, URISyntaxException {
         Properties props = new Properties();
         props.put("octopus.adaptors.local.queue.multi.maxConcurrentJobs", "4");
-        ImmutableMap<String, Object> prefs = ImmutableMap.of("octopus.adaptors.local.queue.multi.maxConcurrentJobs", (Object) 1);
+        ImmutableMap<String, String> prefs = ImmutableMap.of("octopus.adaptors.local.queue.multi.maxConcurrentJobs", "1");
         PollConfiguration pollConf = new PollConfiguration();
         OctopusConfiguration conf =
                 new OctopusConfiguration(new URI("local:///"), "multi", new URI("file:///tmp/sandboxes"), prefs, pollConf);

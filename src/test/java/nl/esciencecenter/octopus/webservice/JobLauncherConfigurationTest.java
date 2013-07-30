@@ -51,7 +51,7 @@ public class JobLauncherConfigurationTest {
         URI scheduler = new URI("local:///");
         String queue = "multi";
         URI sandboxRoot = new URI("file:///tmp/sandboxes");
-        ImmutableMap<String, Object> prefs = ImmutableMap.of("octopus.adaptors.local.queue.multi.maxConcurrentJobs", (Object) 4);
+        ImmutableMap<String, String> prefs = ImmutableMap.of("octopus.adaptors.local.queue.multi.maxConcurrentJobs", "4");
         PollConfiguration pollConf = new PollConfiguration(10, 50, 100);
         OctopusConfiguration octopusConf = new OctopusConfiguration(scheduler, queue, sandboxRoot, prefs, pollConf);
         return octopusConf;
@@ -112,7 +112,7 @@ public class JobLauncherConfigurationTest {
 
         int hashcode = octopusConf.hashCode();
 
-        assertThat(hashcode).isEqualTo(-1913000478);
+        assertThat(hashcode).isEqualTo(-1913015854);
     }
 
     @Test

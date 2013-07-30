@@ -91,8 +91,8 @@ public class JobLauncherServiceTest {
 
     private JobLauncherConfiguration sampleConfiguration()
             throws URISyntaxException {
-        ImmutableMap<String, Object> prefs = ImmutableMap.of(
-                "octopus.adaptors.local.queue.multi.maxConcurrentJobs", (Object) 1);
+        ImmutableMap<String, String> prefs = ImmutableMap.of(
+                "octopus.adaptors.local.queue.multi.maxConcurrentJobs", "1");
         URI scheduler = new URI("local:///");
         URI sandboxRoot = new URI("file:///tmp/sandboxes");
         PollConfiguration pollConf = new PollConfiguration();
