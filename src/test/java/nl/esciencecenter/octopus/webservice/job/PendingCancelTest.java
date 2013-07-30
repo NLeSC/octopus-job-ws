@@ -14,10 +14,14 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ImmutableMap;
 
-public class PendingCancelITCase {
+public class PendingCancelTest {
+    final Logger logger = LoggerFactory.getLogger(PendingCancelTest.class);
+    
     @Rule
     public TemporaryFolder testFolder = new TemporaryFolder();
 
@@ -29,8 +33,8 @@ public class PendingCancelITCase {
     public void test() throws Exception {
         URI scheduler = new URI("local:///");
         PollConfiguration pollConfiguration = new PollConfiguration();
-        ImmutableMap<String, Object> preferences =
-                ImmutableMap.of("octopus.adaptors.local.queue.multi.maxConcurrentJobs", (Object) 1);
+        ImmutableMap<String, String> preferences =
+                ImmutableMap.of("octopus.adaptors.local.queue.multi.maxConcurrentJobs", "1");
         URI sandboxRoot = testFolder.newFolder("sandboxes").toURI();
         String queue = "multi";
         OctopusConfiguration configuration =
@@ -38,9 +42,10 @@ public class PendingCancelITCase {
 
         manager = new OctopusManager(configuration);
 
+        testFolder.create();
         String jobdir = testFolder.newFolder("job1").getPath();
         List<String> arguments = new ArrayList<String>();
-        arguments.add("6000");
+        arguments.add("60");
         JobSubmitRequest submit =
                 new JobSubmitRequest(jobdir, "/bin/sleep", arguments, new ArrayList<String>(), new ArrayList<String>(),
                         "stderr.txt", "stdout.txt", null);
@@ -51,13 +56,13 @@ public class PendingCancelITCase {
         SandboxedJob job = manager.submitJob(submit, httpClient);
 
         manager.start();
-        Thread.sleep(5000); // allow poller to update status
+        Thread.sleep(500); // allow poller to update status
 
         manager.cancelJob(job.getIdentifier());
 
         SandboxedJob job_out = manager.getJob(job.getIdentifier());
 
-        assertEquals(job_out.getStatus().getState(), "KILLED");
+        assertEquals("KILLED", job_out.getStatus().getState());
 
         manager.stop();
     }
