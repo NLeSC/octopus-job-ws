@@ -1,5 +1,3 @@
-package nl.esciencecenter.octopus.webservice.mac;
-
 /*
  * #%L
  * Octopus Job Webservice
@@ -19,6 +17,7 @@ package nl.esciencecenter.octopus.webservice.mac;
  * limitations under the License.
  * #L%
  */
+package nl.esciencecenter.octopus.webservice.mac;
 
 import static com.yammer.dropwizard.testing.JsonHelpers.fromJson;
 import static com.yammer.dropwizard.testing.JsonHelpers.jsonFixture;

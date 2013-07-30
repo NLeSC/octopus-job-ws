@@ -1,5 +1,3 @@
-package nl.esciencecenter.octopus.webservice;
-
 /*
  * #%L
  * Octopus Job Webservice
@@ -19,7 +17,9 @@ package nl.esciencecenter.octopus.webservice;
  * limitations under the License.
  * #L%
  */
+package nl.esciencecenter.octopus.webservice;
 
+import java.net.URISyntaxException;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -42,6 +42,8 @@ import org.apache.http.impl.client.AbstractHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import nl.esciencecenter.octopus.exceptions.OctopusException;
+import nl.esciencecenter.octopus.exceptions.OctopusIOException;
 import nl.esciencecenter.octopus.webservice.health.JobLauncherHealthCheck;
 import nl.esciencecenter.octopus.webservice.job.OctopusManager;
 import nl.esciencecenter.octopus.webservice.mac.MacCredential;
@@ -63,7 +65,8 @@ import com.yammer.dropwizard.config.Environment;
  *
  */
 public class JobLauncherService extends Service<JobLauncherConfiguration> {
-    protected static final Logger logger = LoggerFactory.getLogger(JobLauncherService.class);
+    private static final int HTTPS_PORT = 443;
+    protected static final Logger LOGGER = LoggerFactory.getLogger(JobLauncherService.class);
 
     /**
      * Entry point
@@ -82,7 +85,7 @@ public class JobLauncherService extends Service<JobLauncherConfiguration> {
     }
 
     @Override
-    public void run(JobLauncherConfiguration configuration, Environment environment) throws Exception {
+    public void run(JobLauncherConfiguration configuration, Environment environment) throws OctopusIOException, URISyntaxException, OctopusException, KeyManagementException, UnrecoverableKeyException, NoSuchAlgorithmException, KeyStoreException  {
         OctopusManager octopus = new OctopusManager(configuration.getOctopusConfiguration());
         environment.manage(octopus);
         HttpClient httpClient = new HttpClientBuilder().using(configuration.getHttpClientConfiguration()).build();
@@ -120,7 +123,7 @@ public class JobLauncherService extends Service<JobLauncherConfiguration> {
         }, org.apache.http.conn.ssl.SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
 
         SchemeRegistry registry = httpClient.getConnectionManager().getSchemeRegistry();
-        registry.register(new Scheme("https", 443, socketFactory));
+        registry.register(new Scheme("https", HTTPS_PORT, socketFactory));
     }
 
     /**

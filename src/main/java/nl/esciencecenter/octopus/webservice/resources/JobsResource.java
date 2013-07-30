@@ -1,5 +1,3 @@
-package nl.esciencecenter.octopus.webservice.resources;
-
 /*
  * #%L
  * Octopus Job Webservice
@@ -19,8 +17,11 @@ package nl.esciencecenter.octopus.webservice.resources;
  * limitations under the License.
  * #L%
  */
+package nl.esciencecenter.octopus.webservice.resources;
+
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -36,6 +37,8 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 
+import nl.esciencecenter.octopus.exceptions.OctopusException;
+import nl.esciencecenter.octopus.exceptions.OctopusIOException;
 import nl.esciencecenter.octopus.webservice.api.JobSubmitRequest;
 import nl.esciencecenter.octopus.webservice.api.SandboxedJob;
 import nl.esciencecenter.octopus.webservice.job.OctopusManager;
@@ -95,18 +98,20 @@ public class JobsResource {
      * @param request
      *            A job submission request
      * @return Response with element URI in Location header
+     * @throws URISyntaxException
+     * @throws OctopusException
+     * @throws OctopusIOException
      * @throws Exception
      * @throws GATInvocationException
      * @throws GATObjectCreationException
      */
     @POST
     @Timed
-    public Response submitJob(@Valid JobSubmitRequest request) throws Exception {
+    public Response submitJob(@Valid JobSubmitRequest request) throws OctopusIOException, OctopusException, URISyntaxException {
         SandboxedJob job = octopusmanager.submitJob(request, httpClient);
         UriBuilder builder = uriInfo.getAbsolutePathBuilder();
         URI location = builder.path(job.getIdentifier()).build();
-        Response response = Response.created(location).build();
-        return response;
+        return Response.created(location).build();
     }
 
     /**

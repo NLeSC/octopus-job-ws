@@ -1,5 +1,3 @@
-package nl.esciencecenter.octopus.webservice.job;
-
 /*
  * #%L
  * Octopus Job Webservice
@@ -19,6 +17,8 @@ package nl.esciencecenter.octopus.webservice.job;
  * limitations under the License.
  * #L%
  */
+package nl.esciencecenter.octopus.webservice.job;
+
 
 import java.net.URI;
 
@@ -135,10 +135,12 @@ public class OctopusConfiguration {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null)
+        if (obj == null) {
             return false;
-        if (getClass() != obj.getClass())
+        }
+        if (getClass() != obj.getClass()) {
             return false;
+        }
         OctopusConfiguration other = (OctopusConfiguration) obj;
         return Objects.equal(this.scheduler, other.scheduler) && Objects.equal(this.preferences, other.preferences)
                 && Objects.equal(this.pollConfiguration, other.pollConfiguration) && Objects.equal(this.queue, other.queue)

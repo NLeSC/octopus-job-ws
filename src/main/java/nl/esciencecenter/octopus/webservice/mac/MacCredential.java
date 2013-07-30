@@ -1,5 +1,3 @@
-package nl.esciencecenter.octopus.webservice.mac;
-
 /*
  * #%L
  * Octopus Job Webservice
@@ -19,6 +17,7 @@ package nl.esciencecenter.octopus.webservice.mac;
  * limitations under the License.
  * #L%
  */
+package nl.esciencecenter.octopus.webservice.mac;
 
 import java.net.URI;
 import java.security.Principal;
@@ -143,10 +142,12 @@ public class MacCredential implements Credentials {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null)
+        if (obj == null) {
             return false;
-        if (getClass() != obj.getClass())
+        }
+        if (getClass() != obj.getClass()) {
             return false;
+        }
         MacCredential other = (MacCredential) obj;
         return Objects.equal(this.id, other.id)
                 && Objects.equal(this.key, other.key)

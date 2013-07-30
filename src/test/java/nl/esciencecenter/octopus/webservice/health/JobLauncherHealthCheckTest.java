@@ -1,5 +1,3 @@
-package nl.esciencecenter.octopus.webservice.health;
-
 /*
  * #%L
  * Octopus Job Webservice
@@ -19,6 +17,8 @@ package nl.esciencecenter.octopus.webservice.health;
  * limitations under the License.
  * #L%
  */
+package nl.esciencecenter.octopus.webservice.health;
+
 
 import static org.junit.Assert.*;
 

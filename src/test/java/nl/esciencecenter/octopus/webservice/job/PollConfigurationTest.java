@@ -1,5 +1,3 @@
-package nl.esciencecenter.octopus.webservice.job;
-
 /*
  * #%L
  * Octopus Job Webservice
@@ -19,6 +17,7 @@ package nl.esciencecenter.octopus.webservice.job;
  * limitations under the License.
  * #L%
  */
+package nl.esciencecenter.octopus.webservice.job;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 

@@ -1,5 +1,3 @@
-package nl.esciencecenter.octopus.webservice.resources;
-
 /*
  * #%L
  * Octopus Job Webservice
@@ -19,6 +17,8 @@ package nl.esciencecenter.octopus.webservice.resources;
  * limitations under the License.
  * #L%
  */
+package nl.esciencecenter.octopus.webservice.resources;
+
 
 import java.io.IOException;
 
@@ -63,7 +63,7 @@ public class JobResource {
         try {
             return octopusmanager.getJob(jobIdentifier);
         } catch (NoSuchJobException e) {
-            throw new WebApplicationException(Status.NOT_FOUND);
+            throw new WebApplicationException(e, Status.NOT_FOUND);
         }
     }
 
@@ -73,7 +73,7 @@ public class JobResource {
         try {
             octopusmanager.cancelJob(jobIdentifier);
         } catch (NoSuchJobException e) {
-            throw new WebApplicationException(Status.NOT_FOUND);
+            throw new WebApplicationException(e, Status.NOT_FOUND);
         }
     }
 }

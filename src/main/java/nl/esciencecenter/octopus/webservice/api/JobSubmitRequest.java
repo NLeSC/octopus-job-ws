@@ -1,5 +1,3 @@
-package nl.esciencecenter.octopus.webservice.api;
-
 /*
  * #%L
  * Octopus Job Webservice
@@ -9,9 +7,9 @@ package nl.esciencecenter.octopus.webservice.api;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * 
  *      http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,6 +17,8 @@ package nl.esciencecenter.octopus.webservice.api;
  * limitations under the License.
  * #L%
  */
+package nl.esciencecenter.octopus.webservice.api;
+
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -42,12 +42,12 @@ import com.google.common.base.Objects;
 
 /**
  * Request which can be converted to JobDescription which can be submitted using JavaGAT.
- * 
+ *
  * @author Stefan Verhoeven <s.verhoeven@esciencecenter.nl>
- * 
+ *
  */
 public class JobSubmitRequest {
-    protected final static Logger logger = LoggerFactory.getLogger(JobSubmitRequest.class);
+    protected static final Logger LOGGER = LoggerFactory.getLogger(JobSubmitRequest.class);
 
     /**
      * Job directory where stderr/stdout/prestaged/poststaged file are relative to and where job.state file is written. Must end
@@ -89,7 +89,7 @@ public class JobSubmitRequest {
 
     /**
      * Constructor
-     * 
+     *
      * @param jobdir
      * @param executable
      * @param arguments
@@ -124,7 +124,7 @@ public class JobSubmitRequest {
 
     /**
      * Convert requested jobsubmission to JobDescription which can be submitted
-     * 
+     *
      * @return JobDescription
      * @throws GATObjectCreationException
      */
@@ -140,12 +140,12 @@ public class JobSubmitRequest {
 
     /**
      * Create sandbox from request.
-     * 
+     *
      * Prestaged files/directories will be added to upload list. Poststaged files/directories will be added to download list.
      * Stderr and Stdout will be added to download list when they are not null.
-     * 
+     *
      * Examples when jobdir = /tmp/jobdir and sandboxpath = /tmp/sandbox
-     * 
+     *
      * <ul>
      * <li>
      * [direction], [argument], [source] -> [destination]</li>
@@ -162,7 +162,7 @@ public class JobSubmitRequest {
      * <li>
      * Poststage "output/data.out", "/tmp/sandbox/data.out" -> "/tmp/jobdir/output/data.out"</li>
      * <ul>
-     * 
+     *
      * @param octopus
      *            Octopus instance
      * @param sandBoxRoot
@@ -210,12 +210,15 @@ public class JobSubmitRequest {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (obj == null)
+        }
+        if (obj == null) {
             return false;
-        if (getClass() != obj.getClass())
+        }
+        if (getClass() != obj.getClass()) {
             return false;
+        }
         JobSubmitRequest other = (JobSubmitRequest) obj;
         return Objects.equal(this.jobdir, other.jobdir) && Objects.equal(this.executable, other.executable)
                 && Objects.equal(this.arguments, other.arguments) && Objects.equal(this.stderr, other.stderr)

@@ -1,5 +1,3 @@
-package nl.esciencecenter.octopus.webservice.api;
-
 /*
  * #%L
  * Octopus Job Webservice
@@ -19,6 +17,8 @@ package nl.esciencecenter.octopus.webservice.api;
  * limitations under the License.
  * #L%
  */
+package nl.esciencecenter.octopus.webservice.api;
+
 
 import java.io.IOException;
 
@@ -43,12 +43,12 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 
 /**
  * Job representation.
- * 
+ *
  * @author verhoes
- * 
+ *
  */
 public class SandboxedJob {
-    protected final static Logger logger = LoggerFactory.getLogger(SandboxedJob.class);
+    protected static final Logger LOGGER = LoggerFactory.getLogger(SandboxedJob.class);
 
     private final JobSubmitRequest request;
     private final Sandbox sandbox;
@@ -124,7 +124,7 @@ public class SandboxedJob {
     /**
      * Sets status. If status has changed and callback is set then sends PUT request with {@link JobStatusResponse
      * JobStatusResponse} as JSON to callback URL.
-     * 
+     *
      * @param status
      *            new Job status
      * @throws JsonProcessingException
@@ -151,7 +151,7 @@ public class SandboxedJob {
 
     /**
      * Deletes sandbox.
-     * 
+     *
      * @throws OctopusIOException
      * @throws UnsupportedOperationException
      */
@@ -161,19 +161,19 @@ public class SandboxedJob {
 
     /**
      * Downloads sandbox contents.
-     * 
+     *
      * @throws UnsupportedOperationException
      * @throws OctopusIOException
-     * 
+     *
      */
     public void downloadSandbox() throws OctopusIOException, UnsupportedOperationException {
         sandbox.download(CopyOption.REPLACE);
     }
 
     /**
-     * 
+     *
      * @return Unique identifier of job
-     * 
+     *
      */
     @JsonIgnore
     public String getIdentifier() {

@@ -1,5 +1,3 @@
-package nl.esciencecenter.octopus.webservice.mac;
-
 /*
  * #%L
  * Octopus Job Webservice
@@ -19,15 +17,18 @@ package nl.esciencecenter.octopus.webservice.mac;
  * limitations under the License.
  * #L%
  */
+package nl.esciencecenter.octopus.webservice.mac;
 
 import java.math.BigInteger;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Date;
 import java.util.Objects;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -56,11 +57,14 @@ import org.slf4j.LoggerFactory;
  *
  */
 public class MacScheme implements ContextAwareAuthScheme {
-    protected static final Logger logger = LoggerFactory
+    protected static final Logger LOGGER = LoggerFactory
             .getLogger(MacScheme.class);
 
     /** The name of this authorization scheme. */
     public static final String SCHEME_NAME = "MAC";
+
+    private static final int HTTP_PORT = 80;
+    private static final int HTTPS_PORT = 443;
     /**
      * Used to generate timestamp in Auth header.
      */
@@ -149,9 +153,9 @@ public class MacScheme implements ContextAwareAuthScheme {
             String algorithm) throws AuthenticationException {
         try {
             Mac mac = Mac.getInstance(algorithm);
-            SecretKeySpec macKey = new SecretKeySpec(key.getBytes(), "RAW");
+            SecretKeySpec macKey = new SecretKeySpec(key.getBytes(StandardCharsets.US_ASCII), "RAW");
             mac.init(macKey);
-            byte[] signature = mac.doFinal(data.getBytes());
+            byte[] signature = mac.doFinal(data.getBytes(StandardCharsets.US_ASCII));
             return Base64.encodeBase64String(signature);
         } catch (InvalidKeyException e) {
             throw new AuthenticationException("Failed to generate HMAC: "
@@ -218,8 +222,7 @@ public class MacScheme implements ContextAwareAuthScheme {
     }
 
     private Long getTimestamp() {
-        Long timestamp = date.getTime() / 1000;
-        return timestamp;
+        return TimeUnit.SECONDS.convert(date.getTime(), TimeUnit.MILLISECONDS);
     }
 
     /**
@@ -232,9 +235,9 @@ public class MacScheme implements ContextAwareAuthScheme {
         if (port == -1) {
             String scheme = uri.getScheme();
             if (scheme.equals("http")) {
-                port = 80;
+                port = HTTP_PORT;
             } else if (scheme.equals("https")) {
-                port = 443;
+                port = HTTPS_PORT;
             }
         }
         return port;
@@ -272,10 +275,12 @@ public class MacScheme implements ContextAwareAuthScheme {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null)
+        if (obj == null) {
             return false;
-        if (getClass() != obj.getClass())
+        }
+        if (getClass() != obj.getClass()) {
             return false;
+        }
         return true;
     }
 }

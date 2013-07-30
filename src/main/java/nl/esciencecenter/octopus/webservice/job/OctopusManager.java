@@ -1,5 +1,3 @@
-package nl.esciencecenter.octopus.webservice.job;
-
 /*
  * #%L
  * Octopus Job Webservice
@@ -19,6 +17,9 @@ package nl.esciencecenter.octopus.webservice.job;
  * limitations under the License.
  * #L%
  */
+package nl.esciencecenter.octopus.webservice.job;
+
+
 
 import java.io.IOException;
 import java.net.URI;
@@ -62,7 +63,7 @@ import com.yammer.dropwizard.lifecycle.Managed;
  *
  */
 public class OctopusManager implements Managed {
-    protected final static Logger logger = LoggerFactory.getLogger(OctopusManager.class);
+    protected static final Logger LOGGER = LoggerFactory.getLogger(OctopusManager.class);
 
     private final OctopusConfiguration configuration;
     private final Octopus octopus;
@@ -106,15 +107,18 @@ public class OctopusManager implements Managed {
     /**
      * Starts the job poller.
      */
-    public void start() throws Exception {
+    public void start() {
         long interval = configuration.getPollConfiguration().getInterval();
         executor.scheduleAtFixedRate(poller, 0, interval, TimeUnit.MILLISECONDS);
     }
 
     /**
      * Terminates any running Octopus processes and stops the job poller.
+     * @throws InterruptedException
+     * @throws OctopusException
+     * @throws OctopusIOException
      */
-    public void stop() throws Exception {
+    public void stop() throws InterruptedException, OctopusIOException, OctopusException {
         executor.shutdown();
         // JobsPoller can be in middle of fetching job statuses so give it 1 minute to finish before interrupting it
         executor.awaitTermination(1, TimeUnit.MINUTES);
@@ -192,7 +196,8 @@ public class OctopusManager implements Managed {
         if (!job.getStatus().isDone()) {
             JobStatus canceledStatus = octopus.jobs().cancelJob(job.getJob());
             if (!canceledStatus.isDone()) {
-                canceledStatus = octopus.jobs().waitUntilDone(job.getJob(), 4000);
+                long timeout = configuration.getPollConfiguration().getInterval();
+                canceledStatus = octopus.jobs().waitUntilDone(job.getJob(), timeout);
             }
             job.cleanSandbox();
             job.setStatus(canceledStatus);
@@ -216,8 +221,8 @@ public class OctopusManager implements Managed {
      * @throws NoSuchJobException
      */
     public SandboxedJob getJob(String jobIdentifier) throws NoSuchJobException {
-        SandboxedJob job;
-        if ((job = jobs.get(jobIdentifier)) != null) {
+        SandboxedJob job = jobs.get(jobIdentifier);
+        if (job != null) {
             return job;
         } else {
             throw new NoSuchJobException("", "Job not found");

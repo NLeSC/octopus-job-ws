@@ -1,5 +1,3 @@
-package nl.esciencecenter.octopus.webservice.job;
-
 /*
  * #%L
  * Octopus Job Webservice
@@ -9,9 +7,9 @@ package nl.esciencecenter.octopus.webservice.job;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * 
  *      http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,6 +17,7 @@ package nl.esciencecenter.octopus.webservice.job;
  * limitations under the License.
  * #L%
  */
+package nl.esciencecenter.octopus.webservice.job;
 
 import java.util.concurrent.TimeUnit;
 
@@ -89,10 +88,12 @@ public class PollConfiguration {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null)
+        if (obj == null) {
             return false;
-        if (getClass() != obj.getClass())
+        }
+        if (getClass() != obj.getClass()) {
             return false;
+        }
         PollConfiguration other = (PollConfiguration) obj;
         return Objects.equal(this.interval, other.interval) && Objects.equal(this.cancelTimeout, other.cancelTimeout)
                 && Objects.equal(this.deleteTimeout, other.deleteTimeout);
