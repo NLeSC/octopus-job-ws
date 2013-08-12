@@ -7,9 +7,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -41,8 +41,7 @@ import org.junit.Test;
 import com.google.common.collect.ImmutableMap;
 
 public class OctopusConfigurationTest {
-    @Test
-    public void testGATConfigurationBrokerPrefs() throws URISyntaxException {
+    public OctopusConfiguration sampleConfig() throws URISyntaxException {
         URI scheduler = new URI("local:///");
         String queue = null;
         URI sandbox = new URI("file:///tmp");
@@ -50,10 +49,19 @@ public class OctopusConfigurationTest {
                 "octopus.adaptors.local.queue.multi.maxConcurrentJobs", "1");
         PollConfiguration pollConf = new PollConfiguration();
         OctopusConfiguration config = new OctopusConfiguration(scheduler, queue, sandbox, prefs, pollConf);
+        return config;
+    }
 
-        assertThat(config.getScheduler()).isEqualTo(scheduler);
-        assertThat(config.getQueue()).isEqualTo(queue);
-        assertThat(config.getSandboxRoot()).isEqualTo(sandbox);
+    @Test
+    public void testGATConfigurationBrokerPrefs() throws URISyntaxException {
+        ImmutableMap<String, String> prefs = ImmutableMap.of(
+                "octopus.adaptors.local.queue.multi.maxConcurrentJobs", "1");
+
+        OctopusConfiguration config = sampleConfig();
+
+        assertThat(config.getScheduler()).isEqualTo(new URI("local:///"));
+        assertThat(config.getQueue()).isNull();
+        assertThat(config.getSandboxRoot()).isEqualTo(new URI("file:///tmp"));
         assertThat(config.getPreferences()).isEqualTo(prefs);
     }
 
@@ -98,5 +106,39 @@ public class OctopusConfigurationTest {
         Set<ConstraintViolation<OctopusConfiguration>> constraintViolations = validator.validateProperty(actual, "scheduler");
 
         assertThat(constraintViolations.size()).isEqualTo(0);
+    }
+
+    @Test
+    public void testToString() throws URISyntaxException {
+        OctopusConfiguration config = sampleConfig();
+        String expected = "OctopusConfiguration{local:///, null, file:///tmp, {octopus.adaptors.local.queue.multi.maxConcurrentJobs=1}, PollConfiguration{30000, 3600000, 43200000}}";
+        assertThat(config.toString()).isEqualTo(expected);
+    }
+
+    @Test
+    public void testHashCode() throws URISyntaxException {
+        OctopusConfiguration config = sampleConfig();
+        int expected = 1984879424;
+        assertThat(config.hashCode()).isEqualTo(expected);
+    }
+
+    @Test
+    public void testEquals_SameObj_equal() throws URISyntaxException {
+        OctopusConfiguration config = sampleConfig();
+        assertThat(config.equals(config)).isTrue();
+    }
+
+    @Test
+    public void testEquals_DiffClass_unequal() throws URISyntaxException {
+        OctopusConfiguration config = sampleConfig();
+        URI uri = new URI("local:///");
+        assertThat(config.equals(uri)).isFalse();
+    }
+
+    @Test
+    public void testEquals_SameContent_equal() throws URISyntaxException {
+        OctopusConfiguration config1 = sampleConfig();
+        OctopusConfiguration config2 = sampleConfig();
+        assertThat(config1.equals(config2)).isTrue();
     }
 }
