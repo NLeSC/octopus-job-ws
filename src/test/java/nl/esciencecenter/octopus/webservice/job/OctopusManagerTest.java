@@ -7,9 +7,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -245,6 +245,30 @@ public class OctopusManagerTest {
         OctopusManager manager = new OctopusManager(null, null, null, sjobs, null, null);
 
         manager.cancelJob("1234");
+    }
+
+    @Test
+    public void testCancelJob_UnknownStatus() throws OctopusException, IOException {
+        // create manager with mocked Jobs and other members stubbed
+        Octopus octopus = mock(Octopus.class);
+        Jobs jobsEngine = mock(Jobs.class);
+        when(octopus.jobs()).thenReturn(jobsEngine);
+        Map<String, SandboxedJob> sjobs = new HashMap<String, SandboxedJob>();
+        SandboxedJob sjob = mock(SandboxedJob.class);
+        Job job = mock(Job.class);
+        when(sjob.getJob()).thenReturn(job);
+        JobStatus status = null;
+        when(sjob.getStatus()).thenReturn(status);
+        sjobs.put("1234", sjob);
+        JobStatus timeout_jobstatus =
+                new JobStatusImplementation(job, "KILLED", null, new Exception("Process timed out"), false, true, null);
+        when(jobsEngine.cancelJob(job)).thenReturn(timeout_jobstatus);
+        OctopusManager manager = new OctopusManager(null, octopus, null, sjobs, null, null);
+
+        manager.cancelJob("1234");
+
+        verify(jobsEngine).cancelJob(job);
+        verify(sjob).setStatus(timeout_jobstatus);
     }
 
     @Test

@@ -193,7 +193,8 @@ public class OctopusManager implements Managed {
     public void cancelJob(String jobIdentifier) throws OctopusException, IOException {
         SandboxedJob job = getJob(jobIdentifier);
         // no need to cancel completed jobs
-        if (!job.getStatus().isDone()) {
+        JobStatus status = job.getStatus();
+        if (status == null || !status.isDone()) {
             JobStatus canceledStatus = octopus.jobs().cancelJob(job.getJob());
             if (!canceledStatus.isDone()) {
                 long timeout = configuration.getPollConfiguration().getInterval();
