@@ -38,8 +38,8 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ImmutableMap;
 
-public class PendingCancelTest {
-    protected static final Logger LOGGER = LoggerFactory.getLogger(PendingCancelTest.class);
+public class PendingCancelTestITCase {
+    protected static final Logger LOGGER = LoggerFactory.getLogger(PendingCancelTestITCase.class);
 
     @Rule
     public TemporaryFolder testFolder = new TemporaryFolder();

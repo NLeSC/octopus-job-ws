@@ -19,55 +19,106 @@
  */
 package nl.esciencecenter.octopus.webservice.mac;
 
-import static org.junit.Assert.*;
+import static org.fest.assertions.api.Assertions.assertThat;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Properties;
 
 import nl.esciencecenter.octopus.webservice.JobLauncherService;
-import nl.esciencecenter.octopus.webservice.mac.MacCredential;
 
+import org.apache.http.Header;
+import org.apache.http.HttpException;
+import org.apache.http.HttpHeaders;
+import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPut;
+import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.AbstractHttpClient;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.localserver.LocalTestServer;
+import org.apache.http.protocol.HttpContext;
+import org.apache.http.protocol.HttpRequestHandler;
+import org.apache.http.util.EntityUtils;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ImmutableList;
 
 /**
  * MAC Access Authentication integration test.
- *
- * Required properties file called "integration.props" in src/test/resources with following keys:
- * <ol>
- * <li>integration.callback.url, url to submit status to, must have MAC Access authentication</li>
- * <li>integration.callback.id, MAC identifier to use for url</li>
- * <li>integration.callback.key, MAC key to use for url</li>
- * </ol>
- *
- * @author stefanv
- *
+ * 
+ * Starts a http server and performs requests against it.
+ * 
+ * 
+ * @author Stefan Verhoeven <s.verhoeven@esciencecenter.nl>
+ * 
  */
 public class MacITCase {
+    protected static final Logger LOGGER = LoggerFactory.getLogger(MacITCase.class);
+
+    private LocalTestServer server = null;
+
+    @Before
+    public void setUp() throws Exception {
+        server = new LocalTestServer(null, null);
+        server.register("/status", new AuthHandler());
+        server.start();
+        LOGGER.info("Started webserver on {}", getServerURI());
+    }
+
+    public URI getServerURI() throws URISyntaxException {
+        InetSocketAddress address = server.getServiceAddress();
+        return new URI("http", null, address.getHostString(), address.getPort(), "/status", null, null);
+    }
+
+    // do lots of testing!
+
+    @After
+    public void tearDown() throws Exception {
+        LOGGER.info("Stopping webserver on {}", getServerURI());
+        server.stop();
+    }
+
+    /**
+     * Stub which returns AUTHORIZATION header of request as response body when AUTHORIZATION header is in request. Otherwise
+     * returns UNAUTHORIZED http status code and MAC as the available authentication schemes.
+     * 
+     * @author verhoes
+     * 
+     */
+    static class AuthHandler implements HttpRequestHandler {
+        public void handle(HttpRequest request, HttpResponse response, HttpContext context) throws HttpException, IOException {
+            Header auth = request.getFirstHeader(HttpHeaders.AUTHORIZATION);
+            if (auth == null) {
+                response.setStatusCode(HttpStatus.SC_UNAUTHORIZED);
+                response.addHeader("WWW-Authenticate", "MAC");
+            } else {
+                response.setStatusCode(HttpStatus.SC_OK);
+                response.setEntity(new StringEntity(auth.getValue(), ContentType.TEXT_PLAIN));
+            }
+        }
+
+    }
 
     /**
      * Submit status to a callback server using MAC Access authentication.
-     *
+     * 
      * @throws URISyntaxException
      * @throws ClientProtocolException
      * @throws IOException
      */
     @Test
     public void test() throws URISyntaxException, ClientProtocolException, IOException {
-        Properties props = new Properties();
-        props.load(MacITCase.class.getClassLoader().getResourceAsStream("integration.props"));
-
-        URI url = new URI(props.getProperty("integration.callback.url"));
+        URI url = getServerURI();
 
         // TODO throw better exception than NullPointerException when property can not be found.
 
@@ -75,8 +126,9 @@ public class MacITCase {
         HttpPut request = new HttpPut(url);
         request.setEntity(new StringEntity(state));
 
-        String mac_id = props.getProperty("integration.callback.id");
-        String mac_key = props.getProperty("integration.callback.key");
+        String mac_id =
+                "eyJzYWx0IjogIjU3MjY0NCIsICJleHBpcmVzIjogMTM4Njc3MjEwOC4yOTIyNTUsICJ1c2VyaWQiOiAiam9ibWFuYWdlciJ9KBJRMeTW2G9I6jlYwRj6j8koAek=";
+        String mac_key = "_B1YfcqEYpZxyTx_-411-QdBOSI=";
         URI scope = new URI(url.getScheme(), null, url.getHost(), url.getPort(), null, null, null);
         ImmutableList<MacCredential> macs = ImmutableList.of(new MacCredential(mac_id, mac_key, scope));
         HttpClient httpClient = new DefaultHttpClient();
@@ -84,7 +136,8 @@ public class MacITCase {
 
         HttpResponse response = httpClient.execute(request);
 
-        assertEquals(200, response.getStatusLine().getStatusCode());
+        assertThat(response.getStatusLine().getStatusCode()).isEqualTo(200);
+        assertThat(EntityUtils.toString(response.getEntity())).startsWith("MAC id=\"" + mac_id);
+        // asserting rest of request.header[AUTHORIZATION] can not be done due to embedded timestamp and changing hostname/port.
     }
-
 }

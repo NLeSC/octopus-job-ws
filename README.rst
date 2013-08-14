@@ -223,9 +223,6 @@ A maven site can be generated with
 Integration tests
 -----------------
 
-Running the integration tests requires a configuration file called `src/test/resources/integration.props`.
-An example configuration is available as `src/test/resources/integration.props-dist`.
-
 Run integration tests with
 
 .. code-block:: bash

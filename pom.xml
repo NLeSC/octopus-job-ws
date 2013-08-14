@@ -104,6 +104,14 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpclient</artifactId>
+			<version>4.2.5</version>
+			<classifier>tests</classifier>
+			<scope>test</scope>
+		</dependency>
+		<!-- Octopus dependencies -->
+		<dependency>
 			<groupId>com.jcraft</groupId>
 			<artifactId>jsch</artifactId>
 			<version>0.1.50</version>
@@ -138,7 +146,7 @@
 				</configuration>
 			</plugin>
 
-			<!-- To run ws as standalone use 'mvn package;java -jar target/target/joblauncher-${version}.jar
+			<!-- To run ws as standalone use 'mvn package;java -jar target/target/joblauncher-${version}.jar 
 				server joblauncher.yml' -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
