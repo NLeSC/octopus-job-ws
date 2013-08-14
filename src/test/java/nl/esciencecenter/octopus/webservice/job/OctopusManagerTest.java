@@ -19,8 +19,6 @@
  */
 package nl.esciencecenter.octopus.webservice.job;
 
-
-
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -43,10 +41,10 @@ import nl.esciencecenter.octopus.engine.jobs.JobStatusImplementation;
 import nl.esciencecenter.octopus.exceptions.NoSuchJobException;
 import nl.esciencecenter.octopus.exceptions.OctopusException;
 import nl.esciencecenter.octopus.exceptions.OctopusIOException;
-import nl.esciencecenter.octopus.files.AbsolutePath;
 import nl.esciencecenter.octopus.files.FileSystem;
 import nl.esciencecenter.octopus.files.Files;
-import nl.esciencecenter.octopus.files.RelativePath;
+import nl.esciencecenter.octopus.files.Path;
+import nl.esciencecenter.octopus.files.Pathname;
 import nl.esciencecenter.octopus.jobs.Job;
 import nl.esciencecenter.octopus.jobs.JobDescription;
 import nl.esciencecenter.octopus.jobs.JobStatus;
@@ -66,9 +64,9 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import com.google.common.collect.ImmutableMap;
 
 /**
- *
+ * 
  * @author verhoes
- *
+ * 
  */
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(OctopusFactory.class)
@@ -116,7 +114,8 @@ public class OctopusManagerTest {
         Octopus octopus = mock(Octopus.class);
         ScheduledExecutorService executor = mock(ScheduledExecutorService.class);
         JobsPoller poller = mock(JobsPoller.class);
-        OctopusManager manager = new OctopusManager(null, octopus, null, null, poller, executor);
+        Scheduler scheduler = mock(Scheduler.class);
+        OctopusManager manager = new OctopusManager(null, octopus, scheduler, null, poller, executor);
 
         manager.stop();
 
@@ -141,15 +140,15 @@ public class OctopusManagerTest {
         when(octopus.jobs()).thenReturn(jobs);
         Files files = mock(Files.class);
         when(octopus.files()).thenReturn(files);
-        AbsolutePath sandboxPath = mock(AbsolutePath.class);
+        Path sandboxPath = mock(Path.class);
         FileSystem filesystem = mock(FileSystem.class);
         when(files.newFileSystem(new URI("file:///"), null, null)).thenReturn(filesystem);
-        when(files.newPath(filesystem, new RelativePath("/tmp/sandboxes"))).thenReturn(sandboxPath);
+        when(files.newPath(filesystem, new Pathname("/tmp/sandboxes"))).thenReturn(sandboxPath);
         JobSubmitRequest request = mock(JobSubmitRequest.class);
         JobDescription description = new JobDescription();
         when(request.toJobDescription()).thenReturn(description);
         Sandbox sandbox = mock(Sandbox.class);
-        when(request.toSandbox(octopus, sandboxPath, null)).thenReturn(sandbox);
+        when(request.toSandbox(files, sandboxPath, null)).thenReturn(sandbox);
         when(sandbox.getPath()).thenReturn(sandboxPath);
         when(sandboxPath.getPath()).thenReturn("/tmp/sandboxes");
         HttpClient httpClient = mock(HttpClient.class);

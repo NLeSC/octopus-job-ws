@@ -19,19 +19,18 @@
  */
 package nl.esciencecenter.octopus.webservice.api;
 
-
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
 
 import javax.validation.constraints.NotNull;
 
-import nl.esciencecenter.octopus.Octopus;
 import nl.esciencecenter.octopus.exceptions.OctopusException;
 import nl.esciencecenter.octopus.exceptions.OctopusIOException;
-import nl.esciencecenter.octopus.files.AbsolutePath;
 import nl.esciencecenter.octopus.files.FileSystem;
-import nl.esciencecenter.octopus.files.RelativePath;
+import nl.esciencecenter.octopus.files.Files;
+import nl.esciencecenter.octopus.files.Path;
+import nl.esciencecenter.octopus.files.Pathname;
 import nl.esciencecenter.octopus.jobs.JobDescription;
 import nl.esciencecenter.octopus.util.Sandbox;
 
@@ -42,9 +41,9 @@ import com.google.common.base.Objects;
 
 /**
  * Request which can be converted to JobDescription which can be submitted using JavaGAT.
- *
+ * 
  * @author Stefan Verhoeven <s.verhoeven@esciencecenter.nl>
- *
+ * 
  */
 public class JobSubmitRequest {
     protected static final Logger LOGGER = LoggerFactory.getLogger(JobSubmitRequest.class);
@@ -89,7 +88,7 @@ public class JobSubmitRequest {
 
     /**
      * Constructor
-     *
+     * 
      * @param jobdir
      * @param executable
      * @param arguments
@@ -124,7 +123,7 @@ public class JobSubmitRequest {
 
     /**
      * Convert requested jobsubmission to JobDescription which can be submitted
-     *
+     * 
      * @return JobDescription
      * @throws GATObjectCreationException
      */
@@ -140,12 +139,12 @@ public class JobSubmitRequest {
 
     /**
      * Create sandbox from request.
-     *
+     * 
      * Prestaged files/directories will be added to upload list. Poststaged files/directories will be added to download list.
      * Stderr and Stdout will be added to download list when they are not null.
-     *
+     * 
      * Examples when jobdir = /tmp/jobdir and sandboxpath = /tmp/sandbox
-     *
+     * 
      * <ul>
      * <li>
      * [direction], [argument], [source] -> [destination]</li>
@@ -162,7 +161,7 @@ public class JobSubmitRequest {
      * <li>
      * Poststage "output/data.out", "/tmp/sandbox/data.out" -> "/tmp/jobdir/output/data.out"</li>
      * <ul>
-     *
+     * 
      * @param octopus
      *            Octopus instance
      * @param sandBoxRoot
@@ -174,29 +173,29 @@ public class JobSubmitRequest {
      * @throws OctopusIOException
      * @throws URISyntaxException
      */
-    public Sandbox toSandbox(Octopus octopus, AbsolutePath sandBoxRoot, String sandboxId) throws OctopusException,
-            OctopusIOException, URISyntaxException {
-        Sandbox sandbox = new Sandbox(octopus, sandBoxRoot, sandboxId);
-        FileSystem localFs = octopus.files().newFileSystem(new URI("file:///"), null, null);
-        AbsolutePath localRoot = octopus.files().newPath(localFs, new RelativePath());
-        AbsolutePath jobPath = localRoot.resolve(new RelativePath(jobdir));
+    public Sandbox toSandbox(Files filesEngine, Path sandBoxRoot, String sandboxId) throws OctopusException, OctopusIOException,
+            URISyntaxException {
+        Sandbox sandbox = new Sandbox(filesEngine, sandBoxRoot, sandboxId);
+        FileSystem localFs = filesEngine.newFileSystem(new URI("file:///"), null, null);
+        Path localRoot = filesEngine.newPath(localFs, new Pathname());
+        Path jobPath = localRoot.resolve(new Pathname(jobdir));
 
         // Upload files in request to sandbox
         for (String prestage : prestaged) {
-            AbsolutePath src;
+            Path src;
             if (prestage.startsWith("/")) {
-                src = localRoot.resolve(new RelativePath(prestage));
+                src = localRoot.resolve(new Pathname(prestage));
             } else {
-                src = jobPath.resolve(new RelativePath(prestage));
+                src = jobPath.resolve(new Pathname(prestage));
             }
             sandbox.addUploadFile(src);
         }
 
         // Download files from sandbox to request.jobdir
-        sandbox.addDownloadFile(stdout, jobPath.resolve(new RelativePath(stdout)));
-        sandbox.addDownloadFile(stderr, jobPath.resolve(new RelativePath(stderr)));
+        sandbox.addDownloadFile(stdout, jobPath.resolve(new Pathname(stdout)));
+        sandbox.addDownloadFile(stderr, jobPath.resolve(new Pathname(stderr)));
         for (String poststage : poststaged) {
-            AbsolutePath dest = jobPath.resolve(new RelativePath(poststage));
+            Path dest = jobPath.resolve(new Pathname(poststage));
             sandbox.addDownloadFile(null, dest);
         }
 

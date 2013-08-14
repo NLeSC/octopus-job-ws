@@ -19,8 +19,6 @@
  */
 package nl.esciencecenter.octopus.webservice.job;
 
-
-
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -37,9 +35,10 @@ import nl.esciencecenter.octopus.credentials.Credential;
 import nl.esciencecenter.octopus.exceptions.NoSuchJobException;
 import nl.esciencecenter.octopus.exceptions.OctopusException;
 import nl.esciencecenter.octopus.exceptions.OctopusIOException;
-import nl.esciencecenter.octopus.files.AbsolutePath;
 import nl.esciencecenter.octopus.files.FileSystem;
-import nl.esciencecenter.octopus.files.RelativePath;
+import nl.esciencecenter.octopus.files.Files;
+import nl.esciencecenter.octopus.files.Path;
+import nl.esciencecenter.octopus.files.Pathname;
 import nl.esciencecenter.octopus.jobs.Job;
 import nl.esciencecenter.octopus.jobs.JobDescription;
 import nl.esciencecenter.octopus.jobs.JobStatus;
@@ -56,11 +55,11 @@ import com.yammer.dropwizard.lifecycle.Managed;
 
 /**
  * Octopus manager.
- *
+ * 
  * Responsible for submitting jobs, polling their status and cleaning jobs up.
- *
+ * 
  * @author verhoes
- *
+ * 
  */
 public class OctopusManager implements Managed {
     protected static final Logger LOGGER = LoggerFactory.getLogger(OctopusManager.class);
@@ -74,7 +73,7 @@ public class OctopusManager implements Managed {
 
     /**
      * Sets preferences in GAT context and initializes a broker.
-     *
+     * 
      * @param configuration
      * @throws URISyntaxException
      * @throws OctopusException
@@ -114,6 +113,7 @@ public class OctopusManager implements Managed {
 
     /**
      * Terminates any running Octopus processes and stops the job poller.
+     * 
      * @throws InterruptedException
      * @throws OctopusException
      * @throws OctopusIOException
@@ -128,13 +128,13 @@ public class OctopusManager implements Managed {
 
     /**
      * Submit a job request.
-     *
+     * 
      * @param request
      *            The job request
      * @param httpClient
      *            http client used to reporting status to job callback.
      * @return SandboxedJob job
-     *
+     * 
      * @throws OctopusIOException
      * @throws OctopusException
      * @throws URISyntaxException
@@ -146,10 +146,11 @@ public class OctopusManager implements Managed {
         URI s = configuration.getSandboxRoot();
         URI sandboxURI = new URI(s.getScheme(), s.getUserInfo(), s.getHost(), s.getPort(), "/", s.getQuery(), s.getFragment());
         //create sandbox
-        FileSystem sandboxFS = octopus.files().newFileSystem(sandboxURI, credential, null);
+        Files filesEngine = octopus.files();
+        FileSystem sandboxFS = filesEngine.newFileSystem(sandboxURI, credential, null);
         String sandboxRoot = configuration.getSandboxRoot().getPath();
-        AbsolutePath sandboxRootPath = octopus.files().newPath(sandboxFS, new RelativePath(sandboxRoot));
-        Sandbox sandbox = request.toSandbox(octopus, sandboxRootPath, null);
+        Path sandboxRootPath = filesEngine.newPath(sandboxFS, new Pathname(sandboxRoot));
+        Sandbox sandbox = request.toSandbox(filesEngine, sandboxRootPath, null);
 
         // create job description
         JobDescription description = request.toJobDescription();
@@ -177,14 +178,14 @@ public class OctopusManager implements Managed {
 
     /**
      * Cancel job, cancels pending job and kills running job.
-     *
+     * 
      * Stores canceled state.
-     *
+     * 
      * If job is done then nothing happens.
-     *
+     * 
      * @param jobIdentifier
      *            The identifier of the job.
-     *
+     * 
      * @throws NoSuchJobException
      *             When job with jobIdentifier could not be found.
      * @throws OctopusException
@@ -207,7 +208,7 @@ public class OctopusManager implements Managed {
 
     /**
      * Get list of submitted jobs.
-     *
+     * 
      * @return List of submitted jobs.
      */
     public Collection<SandboxedJob> getJobs() {
@@ -216,7 +217,7 @@ public class OctopusManager implements Managed {
 
     /**
      * Get a job
-     *
+     * 
      * @param jobIdentifier
      * @return the job
      * @throws NoSuchJobException
