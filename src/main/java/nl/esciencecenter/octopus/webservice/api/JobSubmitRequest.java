@@ -178,24 +178,24 @@ public class JobSubmitRequest {
         Sandbox sandbox = new Sandbox(filesEngine, sandBoxRoot, sandboxId);
         FileSystem localFs = filesEngine.newFileSystem(new URI("file:///"), null, null);
         Path localRoot = filesEngine.newPath(localFs, new Pathname());
-        Path jobPath = localRoot.resolve(new Pathname(jobdir));
+        Path jobPath = filesEngine.newPath(localFs, new Pathname(jobdir));
 
         // Upload files in request to sandbox
         for (String prestage : prestaged) {
-            Path src;
+            Pathname src;
             if (prestage.startsWith("/")) {
-                src = localRoot.resolve(new Pathname(prestage));
+                src = localRoot.getPathname().resolve(prestage);
             } else {
-                src = jobPath.resolve(new Pathname(prestage));
+                src = jobPath.getPathname().resolve(prestage);
             }
-            sandbox.addUploadFile(src);
+            sandbox.addUploadFile(filesEngine.newPath(localFs, src));
         }
 
         // Download files from sandbox to request.jobdir
-        sandbox.addDownloadFile(stdout, jobPath.resolve(new Pathname(stdout)));
-        sandbox.addDownloadFile(stderr, jobPath.resolve(new Pathname(stderr)));
+        sandbox.addDownloadFile(stdout, filesEngine.newPath(localFs, jobPath.getPathname().resolve(stdout)));
+        sandbox.addDownloadFile(stderr, filesEngine.newPath(localFs, jobPath.getPathname().resolve(stderr)));
         for (String poststage : poststaged) {
-            Path dest = jobPath.resolve(new Pathname(poststage));
+            Path dest = filesEngine.newPath(localFs, jobPath.getPathname().resolve(poststage));
             sandbox.addDownloadFile(null, dest);
         }
 

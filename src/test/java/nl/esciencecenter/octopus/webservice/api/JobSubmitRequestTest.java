@@ -71,6 +71,26 @@ public class JobSubmitRequestTest {
         when(filesEngine.newFileSystem(new URI("file:///"), null, null)).thenReturn(filesystem);
         Path path = new PathImplementation(filesystem, new Pathname());
         when(filesEngine.newPath(filesystem, new Pathname())).thenReturn(path);
+        when(filesEngine.newPath(filesystem, new Pathname("/tmp/sandboxes"))).thenReturn(
+                new PathImplementation(filesystem, new Pathname("/tmp/sandboxes")));
+        when(filesEngine.newPath(filesystem, new Pathname("/tmp/sandboxes/octopus-sandbox-1234567890"))).thenReturn(
+                new PathImplementation(filesystem, new Pathname("/tmp/sandboxes/octopus-sandbox-1234567890")));
+        when(filesEngine.newPath(filesystem, new Pathname("/tmp/jobdir"))).thenReturn(
+                new PathImplementation(filesystem, new Pathname("/tmp/jobdir")));
+        when(filesEngine.newPath(filesystem, new Pathname("/tmp/jobdir/runme.sh"))).thenReturn(
+                new PathImplementation(filesystem, new Pathname("/tmp/jobdir/runme.sh")));
+        when(filesEngine.newPath(filesystem, new Pathname("/tmp/jobdir/input.dat"))).thenReturn(
+                new PathImplementation(filesystem, new Pathname("/tmp/jobdir/input.dat")));
+        when(filesEngine.newPath(filesystem, new Pathname("/tmp/jobdir/stdout.txt"))).thenReturn(
+                new PathImplementation(filesystem, new Pathname("/tmp/jobdir/stdout.txt")));
+        when(filesEngine.newPath(filesystem, new Pathname("/tmp/jobdir/stderr.txt"))).thenReturn(
+                new PathImplementation(filesystem, new Pathname("/tmp/jobdir/stderr.txt")));
+        when(filesEngine.newPath(filesystem, new Pathname("/tmp/jobdir/output.dat"))).thenReturn(
+                new PathImplementation(filesystem, new Pathname("/tmp/jobdir/output.dat")));
+        when(filesEngine.newPath(filesystem, new Pathname("/tmp/jobdir/data/uniprot.fasta"))).thenReturn(
+                new PathImplementation(filesystem, new Pathname("/tmp/jobdir/data/uniprot.fasta")));
+        when(filesEngine.newPath(filesystem, new Pathname("/data/uniprot.fasta"))).thenReturn(
+                new PathImplementation(filesystem, new Pathname("/data/uniprot.fasta")));
     }
 
     @Test
@@ -213,8 +233,8 @@ public class JobSubmitRequestTest {
         assertThat(sandbox).isEqualTo(expected);
     }
 
-    private Path makePath(String path) {
-        return filesystem.getEntryPath().resolve(new Pathname(path));
+    private Path makePath(String path) throws OctopusIOException {
+        return filesEngine.newPath(filesystem, new Pathname(path));
     }
 
     @Test

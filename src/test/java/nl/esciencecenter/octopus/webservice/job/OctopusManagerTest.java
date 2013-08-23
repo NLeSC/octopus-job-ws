@@ -150,7 +150,9 @@ public class OctopusManagerTest {
         Sandbox sandbox = mock(Sandbox.class);
         when(request.toSandbox(files, sandboxPath, null)).thenReturn(sandbox);
         when(sandbox.getPath()).thenReturn(sandboxPath);
-        when(sandboxPath.getPath()).thenReturn("/tmp/sandboxes");
+        Pathname sandboxPathName = mock(Pathname.class);
+        when(sandboxPath.getPathname()).thenReturn(sandboxPathName);
+        when(sandboxPathName.getAbsolutePath()).thenReturn("/tmp/sandboxes");
         HttpClient httpClient = mock(HttpClient.class);
         Job job = mock(Job.class);
         when(job.getIdentifier()).thenReturn("1234");
