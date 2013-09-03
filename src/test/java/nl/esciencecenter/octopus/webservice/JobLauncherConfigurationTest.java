@@ -7,9 +7,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -33,6 +33,8 @@ import java.net.URISyntaxException;
 import nl.esciencecenter.octopus.webservice.JobLauncherConfiguration;
 import nl.esciencecenter.octopus.webservice.job.OctopusConfiguration;
 import nl.esciencecenter.octopus.webservice.job.PollConfiguration;
+import nl.esciencecenter.octopus.webservice.job.SandboxConfiguration;
+import nl.esciencecenter.octopus.webservice.job.SchedulerConfiguration;
 import nl.esciencecenter.octopus.webservice.mac.MacCredential;
 
 import org.junit.Test;
@@ -48,12 +50,11 @@ public class JobLauncherConfigurationTest {
      * @throws URISyntaxException
      */
     public OctopusConfiguration getSampleOctopusConfiguration() throws URISyntaxException {
-        URI scheduler = new URI("local:///");
-        String queue = "multi";
-        URI sandboxRoot = new URI("file:///tmp/sandboxes");
+        SchedulerConfiguration scheduler = new SchedulerConfiguration("local", null, "multi", null);
+        SandboxConfiguration sandbox = new SandboxConfiguration("file", null, "/tmp/sandboxes", null);
         ImmutableMap<String, String> prefs = ImmutableMap.of("octopus.adaptors.local.queue.multi.maxConcurrentJobs", "4");
         PollConfiguration pollConf = new PollConfiguration(10, 50, 100);
-        OctopusConfiguration octopusConf = new OctopusConfiguration(scheduler, queue, sandboxRoot, prefs, pollConf);
+        OctopusConfiguration octopusConf = new OctopusConfiguration(scheduler, sandbox, prefs, pollConf);
         return octopusConf;
     }
 
@@ -98,8 +99,11 @@ public class JobLauncherConfigurationTest {
         JobLauncherConfiguration conf = fromJson(jsonFixture("fixtures/joblauncher.config.json"), JobLauncherConfiguration.class);
 
         OctopusConfiguration octopusConf = getSampleOctopusConfiguration();
-        octopusConf.setPollConfiguration(new PollConfiguration());
+        octopusConf.setPoll(new PollConfiguration());
         ImmutableList<MacCredential> macs = ImmutableList.of(new MacCredential("id", "key", new URI("http://localhost")));
+        ImmutableMap<String, String> emptyProps = ImmutableMap.of();
+        octopusConf.setScheduler(new SchedulerConfiguration("local", null, "multi", emptyProps));
+        octopusConf.setSandbox(new SandboxConfiguration("file", "/", "/tmp/sandboxes", emptyProps));
 
         assertThat(conf.getOctopusConfiguration()).isEqualTo(octopusConf);
         assertThat(conf.getMacs()).isEqualTo(macs);
@@ -112,7 +116,7 @@ public class JobLauncherConfigurationTest {
 
         int hashcode = octopusConf.hashCode();
 
-        assertThat(hashcode).isEqualTo(-1913015854);
+        assertThat(hashcode).isEqualTo(-1086214713);
     }
 
     @Test
@@ -121,7 +125,7 @@ public class JobLauncherConfigurationTest {
 
         String self = octopusConf.toString();
 
-        String expected = "OctopusConfiguration{local:///, multi, file:///tmp/sandboxes, {octopus.adaptors.local.queue.multi.maxConcurrentJobs=4}, PollConfiguration{10, 50, 100}}";
+        String expected = "OctopusConfiguration{SchedulerConfiguration{local, multi, null, null}, SandboxConfiguration{file, /tmp/sandboxes, null, null}, {octopus.adaptors.local.queue.multi.maxConcurrentJobs=4}, PollConfiguration{10, 50, 100}}";
         assertThat(self).isEqualTo(expected);
 
     }

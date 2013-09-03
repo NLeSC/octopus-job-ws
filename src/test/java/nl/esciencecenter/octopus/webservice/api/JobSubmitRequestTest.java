@@ -64,11 +64,11 @@ public class JobSubmitRequestTest {
     @Before
     public void setUp() throws URISyntaxException, OctopusIOException, OctopusException {
         request = sampleRequest();
-        filesystem = new FileSystemImplementation("local", "local-1", new URI("file:///"), new Pathname(), null, null);
+        filesystem = new FileSystemImplementation("local", "local-1", "file", "/", new Pathname(), null, null);
         octopus = mock(Octopus.class);
         filesEngine = mock(Files.class);
         when(octopus.files()).thenReturn(filesEngine);
-        when(filesEngine.newFileSystem(new URI("file:///"), null, null)).thenReturn(filesystem);
+        when(filesEngine.newFileSystem("file", "/", null, null)).thenReturn(filesystem);
         Path path = new PathImplementation(filesystem, new Pathname());
         when(filesEngine.newPath(filesystem, new Pathname())).thenReturn(path);
         when(filesEngine.newPath(filesystem, new Pathname("/tmp/sandboxes"))).thenReturn(

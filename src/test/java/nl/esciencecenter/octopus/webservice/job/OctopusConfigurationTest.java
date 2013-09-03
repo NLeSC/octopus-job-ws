@@ -42,31 +42,27 @@ import com.google.common.collect.ImmutableMap;
 
 public class OctopusConfigurationTest {
     public OctopusConfiguration sampleConfig() throws URISyntaxException {
-        URI scheduler = new URI("local:///");
-        String queue = null;
-        URI sandbox = new URI("file:///tmp");
+        SchedulerConfiguration scheduler = new SchedulerConfiguration("local", null, "multi", null);
+        SandboxConfiguration sandbox = new SandboxConfiguration("file", null, "/tmp/sandboxes", null);
         ImmutableMap<String, String> prefs = ImmutableMap.of(
                 "octopus.adaptors.local.queue.multi.maxConcurrentJobs", "1");
         PollConfiguration pollConf = new PollConfiguration();
-        OctopusConfiguration config = new OctopusConfiguration(scheduler, queue, sandbox, prefs, pollConf);
+        OctopusConfiguration config = new OctopusConfiguration(scheduler, sandbox, prefs, pollConf);
         return config;
     }
 
     @Test
-    public void testGATConfigurationBrokerPrefs() throws URISyntaxException {
+    public void testGetPreferences_Filled() throws URISyntaxException {
         ImmutableMap<String, String> prefs = ImmutableMap.of(
                 "octopus.adaptors.local.queue.multi.maxConcurrentJobs", "1");
 
         OctopusConfiguration config = sampleConfig();
 
-        assertThat(config.getScheduler()).isEqualTo(new URI("local:///"));
-        assertThat(config.getQueue()).isNull();
-        assertThat(config.getSandboxRoot()).isEqualTo(new URI("file:///tmp"));
         assertThat(config.getPreferences()).isEqualTo(prefs);
     }
 
     @Test
-    public void testGetPreferences() {
+    public void testGetPreferences_Empty() {
         OctopusConfiguration g = new OctopusConfiguration();
         ImmutableMap<String, String> expected = ImmutableMap.of();
         assertThat(g.getPreferences()).isEqualTo(expected);
@@ -85,14 +81,18 @@ public class OctopusConfigurationTest {
         OctopusConfiguration actual = fromJson(jsonFixture("fixtures/octopus.json"),
                 OctopusConfiguration.class);
 
-        assertThat(actual.getScheduler()).isEqualTo(new URI("local:///"));
-        assertThat(actual.getQueue()).isEqualTo("multi");
-        assertThat(actual.getSandboxRoot()).isEqualTo(new URI("file:///tmp/sandboxes"));
+        ImmutableMap<String, String> emptyProps = ImmutableMap.of();
+        SchedulerConfiguration expectedScheduler = new SchedulerConfiguration("local", null, "multi", emptyProps);
+        assertThat(actual.getScheduler()).isEqualTo(expectedScheduler);
+
+        SandboxConfiguration expectedSandbox = new SandboxConfiguration("file", "/", "/tmp/sandboxes", emptyProps);
+        assertThat(actual.getSandbox()).isEqualTo(expectedSandbox);
+
         ImmutableMap<String, String> prefs = ImmutableMap.of(
                 "octopus.adaptors.local.queue.multi.maxConcurrentJobs", "4");
         assertThat(actual.getPreferences()).isEqualTo(prefs);
         PollConfiguration expected_poll = new PollConfiguration(500, 3600000, 43200000);
-        assertThat(actual.getPollConfiguration()).isEqualTo(expected_poll);
+        assertThat(actual.getPoll()).isEqualTo(expected_poll);
     }
 
     @Test
@@ -111,14 +111,14 @@ public class OctopusConfigurationTest {
     @Test
     public void testToString() throws URISyntaxException {
         OctopusConfiguration config = sampleConfig();
-        String expected = "OctopusConfiguration{local:///, null, file:///tmp, {octopus.adaptors.local.queue.multi.maxConcurrentJobs=1}, PollConfiguration{30000, 3600000, 43200000}}";
+        String expected = "OctopusConfiguration{SchedulerConfiguration{local, multi, null, null}, SandboxConfiguration{file, /tmp/sandboxes, null, null}, {octopus.adaptors.local.queue.multi.maxConcurrentJobs=1}, PollConfiguration{30000, 3600000, 43200000}}";
         assertThat(config.toString()).isEqualTo(expected);
     }
 
     @Test
     public void testHashCode() throws URISyntaxException {
         OctopusConfiguration config = sampleConfig();
-        int expected = 1984879424;
+        int expected = -902600778;
         assertThat(config.hashCode()).isEqualTo(expected);
     }
 

@@ -20,7 +20,6 @@
 package nl.esciencecenter.octopus.webservice.job;
 
 import java.io.IOException;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.Map;
@@ -38,7 +37,6 @@ import nl.esciencecenter.octopus.exceptions.OctopusIOException;
 import nl.esciencecenter.octopus.files.FileSystem;
 import nl.esciencecenter.octopus.files.Files;
 import nl.esciencecenter.octopus.files.Path;
-import nl.esciencecenter.octopus.files.Pathname;
 import nl.esciencecenter.octopus.jobs.Job;
 import nl.esciencecenter.octopus.jobs.JobDescription;
 import nl.esciencecenter.octopus.jobs.JobStatus;
@@ -55,11 +53,11 @@ import com.yammer.dropwizard.lifecycle.Managed;
 
 /**
  * Octopus manager.
- * 
+ *
  * Responsible for submitting jobs, polling their status and cleaning jobs up.
- * 
+ *
  * @author verhoes
- * 
+ *
  */
 public class OctopusManager implements Managed {
     protected static final Logger LOGGER = LoggerFactory.getLogger(OctopusManager.class);
@@ -67,13 +65,15 @@ public class OctopusManager implements Managed {
     private final OctopusConfiguration configuration;
     private final Octopus octopus;
     private final Scheduler scheduler;
+    private final Path sandboxRootPath;
     private final Map<String, SandboxedJob> jobs;
     private final JobsPoller poller;
     private ScheduledExecutorService executor;
 
+
     /**
      * Sets preferences in GAT context and initializes a broker.
-     * 
+     *
      * @param configuration
      * @throws URISyntaxException
      * @throws OctopusException
@@ -81,23 +81,53 @@ public class OctopusManager implements Managed {
      */
     public OctopusManager(OctopusConfiguration configuration) throws URISyntaxException, OctopusException, OctopusIOException {
         this.configuration = configuration;
+
         octopus = OctopusFactory.newOctopus(configuration.getPreferences());
-        URI schedulerURI = configuration.getScheduler();
-        Credential credential = configuration.getCredential();
-        // TODO prompt user for password/passphrases
-        scheduler = octopus.jobs().newScheduler(schedulerURI, credential, null);
+
+        scheduler = newScheduler();
+
+        sandboxRootPath = newSandboxRootPath();
+
         jobs = new ConcurrentHashMap<String, SandboxedJob>();
+
         executor = Executors.newSingleThreadScheduledExecutor();
-        PollConfiguration pollConf = configuration.getPollConfiguration();
+        PollConfiguration pollConf = configuration.getPoll();
+
         poller = new JobsPoller(jobs, pollConf, octopus);
     }
 
-    protected OctopusManager(OctopusConfiguration configuration, Octopus octopus, Scheduler scheduler,
+    /**
+     * @return Path
+     * @throws OctopusException
+     * @throws OctopusIOException
+     */
+    protected Path newSandboxRootPath() throws OctopusException, OctopusIOException {
+        Credential credential = null;
+        SandboxConfiguration sandboxConf = this.configuration.getSandbox();
+        Files filesEngine = octopus.files();
+        FileSystem sandboxFS = filesEngine.newFileSystem(sandboxConf.getScheme(), sandboxConf.getLocation(), credential, sandboxConf.getProperties());
+        return filesEngine.newPath(sandboxFS, sandboxConf.getPath());
+    }
+
+    /**
+     * @return Scheduler
+     * @throws OctopusException
+     * @throws OctopusIOException
+     */
+    protected Scheduler newScheduler() throws OctopusException, OctopusIOException {
+        Credential credential = null;
+        SchedulerConfiguration schedulerConf = configuration.getScheduler();
+        // TODO prompt user for password/passphrases
+        return octopus.jobs().newScheduler(schedulerConf.getScheme(), schedulerConf.getLocation(), credential, schedulerConf.getProperties());
+    }
+
+    protected OctopusManager(OctopusConfiguration configuration, Octopus octopus, Scheduler scheduler, Path sandboxRootPath,
             Map<String, SandboxedJob> jobs, JobsPoller poller, ScheduledExecutorService executor) {
         super();
         this.configuration = configuration;
         this.octopus = octopus;
         this.scheduler = scheduler;
+        this.sandboxRootPath = sandboxRootPath;
         this.jobs = jobs;
         this.poller = poller;
         this.executor = executor;
@@ -107,13 +137,13 @@ public class OctopusManager implements Managed {
      * Starts the job poller.
      */
     public void start() {
-        long interval = configuration.getPollConfiguration().getInterval();
+        long interval = configuration.getPoll().getInterval();
         executor.scheduleAtFixedRate(poller, 0, interval, TimeUnit.MILLISECONDS);
     }
 
     /**
      * Terminates any running Octopus processes and stops the job poller.
-     * 
+     *
      * @throws InterruptedException
      * @throws OctopusException
      * @throws OctopusIOException
@@ -128,35 +158,26 @@ public class OctopusManager implements Managed {
 
     /**
      * Submit a job request.
-     * 
+     *
      * @param request
      *            The job request
      * @param httpClient
      *            http client used to reporting status to job callback.
      * @return SandboxedJob job
-     * 
+     *
      * @throws OctopusIOException
      * @throws OctopusException
      * @throws URISyntaxException
      */
     public SandboxedJob submitJob(JobSubmitRequest request, HttpClient httpClient) throws OctopusIOException, OctopusException,
             URISyntaxException {
-        Credential credential = configuration.getCredential();
-        // filesystems cant have path in them so strip eg. file:///tmp to file:///
-        URI s = configuration.getSandboxRoot();
-        URI sandboxURI = new URI(s.getScheme(), s.getUserInfo(), s.getHost(), s.getPort(), "/", s.getQuery(), s.getFragment());
-        //create sandbox
-        Files filesEngine = octopus.files();
-        FileSystem sandboxFS = filesEngine.newFileSystem(sandboxURI, credential, null);
-        String sandboxRoot = configuration.getSandboxRoot().getPath();
-        Path sandboxRootPath = filesEngine.newPath(sandboxFS, new Pathname(sandboxRoot));
-        Sandbox sandbox = request.toSandbox(filesEngine, sandboxRootPath, null);
+        Sandbox sandbox = request.toSandbox(octopus.files(), sandboxRootPath, null);
 
         // create job description
         JobDescription description = request.toJobDescription();
-        description.setQueueName(configuration.getQueue());
+        description.setQueueName(configuration.getScheduler().getQueue());
         description.setWorkingDirectory(sandbox.getPath().getPathname().getAbsolutePath());
-        long cancelTimeout = configuration.getPollConfiguration().getCancelTimeout();
+        long cancelTimeout = configuration.getPoll().getCancelTimeout();
         // CancelTimeout is in milliseconds and MaxTime must be in minutes, so convert it
         int maxTime = (int) TimeUnit.MINUTES.convert(cancelTimeout, TimeUnit.MILLISECONDS);
         description.setMaxTime(maxTime);
@@ -178,14 +199,14 @@ public class OctopusManager implements Managed {
 
     /**
      * Cancel job, cancels pending job and kills running job.
-     * 
+     *
      * Stores canceled state.
-     * 
+     *
      * If job is done then nothing happens.
-     * 
+     *
      * @param jobIdentifier
      *            The identifier of the job.
-     * 
+     *
      * @throws NoSuchJobException
      *             When job with jobIdentifier could not be found.
      * @throws OctopusException
@@ -198,7 +219,7 @@ public class OctopusManager implements Managed {
         if (status == null || !status.isDone()) {
             JobStatus canceledStatus = octopus.jobs().cancelJob(job.getJob());
             if (!canceledStatus.isDone()) {
-                long timeout = configuration.getPollConfiguration().getInterval();
+                long timeout = configuration.getPoll().getInterval();
                 canceledStatus = octopus.jobs().waitUntilDone(job.getJob(), timeout);
             }
             job.cleanSandbox();
@@ -208,7 +229,7 @@ public class OctopusManager implements Managed {
 
     /**
      * Get list of submitted jobs.
-     * 
+     *
      * @return List of submitted jobs.
      */
     public Collection<SandboxedJob> getJobs() {
@@ -217,7 +238,7 @@ public class OctopusManager implements Managed {
 
     /**
      * Get a job
-     * 
+     *
      * @param jobIdentifier
      * @return the job
      * @throws NoSuchJobException

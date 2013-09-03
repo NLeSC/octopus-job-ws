@@ -7,9 +7,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -41,9 +41,9 @@ import com.google.common.base.Objects;
 
 /**
  * Request which can be converted to JobDescription which can be submitted using JavaGAT.
- * 
+ *
  * @author Stefan Verhoeven <s.verhoeven@esciencecenter.nl>
- * 
+ *
  */
 public class JobSubmitRequest {
     protected static final Logger LOGGER = LoggerFactory.getLogger(JobSubmitRequest.class);
@@ -88,7 +88,7 @@ public class JobSubmitRequest {
 
     /**
      * Constructor
-     * 
+     *
      * @param jobdir
      * @param executable
      * @param arguments
@@ -98,7 +98,7 @@ public class JobSubmitRequest {
      * @param stdout
      */
     public JobSubmitRequest(String jobdir, String executable, List<String> arguments, List<String> prestaged,
-            List<String> poststaged, String stderr, String stdout, URI status_callback_url) {
+            List<String> poststaged, String stderr, String stdout, URI statusCallbackURI) {
         super();
         this.jobdir = jobdir;
         this.executable = executable;
@@ -107,7 +107,7 @@ public class JobSubmitRequest {
         this.poststaged = poststaged;
         this.stderr = stderr;
         this.stdout = stdout;
-        this.status_callback_url = status_callback_url;
+        this.status_callback_url = statusCallbackURI;
     }
 
     public URI getStatus_callback_url() {
@@ -123,7 +123,7 @@ public class JobSubmitRequest {
 
     /**
      * Convert requested jobsubmission to JobDescription which can be submitted
-     * 
+     *
      * @return JobDescription
      * @throws GATObjectCreationException
      */
@@ -139,12 +139,12 @@ public class JobSubmitRequest {
 
     /**
      * Create sandbox from request.
-     * 
+     *
      * Prestaged files/directories will be added to upload list. Poststaged files/directories will be added to download list.
      * Stderr and Stdout will be added to download list when they are not null.
-     * 
+     *
      * Examples when jobdir = /tmp/jobdir and sandboxpath = /tmp/sandbox
-     * 
+     *
      * <ul>
      * <li>
      * [direction], [argument], [source] -> [destination]</li>
@@ -161,7 +161,7 @@ public class JobSubmitRequest {
      * <li>
      * Poststage "output/data.out", "/tmp/sandbox/data.out" -> "/tmp/jobdir/output/data.out"</li>
      * <ul>
-     * 
+     *
      * @param octopus
      *            Octopus instance
      * @param sandBoxRoot
@@ -176,7 +176,7 @@ public class JobSubmitRequest {
     public Sandbox toSandbox(Files filesEngine, Path sandBoxRoot, String sandboxId) throws OctopusException, OctopusIOException,
             URISyntaxException {
         Sandbox sandbox = new Sandbox(filesEngine, sandBoxRoot, sandboxId);
-        FileSystem localFs = filesEngine.newFileSystem(new URI("file:///"), null, null);
+        FileSystem localFs = filesEngine.newFileSystem("file", "/", null, null);
         Path localRoot = filesEngine.newPath(localFs, new Pathname());
         Path jobPath = filesEngine.newPath(localFs, new Pathname(jobdir));
 

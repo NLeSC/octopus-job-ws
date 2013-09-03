@@ -26,7 +26,6 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.HashMap;
@@ -64,9 +63,9 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import com.google.common.collect.ImmutableMap;
 
 /**
- * 
+ *
  * @author verhoes
- * 
+ *
  */
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(OctopusFactory.class)
@@ -79,12 +78,15 @@ public class OctopusManagerTest {
         Octopus octopus = mock(Octopus.class);
         Jobs jobs = mock(Jobs.class);
         when(octopus.jobs()).thenReturn(jobs);
+        Files files = mock(Files.class);
+        when(octopus.files()).thenReturn(files);
         ImmutableMap<String, String> prefs = ImmutableMap.of("octopus.adaptors.local.queue.multi.maxConcurrentJobs", "1");
         when(OctopusFactory.newOctopus(prefs)).thenReturn(octopus);
 
         PollConfiguration pollConf = new PollConfiguration();
-        OctopusConfiguration conf =
-                new OctopusConfiguration(new URI("local:///"), "multi", new URI("file:///tmp/sandboxes"), prefs, pollConf);
+        SchedulerConfiguration scheduler = new SchedulerConfiguration("local", null, "multi", null);
+        SandboxConfiguration sandbox = new SandboxConfiguration("file", null, "/tmp/sandboxes", null);
+        OctopusConfiguration conf = new OctopusConfiguration(scheduler, sandbox, prefs, pollConf);
 
         new OctopusManager(conf);
 
@@ -92,7 +94,7 @@ public class OctopusManagerTest {
         PowerMockito.verifyStatic();
         OctopusFactory.newOctopus(prefs);
         // verify scheduler created
-        when(jobs.newScheduler(new URI("local:///"), null, prefs));
+        verify(jobs).newScheduler("local", null, null, null);
     }
 
     @Test
@@ -100,7 +102,7 @@ public class OctopusManagerTest {
         JobsPoller poller = mock(JobsPoller.class);
         ScheduledExecutorService executor = mock(ScheduledExecutorService.class);
         OctopusConfiguration conf = new OctopusConfiguration();
-        OctopusManager manager = new OctopusManager(conf, null, null, null, poller, executor);
+        OctopusManager manager = new OctopusManager(conf, null, null, null, null, poller, executor);
 
         manager.start();
 
@@ -115,7 +117,7 @@ public class OctopusManagerTest {
         ScheduledExecutorService executor = mock(ScheduledExecutorService.class);
         JobsPoller poller = mock(JobsPoller.class);
         Scheduler scheduler = mock(Scheduler.class);
-        OctopusManager manager = new OctopusManager(null, octopus, scheduler, null, poller, executor);
+        OctopusManager manager = new OctopusManager(null, octopus, scheduler, null, null, poller, executor);
 
         manager.stop();
 
@@ -132,8 +134,9 @@ public class OctopusManagerTest {
         props.put("octopus.adaptors.local.queue.multi.maxConcurrentJobs", "4");
         ImmutableMap<String, String> prefs = ImmutableMap.of("octopus.adaptors.local.queue.multi.maxConcurrentJobs", "1");
         PollConfiguration pollConf = new PollConfiguration();
-        OctopusConfiguration conf =
-                new OctopusConfiguration(new URI("local:///"), "multi", new URI("file:///tmp/sandboxes"), prefs, pollConf);
+        SchedulerConfiguration schedulerConf = new SchedulerConfiguration("local", null, "multi", null);
+        SandboxConfiguration sandboxConf = new SandboxConfiguration("file", null, "/tmp/sandboxes", null);
+        OctopusConfiguration conf = new OctopusConfiguration(schedulerConf, sandboxConf, prefs, pollConf);
         Octopus octopus = mock(Octopus.class);
         Scheduler scheduler = mock(Scheduler.class);
         Jobs jobs = mock(Jobs.class);
@@ -142,7 +145,7 @@ public class OctopusManagerTest {
         when(octopus.files()).thenReturn(files);
         Path sandboxPath = mock(Path.class);
         FileSystem filesystem = mock(FileSystem.class);
-        when(files.newFileSystem(new URI("file:///"), null, null)).thenReturn(filesystem);
+        when(files.newFileSystem("file", "/", null, null)).thenReturn(filesystem);
         when(files.newPath(filesystem, new Pathname("/tmp/sandboxes"))).thenReturn(sandboxPath);
         JobSubmitRequest request = mock(JobSubmitRequest.class);
         JobDescription description = new JobDescription();
@@ -160,7 +163,7 @@ public class OctopusManagerTest {
         Map<String, SandboxedJob> sjobs = new HashMap<String, SandboxedJob>();
         JobsPoller poller = mock(JobsPoller.class);
         ScheduledExecutorService executor = mock(ScheduledExecutorService.class);
-        OctopusManager manager = new OctopusManager(conf, octopus, scheduler, sjobs, poller, executor);
+        OctopusManager manager = new OctopusManager(conf, octopus, scheduler, sandboxPath, sjobs, poller, executor);
 
         SandboxedJob result = manager.submitJob(request, httpClient);
 
@@ -179,7 +182,7 @@ public class OctopusManagerTest {
         Map<String, SandboxedJob> sjobs = new HashMap<String, SandboxedJob>();
         SandboxedJob sjob = mock(SandboxedJob.class);
         sjobs.put("1234", sjob);
-        OctopusManager manager = new OctopusManager(null, null, null, sjobs, null, null);
+        OctopusManager manager = new OctopusManager(null, null, null, null, sjobs, null, null);
 
         SandboxedJob result = manager.getJob("1234");
 
@@ -189,7 +192,7 @@ public class OctopusManagerTest {
     @Test(expected = NoSuchJobException.class)
     public void getJob_UnknownJob_ThrowsNoSuchJobException() throws OctopusIOException, OctopusException {
         Map<String, SandboxedJob> sjobs = new HashMap<String, SandboxedJob>();
-        OctopusManager manager = new OctopusManager(null, null, null, sjobs, null, null);
+        OctopusManager manager = new OctopusManager(null, null, null, null, sjobs, null, null);
 
         manager.getJob("1234");
     }
@@ -211,7 +214,7 @@ public class OctopusManagerTest {
         JobStatus timeout_jobstatus =
                 new JobStatusImplementation(job, "KILLED", null, new Exception("Process timed out"), false, true, null);
         when(jobsEngine.cancelJob(job)).thenReturn(timeout_jobstatus);
-        OctopusManager manager = new OctopusManager(null, octopus, null, sjobs, null, null);
+        OctopusManager manager = new OctopusManager(null, octopus, null, null, sjobs, null, null);
 
         manager.cancelJob("1234");
 
@@ -233,7 +236,7 @@ public class OctopusManagerTest {
         when(status.isDone()).thenReturn(true); // Job is done
         when(sjob.getStatus()).thenReturn(status);
         sjobs.put("1234", sjob);
-        OctopusManager manager = new OctopusManager(null, octopus, null, sjobs, null, null);
+        OctopusManager manager = new OctopusManager(null, octopus, null, null, sjobs, null, null);
 
         manager.cancelJob("1234");
 
@@ -243,7 +246,7 @@ public class OctopusManagerTest {
     @Test(expected = NoSuchJobException.class)
     public void testCancelJob_UnknownJob_ThrowsNoSuchJobException() throws OctopusException, IOException {
         Map<String, SandboxedJob> sjobs = new HashMap<String, SandboxedJob>();
-        OctopusManager manager = new OctopusManager(null, null, null, sjobs, null, null);
+        OctopusManager manager = new OctopusManager(null, null, null, null, sjobs, null, null);
 
         manager.cancelJob("1234");
     }
@@ -264,7 +267,7 @@ public class OctopusManagerTest {
         JobStatus timeout_jobstatus =
                 new JobStatusImplementation(job, "KILLED", null, new Exception("Process timed out"), false, true, null);
         when(jobsEngine.cancelJob(job)).thenReturn(timeout_jobstatus);
-        OctopusManager manager = new OctopusManager(null, octopus, null, sjobs, null, null);
+        OctopusManager manager = new OctopusManager(null, octopus, null, null, sjobs, null, null);
 
         manager.cancelJob("1234");
 
@@ -278,7 +281,7 @@ public class OctopusManagerTest {
         SandboxedJob sjob = mock(SandboxedJob.class);
         when(sjob.getIdentifier()).thenReturn("1234");
         sjobs.put(sjob.getIdentifier(), sjob);
-        OctopusManager manager = new OctopusManager(null, null, null, sjobs, null, null);
+        OctopusManager manager = new OctopusManager(null, null, null, null, sjobs, null, null);
 
         Collection<SandboxedJob> jobs = manager.getJobs();
 

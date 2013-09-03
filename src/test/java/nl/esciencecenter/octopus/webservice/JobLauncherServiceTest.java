@@ -7,9 +7,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -42,6 +42,8 @@ import nl.esciencecenter.octopus.webservice.health.JobLauncherHealthCheck;
 import nl.esciencecenter.octopus.webservice.job.OctopusConfiguration;
 import nl.esciencecenter.octopus.webservice.job.OctopusManager;
 import nl.esciencecenter.octopus.webservice.job.PollConfiguration;
+import nl.esciencecenter.octopus.webservice.job.SandboxConfiguration;
+import nl.esciencecenter.octopus.webservice.job.SchedulerConfiguration;
 import nl.esciencecenter.octopus.webservice.mac.MacCredential;
 import nl.esciencecenter.octopus.webservice.mac.MacScheme;
 
@@ -94,10 +96,10 @@ public class JobLauncherServiceTest {
             throws URISyntaxException {
         ImmutableMap<String, String> prefs = ImmutableMap.of(
                 "octopus.adaptors.local.queue.multi.maxConcurrentJobs", "1");
-        URI scheduler = new URI("local:///");
-        URI sandboxRoot = new URI("file:///tmp/sandboxes");
+        SchedulerConfiguration scheduler = new SchedulerConfiguration("local", null, "multi", null);
+        SandboxConfiguration sandbox = new SandboxConfiguration("file", "/", "/tmp/sandboxes", null);
         PollConfiguration pollConf = new PollConfiguration();
-        OctopusConfiguration octopus = new OctopusConfiguration(scheduler, "multi", sandboxRoot, prefs, pollConf);
+        OctopusConfiguration octopus = new OctopusConfiguration(scheduler, sandbox, prefs, pollConf);
         ImmutableList<MacCredential> macs = ImmutableList.of(new MacCredential(
                 "id", "key", new URI("http://localhost")));
         HttpClientConfiguration httpClient = new HttpClientConfiguration();
