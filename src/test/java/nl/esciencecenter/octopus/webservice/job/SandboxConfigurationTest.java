@@ -20,7 +20,7 @@
 package nl.esciencecenter.octopus.webservice.job;
 
 import static org.fest.assertions.api.Assertions.assertThat;
-import nl.esciencecenter.octopus.files.Pathname;
+import nl.esciencecenter.octopus.files.RelativePath;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -56,7 +56,7 @@ public class SandboxConfigurationTest {
 
     @Test
     public void testGetPath() {
-        Pathname expected = new Pathname("/tmp/sandboxes");
+        RelativePath expected = new RelativePath("/tmp/sandboxes");
         assertThat(sandbox.getPath()).isEqualTo(expected);
     }
 

@@ -46,7 +46,7 @@
 		</license>
 	</licenses>
 	<properties>
-		<octopus.version>1.0</octopus.version>
+		<octopus.version>0.2.0</octopus.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<dropwizard.version>0.6.2</dropwizard.version>
 		<powermock.version>1.5</powermock.version>
@@ -146,7 +146,7 @@
 				</configuration>
 			</plugin>
 
-			<!-- To run ws as standalone use 'mvn package;java -jar target/target/joblauncher-${version}.jar 
+			<!-- To run ws as standalone use 'mvn package;java -jar target/target/joblauncher-${version}.jar
 				server joblauncher.yml' -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>

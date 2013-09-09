@@ -22,13 +22,13 @@ Install
 
    git clone https://github.com/NLeSC/octopus.git
    cd octopus
-   ant build -Dversion=-1.0
+   ant build
 
 2. Add Octopus jar to local maven repository, so it can be used as maven dependencies
 
 .. code-block:: bash
 
-   mvn install:install-file -Dfile=dist/octopus-1.0.jar -DartifactId=octopus -Dversion=1.0 -DgroupId=nl.esciencecenter.octopus -Dpackaging=jar -DgeneratePom=true
+   mvn install:install-file -Dfile=dist/octopus.jar -DartifactId=octopus -Dversion=0.2.0 -DgroupId=nl.esciencecenter.octopus -Dpackaging=jar -DgeneratePom=true
 
 3. Make copy of 'joblauncher.yml-dist' to 'joblauncher.yml'
 3.1 Configure Octopus scheduler

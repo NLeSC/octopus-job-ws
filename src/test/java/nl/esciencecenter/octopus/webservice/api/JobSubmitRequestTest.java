@@ -48,7 +48,7 @@ import nl.esciencecenter.octopus.exceptions.OctopusIOException;
 import nl.esciencecenter.octopus.files.FileSystem;
 import nl.esciencecenter.octopus.files.Files;
 import nl.esciencecenter.octopus.files.Path;
-import nl.esciencecenter.octopus.files.Pathname;
+import nl.esciencecenter.octopus.files.RelativePath;
 import nl.esciencecenter.octopus.jobs.JobDescription;
 import nl.esciencecenter.octopus.util.Sandbox;
 
@@ -64,33 +64,33 @@ public class JobSubmitRequestTest {
     @Before
     public void setUp() throws URISyntaxException, OctopusIOException, OctopusException {
         request = sampleRequest();
-        filesystem = new FileSystemImplementation("local", "local-1", "file", "/", new Pathname(), null, null);
+        filesystem = new FileSystemImplementation("local", "local-1", "file", "/", new RelativePath(), null, null);
         octopus = mock(Octopus.class);
         filesEngine = mock(Files.class);
         when(octopus.files()).thenReturn(filesEngine);
         when(filesEngine.newFileSystem("file", "/", null, null)).thenReturn(filesystem);
-        Path path = new PathImplementation(filesystem, new Pathname());
-        when(filesEngine.newPath(filesystem, new Pathname())).thenReturn(path);
-        when(filesEngine.newPath(filesystem, new Pathname("/tmp/sandboxes"))).thenReturn(
-                new PathImplementation(filesystem, new Pathname("/tmp/sandboxes")));
-        when(filesEngine.newPath(filesystem, new Pathname("/tmp/sandboxes/octopus-sandbox-1234567890"))).thenReturn(
-                new PathImplementation(filesystem, new Pathname("/tmp/sandboxes/octopus-sandbox-1234567890")));
-        when(filesEngine.newPath(filesystem, new Pathname("/tmp/jobdir"))).thenReturn(
-                new PathImplementation(filesystem, new Pathname("/tmp/jobdir")));
-        when(filesEngine.newPath(filesystem, new Pathname("/tmp/jobdir/runme.sh"))).thenReturn(
-                new PathImplementation(filesystem, new Pathname("/tmp/jobdir/runme.sh")));
-        when(filesEngine.newPath(filesystem, new Pathname("/tmp/jobdir/input.dat"))).thenReturn(
-                new PathImplementation(filesystem, new Pathname("/tmp/jobdir/input.dat")));
-        when(filesEngine.newPath(filesystem, new Pathname("/tmp/jobdir/stdout.txt"))).thenReturn(
-                new PathImplementation(filesystem, new Pathname("/tmp/jobdir/stdout.txt")));
-        when(filesEngine.newPath(filesystem, new Pathname("/tmp/jobdir/stderr.txt"))).thenReturn(
-                new PathImplementation(filesystem, new Pathname("/tmp/jobdir/stderr.txt")));
-        when(filesEngine.newPath(filesystem, new Pathname("/tmp/jobdir/output.dat"))).thenReturn(
-                new PathImplementation(filesystem, new Pathname("/tmp/jobdir/output.dat")));
-        when(filesEngine.newPath(filesystem, new Pathname("/tmp/jobdir/data/uniprot.fasta"))).thenReturn(
-                new PathImplementation(filesystem, new Pathname("/tmp/jobdir/data/uniprot.fasta")));
-        when(filesEngine.newPath(filesystem, new Pathname("/data/uniprot.fasta"))).thenReturn(
-                new PathImplementation(filesystem, new Pathname("/data/uniprot.fasta")));
+        Path path = new PathImplementation(filesystem, new RelativePath());
+        when(filesEngine.newPath(filesystem, new RelativePath())).thenReturn(path);
+        when(filesEngine.newPath(filesystem, new RelativePath("/tmp/sandboxes"))).thenReturn(
+                new PathImplementation(filesystem, new RelativePath("/tmp/sandboxes")));
+        when(filesEngine.newPath(filesystem, new RelativePath("/tmp/sandboxes/octopus-sandbox-1234567890"))).thenReturn(
+                new PathImplementation(filesystem, new RelativePath("/tmp/sandboxes/octopus-sandbox-1234567890")));
+        when(filesEngine.newPath(filesystem, new RelativePath("/tmp/jobdir"))).thenReturn(
+                new PathImplementation(filesystem, new RelativePath("/tmp/jobdir")));
+        when(filesEngine.newPath(filesystem, new RelativePath("/tmp/jobdir/runme.sh"))).thenReturn(
+                new PathImplementation(filesystem, new RelativePath("/tmp/jobdir/runme.sh")));
+        when(filesEngine.newPath(filesystem, new RelativePath("/tmp/jobdir/input.dat"))).thenReturn(
+                new PathImplementation(filesystem, new RelativePath("/tmp/jobdir/input.dat")));
+        when(filesEngine.newPath(filesystem, new RelativePath("/tmp/jobdir/stdout.txt"))).thenReturn(
+                new PathImplementation(filesystem, new RelativePath("/tmp/jobdir/stdout.txt")));
+        when(filesEngine.newPath(filesystem, new RelativePath("/tmp/jobdir/stderr.txt"))).thenReturn(
+                new PathImplementation(filesystem, new RelativePath("/tmp/jobdir/stderr.txt")));
+        when(filesEngine.newPath(filesystem, new RelativePath("/tmp/jobdir/output.dat"))).thenReturn(
+                new PathImplementation(filesystem, new RelativePath("/tmp/jobdir/output.dat")));
+        when(filesEngine.newPath(filesystem, new RelativePath("/tmp/jobdir/data/uniprot.fasta"))).thenReturn(
+                new PathImplementation(filesystem, new RelativePath("/tmp/jobdir/data/uniprot.fasta")));
+        when(filesEngine.newPath(filesystem, new RelativePath("/data/uniprot.fasta"))).thenReturn(
+                new PathImplementation(filesystem, new RelativePath("/data/uniprot.fasta")));
     }
 
     @Test
@@ -234,7 +234,7 @@ public class JobSubmitRequestTest {
     }
 
     private Path makePath(String path) throws OctopusIOException {
-        return filesEngine.newPath(filesystem, new Pathname(path));
+        return filesEngine.newPath(filesystem, new RelativePath(path));
     }
 
     @Test

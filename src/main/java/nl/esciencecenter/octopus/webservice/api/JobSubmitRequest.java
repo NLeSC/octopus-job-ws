@@ -30,7 +30,7 @@ import nl.esciencecenter.octopus.exceptions.OctopusIOException;
 import nl.esciencecenter.octopus.files.FileSystem;
 import nl.esciencecenter.octopus.files.Files;
 import nl.esciencecenter.octopus.files.Path;
-import nl.esciencecenter.octopus.files.Pathname;
+import nl.esciencecenter.octopus.files.RelativePath;
 import nl.esciencecenter.octopus.jobs.JobDescription;
 import nl.esciencecenter.octopus.util.Sandbox;
 
@@ -177,25 +177,25 @@ public class JobSubmitRequest {
             URISyntaxException {
         Sandbox sandbox = new Sandbox(filesEngine, sandBoxRoot, sandboxId);
         FileSystem localFs = filesEngine.newFileSystem("file", "/", null, null);
-        Path localRoot = filesEngine.newPath(localFs, new Pathname());
-        Path jobPath = filesEngine.newPath(localFs, new Pathname(jobdir));
+        Path localRoot = filesEngine.newPath(localFs, new RelativePath());
+        Path jobPath = filesEngine.newPath(localFs, new RelativePath(jobdir));
 
         // Upload files in request to sandbox
         for (String prestage : prestaged) {
-            Pathname src;
+            RelativePath src;
             if (prestage.startsWith("/")) {
-                src = localRoot.getPathname().resolve(prestage);
+                src = localRoot.getRelativePath().resolve(prestage);
             } else {
-                src = jobPath.getPathname().resolve(prestage);
+                src = jobPath.getRelativePath().resolve(prestage);
             }
             sandbox.addUploadFile(filesEngine.newPath(localFs, src));
         }
 
         // Download files from sandbox to request.jobdir
-        sandbox.addDownloadFile(stdout, filesEngine.newPath(localFs, jobPath.getPathname().resolve(stdout)));
-        sandbox.addDownloadFile(stderr, filesEngine.newPath(localFs, jobPath.getPathname().resolve(stderr)));
+        sandbox.addDownloadFile(stdout, filesEngine.newPath(localFs, jobPath.getRelativePath().resolve(stdout)));
+        sandbox.addDownloadFile(stderr, filesEngine.newPath(localFs, jobPath.getRelativePath().resolve(stderr)));
         for (String poststage : poststaged) {
-            Path dest = filesEngine.newPath(localFs, jobPath.getPathname().resolve(poststage));
+            Path dest = filesEngine.newPath(localFs, jobPath.getRelativePath().resolve(poststage));
             sandbox.addDownloadFile(null, dest);
         }
 

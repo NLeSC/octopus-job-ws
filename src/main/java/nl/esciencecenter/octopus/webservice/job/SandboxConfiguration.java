@@ -21,7 +21,7 @@ package nl.esciencecenter.octopus.webservice.job;
 
 import java.util.Map;
 
-import nl.esciencecenter.octopus.files.Pathname;
+import nl.esciencecenter.octopus.files.RelativePath;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
@@ -82,8 +82,8 @@ public class SandboxConfiguration {
         return properties;
     }
 
-    public Pathname getPath() {
-        return new Pathname(path);
+    public RelativePath getPath() {
+        return new RelativePath(path);
     }
 
     @Override
