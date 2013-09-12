@@ -29,17 +29,16 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import nl.esciencecenter.octopus.Octopus;
+import nl.esciencecenter.octopus.OctopusException;
 import nl.esciencecenter.octopus.OctopusFactory;
 import nl.esciencecenter.octopus.credentials.Credential;
-import nl.esciencecenter.octopus.exceptions.NoSuchJobException;
-import nl.esciencecenter.octopus.exceptions.OctopusException;
-import nl.esciencecenter.octopus.exceptions.OctopusIOException;
 import nl.esciencecenter.octopus.files.FileSystem;
 import nl.esciencecenter.octopus.files.Files;
 import nl.esciencecenter.octopus.files.Path;
 import nl.esciencecenter.octopus.jobs.Job;
 import nl.esciencecenter.octopus.jobs.JobDescription;
 import nl.esciencecenter.octopus.jobs.JobStatus;
+import nl.esciencecenter.octopus.jobs.NoSuchJobException;
 import nl.esciencecenter.octopus.jobs.Scheduler;
 import nl.esciencecenter.octopus.util.Sandbox;
 import nl.esciencecenter.octopus.webservice.api.JobSubmitRequest;
@@ -77,9 +76,8 @@ public class OctopusManager implements Managed {
      * @param configuration
      * @throws URISyntaxException
      * @throws OctopusException
-     * @throws OctopusIOException
      */
-    public OctopusManager(OctopusConfiguration configuration) throws URISyntaxException, OctopusException, OctopusIOException {
+    public OctopusManager(OctopusConfiguration configuration) throws URISyntaxException, OctopusException {
         this.configuration = configuration;
 
         octopus = OctopusFactory.newOctopus(configuration.getPreferences());
@@ -99,9 +97,8 @@ public class OctopusManager implements Managed {
     /**
      * @return Path
      * @throws OctopusException
-     * @throws OctopusIOException
      */
-    protected Path newSandboxRootPath() throws OctopusException, OctopusIOException {
+    protected Path newSandboxRootPath() throws OctopusException {
         Credential credential = null;
         SandboxConfiguration sandboxConf = this.configuration.getSandbox();
         Files filesEngine = octopus.files();
@@ -112,9 +109,8 @@ public class OctopusManager implements Managed {
     /**
      * @return Scheduler
      * @throws OctopusException
-     * @throws OctopusIOException
      */
-    protected Scheduler newScheduler() throws OctopusException, OctopusIOException {
+    protected Scheduler newScheduler() throws OctopusException {
         Credential credential = null;
         SchedulerConfiguration schedulerConf = configuration.getScheduler();
         // TODO prompt user for password/passphrases
@@ -148,7 +144,7 @@ public class OctopusManager implements Managed {
      * @throws OctopusException
      * @throws OctopusIOException
      */
-    public void stop() throws InterruptedException, OctopusIOException, OctopusException {
+    public void stop() throws InterruptedException, OctopusException {
         executor.shutdown();
         // JobsPoller can be in middle of fetching job statuses so give it 1 minute to finish before interrupting it
         executor.awaitTermination(1, TimeUnit.MINUTES);
@@ -165,11 +161,10 @@ public class OctopusManager implements Managed {
      *            http client used to reporting status to job callback.
      * @return SandboxedJob job
      *
-     * @throws OctopusIOException
      * @throws OctopusException
      * @throws URISyntaxException
      */
-    public SandboxedJob submitJob(JobSubmitRequest request, HttpClient httpClient) throws OctopusIOException, OctopusException,
+    public SandboxedJob submitJob(JobSubmitRequest request, HttpClient httpClient) throws OctopusException,
             URISyntaxException {
         Sandbox sandbox = request.toSandbox(octopus.files(), sandboxRootPath, null);
 

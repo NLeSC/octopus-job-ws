@@ -37,8 +37,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 
-import nl.esciencecenter.octopus.exceptions.OctopusException;
-import nl.esciencecenter.octopus.exceptions.OctopusIOException;
+import nl.esciencecenter.octopus.OctopusException;
 import nl.esciencecenter.octopus.webservice.api.JobSubmitRequest;
 import nl.esciencecenter.octopus.webservice.api.SandboxedJob;
 import nl.esciencecenter.octopus.webservice.job.OctopusManager;
@@ -107,7 +106,7 @@ public class JobsResource {
      */
     @POST
     @Timed
-    public Response submitJob(@Valid JobSubmitRequest request) throws OctopusIOException, OctopusException, URISyntaxException {
+    public Response submitJob(@Valid JobSubmitRequest request) throws URISyntaxException, OctopusException {
         SandboxedJob job = octopusmanager.submitJob(request, httpClient);
         UriBuilder builder = uriInfo.getAbsolutePathBuilder();
         URI location = builder.path(job.getIdentifier()).build();

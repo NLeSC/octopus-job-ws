@@ -7,9 +7,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -38,12 +38,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 import nl.esciencecenter.octopus.Octopus;
+import nl.esciencecenter.octopus.OctopusException;
 import nl.esciencecenter.octopus.engine.jobs.JobImplementation;
 import nl.esciencecenter.octopus.engine.jobs.JobStatusImplementation;
-import nl.esciencecenter.octopus.exceptions.OctopusException;
-import nl.esciencecenter.octopus.exceptions.OctopusIOException;
-import nl.esciencecenter.octopus.exceptions.UnsupportedOperationException;
 import nl.esciencecenter.octopus.files.CopyOption;
+import nl.esciencecenter.octopus.files.InvalidCopyOptionsException;
 import nl.esciencecenter.octopus.jobs.Job;
 import nl.esciencecenter.octopus.jobs.JobDescription;
 import nl.esciencecenter.octopus.jobs.JobStatus;
@@ -129,7 +128,7 @@ public class JobsPollerTest {
     }
 
     @Test
-    public void run_RunningState_DoneOkWithCleanupSandbox() throws OctopusIOException, UnsupportedOperationException {
+    public void run_RunningState_DoneOkWithCleanupSandbox() throws UnsupportedOperationException, InvalidCopyOptionsException, OctopusException {
         Map<String, SandboxedJob> jobs = new HashMap<String, SandboxedJob>();
         String identifier = "1234";
         Job job = new JobImplementation(mock(Scheduler.class), identifier, mock(JobDescription.class), false, false);
@@ -154,7 +153,7 @@ public class JobsPollerTest {
     }
 
     @Test
-    public void run_PendingStateOnCancelTimeout_JobCanceled() throws OctopusIOException, OctopusException {
+    public void run_PendingStateOnCancelTimeout_JobCanceled() throws OctopusException {
         Map<String, SandboxedJob> jobs = new HashMap<String, SandboxedJob>();
         String identifier = "1234";
         Job job = new JobImplementation(mock(Scheduler.class), identifier, mock(JobDescription.class), false, false);
@@ -180,7 +179,7 @@ public class JobsPollerTest {
     }
 
     @Test
-    public void run_PendingStateOnDeleteTimeout_JobDeleted() throws OctopusIOException, OctopusException {
+    public void run_PendingStateOnDeleteTimeout_JobDeleted() throws OctopusException {
         Map<String, SandboxedJob> jobs = new HashMap<String, SandboxedJob>();
         String identifier = "1234";
         Job job = new JobImplementation(mock(Scheduler.class), identifier, mock(JobDescription.class), false, false);
@@ -226,7 +225,7 @@ public class JobsPollerTest {
     }
 
     @Test
-    public void testCancelJob() throws OctopusIOException, OctopusException {
+    public void testCancelJob() throws OctopusException {
         Octopus octopus = mock(Octopus.class);
         Jobs jobs = mock(Jobs.class);
         when(octopus.jobs()).thenReturn(jobs);
@@ -241,7 +240,7 @@ public class JobsPollerTest {
     }
 
     @Test
-    public void testCleanSandbox() throws OctopusIOException, UnsupportedOperationException {
+    public void testCleanSandbox() throws UnsupportedOperationException, OctopusException {
         Octopus octopus = mock(Octopus.class);
         JobsPoller poller = new JobsPoller(null, null, octopus);
         SandboxedJob job = mock(SandboxedJob.class);
@@ -264,7 +263,7 @@ public class JobsPollerTest {
     }
 
     @Test
-    public void testStop_NoJobs_nocancel() throws OctopusIOException, OctopusException {
+    public void testStop_NoJobs_nocancel() throws OctopusException {
         Octopus octopus = mock(Octopus.class);
         Map<String, SandboxedJob> jobs = new HashMap<String, SandboxedJob>();
         JobsPoller poller = new JobsPoller(jobs, null, octopus);
@@ -275,7 +274,7 @@ public class JobsPollerTest {
     }
 
     @Test
-    public void testStop_DoneJobs_nocancel() throws OctopusIOException, OctopusException {
+    public void testStop_DoneJobs_nocancel() throws OctopusException {
         Octopus octopus = mock(Octopus.class);
         Map<String, SandboxedJob> jobs = new HashMap<String, SandboxedJob>();
         String identifier = "1234";
@@ -291,7 +290,7 @@ public class JobsPollerTest {
     }
 
     @Test
-    public void testStop_runningjobs_cancelanddelete() throws OctopusIOException, OctopusException {
+    public void testStop_runningjobs_cancelanddelete() throws OctopusException {
         Octopus octopus = mock(Octopus.class);
         Jobs jobsEngine = mock(Jobs.class);
         when(octopus.jobs()).thenReturn(jobsEngine);

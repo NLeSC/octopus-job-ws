@@ -7,9 +7,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -37,11 +37,11 @@ import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 
+import nl.esciencecenter.octopus.OctopusException;
 import nl.esciencecenter.octopus.engine.jobs.JobImplementation;
 import nl.esciencecenter.octopus.engine.jobs.JobStatusImplementation;
-import nl.esciencecenter.octopus.exceptions.OctopusIOException;
-import nl.esciencecenter.octopus.exceptions.UnsupportedOperationException;
 import nl.esciencecenter.octopus.files.CopyOption;
+import nl.esciencecenter.octopus.files.InvalidCopyOptionsException;
 import nl.esciencecenter.octopus.jobs.Job;
 import nl.esciencecenter.octopus.jobs.JobDescription;
 import nl.esciencecenter.octopus.jobs.JobStatus;
@@ -176,14 +176,14 @@ public class SandboxedJobTest {
     }
 
     @Test
-    public void testCleanSandbox() throws URISyntaxException, OctopusIOException, UnsupportedOperationException {
+    public void testCleanSandbox() throws URISyntaxException, UnsupportedOperationException, OctopusException {
         job.cleanSandbox();
 
         verify(sandbox).delete();
     }
 
     @Test
-    public void testDownloadSandbox() throws URISyntaxException, OctopusIOException, UnsupportedOperationException {
+    public void testDownloadSandbox() throws URISyntaxException, UnsupportedOperationException, InvalidCopyOptionsException, OctopusException {
         job.downloadSandbox();
 
         verify(sandbox).download(CopyOption.REPLACE);

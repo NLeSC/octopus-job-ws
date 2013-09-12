@@ -41,10 +41,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import nl.esciencecenter.octopus.Octopus;
+import nl.esciencecenter.octopus.OctopusException;
 import nl.esciencecenter.octopus.engine.files.FileSystemImplementation;
 import nl.esciencecenter.octopus.engine.files.PathImplementation;
-import nl.esciencecenter.octopus.exceptions.OctopusException;
-import nl.esciencecenter.octopus.exceptions.OctopusIOException;
 import nl.esciencecenter.octopus.files.FileSystem;
 import nl.esciencecenter.octopus.files.Files;
 import nl.esciencecenter.octopus.files.Path;
@@ -62,7 +61,7 @@ public class JobSubmitRequestTest {
     private Files filesEngine;
 
     @Before
-    public void setUp() throws URISyntaxException, OctopusIOException, OctopusException {
+    public void setUp() throws URISyntaxException, OctopusException {
         request = sampleRequest();
         filesystem = new FileSystemImplementation("local", "local-1", "file", "/", new RelativePath(), null, null);
         octopus = mock(Octopus.class);
@@ -217,7 +216,7 @@ public class JobSubmitRequestTest {
     }
 
     @Test
-    public void toSandbox() throws OctopusIOException, OctopusException, URISyntaxException {
+    public void toSandbox() throws URISyntaxException, OctopusException {
         String sandboxId = "octopus-sandbox-1234567890";
         Path sandBoxRoot = makePath("/tmp/sandboxes");
 
@@ -233,12 +232,12 @@ public class JobSubmitRequestTest {
         assertThat(sandbox).isEqualTo(expected);
     }
 
-    private Path makePath(String path) throws OctopusIOException {
+    private Path makePath(String path) throws OctopusException {
         return filesEngine.newPath(filesystem, new RelativePath(path));
     }
 
     @Test
-    public void postStage2Sandbox_AbsolutePrestage_keepAbsolute() throws URISyntaxException, OctopusIOException, OctopusException {
+    public void postStage2Sandbox_AbsolutePrestage_keepAbsolute() throws URISyntaxException, OctopusException {
         String sandboxId = "octopus-sandbox-1234567890";
         Path sandBoxRoot = makePath("/tmp/sandboxes");
 
@@ -259,7 +258,7 @@ public class JobSubmitRequestTest {
     }
 
     @Test
-    public void toSandbox_NestedPreStage_flattened() throws OctopusIOException, OctopusException, URISyntaxException {
+    public void toSandbox_NestedPreStage_flattened() throws OctopusException, URISyntaxException {
         String sandboxId = "octopus-sandbox-1234567890";
         Path sandBoxRoot = makePath("/tmp/sandboxes");
 
@@ -280,7 +279,7 @@ public class JobSubmitRequestTest {
     }
 
     @Test
-    public void toSandbox_AbsolutePoststage_keepAbsolute() throws URISyntaxException, OctopusIOException, OctopusException {
+    public void toSandbox_AbsolutePoststage_keepAbsolute() throws URISyntaxException, OctopusException {
         String sandboxId = "octopus-sandbox-1234567890";
         Path sandBoxRoot = makePath("/tmp/sandboxes");
 
@@ -301,7 +300,7 @@ public class JobSubmitRequestTest {
     }
 
     @Test
-    public void toSandbox_NestedPoststage_Flattened() throws URISyntaxException, OctopusIOException, OctopusException {
+    public void toSandbox_NestedPoststage_Flattened() throws URISyntaxException, OctopusException {
         String sandboxId = "octopus-sandbox-1234567890";
         Path sandBoxRoot = makePath("/tmp/sandboxes");
 

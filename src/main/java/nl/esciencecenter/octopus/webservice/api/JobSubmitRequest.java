@@ -25,8 +25,7 @@ import java.util.List;
 
 import javax.validation.constraints.NotNull;
 
-import nl.esciencecenter.octopus.exceptions.OctopusException;
-import nl.esciencecenter.octopus.exceptions.OctopusIOException;
+import nl.esciencecenter.octopus.OctopusException;
 import nl.esciencecenter.octopus.files.FileSystem;
 import nl.esciencecenter.octopus.files.Files;
 import nl.esciencecenter.octopus.files.Path;
@@ -169,12 +168,11 @@ public class JobSubmitRequest {
      * @param sandboxId
      *            Identifier of sandbox
      * @return A sandbox with stderr, stdout, prestaged and poststaged files/directories.
-     * @throws OctopusException
-     * @throws OctopusIOException
+
      * @throws URISyntaxException
+     * @throws OctopusException
      */
-    public Sandbox toSandbox(Files filesEngine, Path sandBoxRoot, String sandboxId) throws OctopusException, OctopusIOException,
-            URISyntaxException {
+    public Sandbox toSandbox(Files filesEngine, Path sandBoxRoot, String sandboxId) throws URISyntaxException, OctopusException {
         Sandbox sandbox = new Sandbox(filesEngine, sandBoxRoot, sandboxId);
         FileSystem localFs = filesEngine.newFileSystem("file", "/", null, null);
         Path localRoot = filesEngine.newPath(localFs, new RelativePath());

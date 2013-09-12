@@ -27,9 +27,7 @@ import java.util.List;
 import java.util.Map;
 
 import nl.esciencecenter.octopus.Octopus;
-import nl.esciencecenter.octopus.exceptions.OctopusException;
-import nl.esciencecenter.octopus.exceptions.OctopusIOException;
-import nl.esciencecenter.octopus.exceptions.UnsupportedOperationException;
+import nl.esciencecenter.octopus.OctopusException;
 import nl.esciencecenter.octopus.jobs.Job;
 import nl.esciencecenter.octopus.jobs.JobStatus;
 import nl.esciencecenter.octopus.jobs.Jobs;
@@ -148,7 +146,7 @@ public class JobsPoller implements Runnable {
     protected void downloadSandbox(SandboxedJob job) {
         try {
             job.downloadSandbox();
-        } catch (OctopusIOException e) {
+        } catch (OctopusException e) {
             LOGGER.error(e.getMessage(), e);
         } catch (UnsupportedOperationException e) {
             LOGGER.error(e.getMessage(), e);
@@ -158,7 +156,7 @@ public class JobsPoller implements Runnable {
     protected void cleanSandbox(SandboxedJob job) {
         try {
             job.cleanSandbox();
-        } catch (OctopusIOException e) {
+        } catch (OctopusException e) {
             LOGGER.error(e.getMessage(), e);
         } catch (UnsupportedOperationException e) {
             LOGGER.error(e.getMessage(), e);
@@ -178,11 +176,10 @@ public class JobsPoller implements Runnable {
 
     /**
      * Cancels all not done jobs and cleans sandboxes of those jobs.
-     *
      * @throws OctopusException
-     * @throws OctopusIOException
+     *
      */
-    public void stop() throws OctopusIOException, OctopusException {
+    public void stop() throws OctopusException {
         LOGGER.debug("Cancelling jobs and cleaning their sandboxes");
         for (SandboxedJob job : jobs.values()) {
             if (!job.getStatus().isDone()) {

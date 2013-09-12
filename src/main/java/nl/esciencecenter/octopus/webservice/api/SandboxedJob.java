@@ -22,9 +22,9 @@ package nl.esciencecenter.octopus.webservice.api;
 
 import java.io.IOException;
 
-import nl.esciencecenter.octopus.exceptions.OctopusIOException;
-import nl.esciencecenter.octopus.exceptions.UnsupportedOperationException;
+import nl.esciencecenter.octopus.OctopusException;
 import nl.esciencecenter.octopus.files.CopyOption;
+import nl.esciencecenter.octopus.files.InvalidCopyOptionsException;
 import nl.esciencecenter.octopus.jobs.Job;
 import nl.esciencecenter.octopus.jobs.JobStatus;
 import nl.esciencecenter.octopus.util.Sandbox;
@@ -151,10 +151,10 @@ public class SandboxedJob {
     /**
      * Deletes sandbox.
      *
-     * @throws OctopusIOException
      * @throws UnsupportedOperationException
+     * @throws OctopusException
      */
-    public void cleanSandbox() throws OctopusIOException, UnsupportedOperationException {
+    public void cleanSandbox() throws UnsupportedOperationException, OctopusException {
         sandbox.delete();
     }
 
@@ -162,10 +162,11 @@ public class SandboxedJob {
      * Downloads sandbox contents.
      *
      * @throws UnsupportedOperationException
-     * @throws OctopusIOException
+     * @throws OctopusException
+     * @throws InvalidCopyOptionsException
      *
      */
-    public void downloadSandbox() throws OctopusIOException, UnsupportedOperationException {
+    public void downloadSandbox() throws UnsupportedOperationException, InvalidCopyOptionsException, OctopusException {
         sandbox.download(CopyOption.REPLACE);
     }
 

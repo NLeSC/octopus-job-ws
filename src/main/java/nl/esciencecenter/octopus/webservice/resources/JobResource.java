@@ -32,9 +32,8 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.MediaType;
 
-import nl.esciencecenter.octopus.exceptions.NoSuchJobException;
-import nl.esciencecenter.octopus.exceptions.OctopusException;
-import nl.esciencecenter.octopus.exceptions.OctopusIOException;
+import nl.esciencecenter.octopus.OctopusException;
+import nl.esciencecenter.octopus.jobs.NoSuchJobException;
 import nl.esciencecenter.octopus.webservice.api.SandboxedJob;
 import nl.esciencecenter.octopus.webservice.job.OctopusManager;
 
@@ -59,7 +58,7 @@ public class JobResource {
 
     @GET
     @Timed
-    public SandboxedJob getJob(@PathParam("jobidentifier") String jobIdentifier) throws OctopusIOException, OctopusException {
+    public SandboxedJob getJob(@PathParam("jobidentifier") String jobIdentifier) throws OctopusException {
         try {
             return octopusmanager.getJob(jobIdentifier);
         } catch (NoSuchJobException e) {

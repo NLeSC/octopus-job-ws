@@ -42,8 +42,7 @@ import org.apache.http.impl.client.AbstractHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import nl.esciencecenter.octopus.exceptions.OctopusException;
-import nl.esciencecenter.octopus.exceptions.OctopusIOException;
+import nl.esciencecenter.octopus.OctopusException;
 import nl.esciencecenter.octopus.webservice.health.JobLauncherHealthCheck;
 import nl.esciencecenter.octopus.webservice.job.OctopusManager;
 import nl.esciencecenter.octopus.webservice.mac.MacCredential;
@@ -85,7 +84,7 @@ public class JobLauncherService extends Service<JobLauncherConfiguration> {
     }
 
     @Override
-    public void run(JobLauncherConfiguration configuration, Environment environment) throws OctopusIOException, URISyntaxException, OctopusException, KeyManagementException, UnrecoverableKeyException, NoSuchAlgorithmException, KeyStoreException  {
+    public void run(JobLauncherConfiguration configuration, Environment environment) throws URISyntaxException, KeyManagementException, UnrecoverableKeyException, NoSuchAlgorithmException, KeyStoreException, OctopusException  {
         OctopusManager octopus = new OctopusManager(configuration.getOctopusConfiguration());
         environment.manage(octopus);
         HttpClient httpClient = new HttpClientBuilder().using(configuration.getHttpClientConfiguration()).build();

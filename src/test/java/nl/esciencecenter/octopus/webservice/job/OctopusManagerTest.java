@@ -35,11 +35,9 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import nl.esciencecenter.octopus.Octopus;
+import nl.esciencecenter.octopus.OctopusException;
 import nl.esciencecenter.octopus.OctopusFactory;
 import nl.esciencecenter.octopus.engine.jobs.JobStatusImplementation;
-import nl.esciencecenter.octopus.exceptions.NoSuchJobException;
-import nl.esciencecenter.octopus.exceptions.OctopusException;
-import nl.esciencecenter.octopus.exceptions.OctopusIOException;
 import nl.esciencecenter.octopus.files.FileSystem;
 import nl.esciencecenter.octopus.files.Files;
 import nl.esciencecenter.octopus.files.Path;
@@ -48,6 +46,7 @@ import nl.esciencecenter.octopus.jobs.Job;
 import nl.esciencecenter.octopus.jobs.JobDescription;
 import nl.esciencecenter.octopus.jobs.JobStatus;
 import nl.esciencecenter.octopus.jobs.Jobs;
+import nl.esciencecenter.octopus.jobs.NoSuchJobException;
 import nl.esciencecenter.octopus.jobs.Scheduler;
 import nl.esciencecenter.octopus.util.Sandbox;
 import nl.esciencecenter.octopus.webservice.api.JobSubmitRequest;
@@ -72,7 +71,7 @@ import com.google.common.collect.ImmutableMap;
 public class OctopusManagerTest {
 
     @Test
-    public void testOctopusManager() throws URISyntaxException, OctopusException, OctopusIOException {
+    public void testOctopusManager() throws URISyntaxException, OctopusException {
         // Use powermock mockito to mock OctopusFactory.newOctopus()
         PowerMockito.mockStatic(OctopusFactory.class);
         Octopus octopus = mock(Octopus.class);
@@ -129,7 +128,7 @@ public class OctopusManagerTest {
     }
 
     @Test
-    public void testSubmitJob() throws OctopusIOException, OctopusException, URISyntaxException {
+    public void testSubmitJob() throws OctopusException, URISyntaxException {
         Properties props = new Properties();
         props.put("octopus.adaptors.local.queue.multi.maxConcurrentJobs", "4");
         ImmutableMap<String, String> prefs = ImmutableMap.of("octopus.adaptors.local.queue.multi.maxConcurrentJobs", "1");
@@ -178,7 +177,7 @@ public class OctopusManagerTest {
     }
 
     @Test
-    public void getJob_DoneJob_DoneJob() throws URISyntaxException, OctopusIOException, OctopusException {
+    public void getJob_DoneJob_DoneJob() throws URISyntaxException, OctopusException {
         Map<String, SandboxedJob> sjobs = new HashMap<String, SandboxedJob>();
         SandboxedJob sjob = mock(SandboxedJob.class);
         sjobs.put("1234", sjob);
@@ -190,7 +189,7 @@ public class OctopusManagerTest {
     }
 
     @Test(expected = NoSuchJobException.class)
-    public void getJob_UnknownJob_ThrowsNoSuchJobException() throws OctopusIOException, OctopusException {
+    public void getJob_UnknownJob_ThrowsNoSuchJobException() throws OctopusException {
         Map<String, SandboxedJob> sjobs = new HashMap<String, SandboxedJob>();
         OctopusManager manager = new OctopusManager(null, null, null, null, sjobs, null, null);
 

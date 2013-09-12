@@ -7,9 +7,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -31,9 +31,8 @@ import java.io.IOException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response.Status;
 
-import nl.esciencecenter.octopus.exceptions.NoSuchJobException;
-import nl.esciencecenter.octopus.exceptions.OctopusException;
-import nl.esciencecenter.octopus.exceptions.OctopusIOException;
+import nl.esciencecenter.octopus.OctopusException;
+import nl.esciencecenter.octopus.jobs.NoSuchJobException;
 import nl.esciencecenter.octopus.webservice.api.SandboxedJob;
 import nl.esciencecenter.octopus.webservice.job.OctopusManager;
 
@@ -42,7 +41,7 @@ import org.junit.Test;
 public class JobResourceTest {
 
     @Test
-    public void testStateJob_KnownJob_JobStatusReturned() throws OctopusIOException, OctopusException {
+    public void testStateJob_KnownJob_JobStatusReturned() throws OctopusException {
         OctopusManager manager = mock(OctopusManager.class);
         SandboxedJob job = mock(SandboxedJob.class);
         when(manager.getJob("1234")).thenReturn(job);
@@ -55,7 +54,7 @@ public class JobResourceTest {
     }
 
     @Test
-    public void testStateJob_UnknownJob_ThrowsWebApplicationException() throws OctopusIOException, OctopusException {
+    public void testStateJob_UnknownJob_ThrowsWebApplicationException() throws OctopusException {
         String request = "1234";
         OctopusManager manager = mock(OctopusManager.class);
         doThrow(new NoSuchJobException("", "Job not found")).when(manager).getJob("1234");
