@@ -1,7 +1,7 @@
-joblauncher
-===========
+Osmium
+======
 
-Web service to submit jobs via a Octopus supported scheduler.
+Web service to submit jobs via a Xenon supported scheduler.
 
 Submit job to web service using a HTTP POST request.
 Reports status of job to submitter using a callback url.
@@ -11,36 +11,36 @@ Requirements
 
 - JDK 7 (http://www.java.com)
 - Maven 3 (http://maven.apache.org)
-- Octopus (https://github.com/NLeSC/octopus)
+- Xenon (https://github.com/NLeSC/Xenon)
 
 Install
 -------
 
-1. Build Octopus
+1. Build xenon
 
 .. code-block:: bash
 
-   git clone https://github.com/NLeSC/octopus.git
-   cd octopus
+   git clone https://github.com/NLeSC/Xenon.git
+   cd Xenon
    ant build
 
-2. Add Octopus jar to local maven repository, so it can be used as maven dependencies
+2. Add Xenon jar to local maven repository, so it can be used as maven dependencies
 
 .. code-block:: bash
 
-   mvn install:install-file -Dfile=dist/octopus-1.0.jar -DartifactId=octopus -Dversion=1.0 -DgroupId=nl.esciencecenter.octopus -Dpackaging=jar -DgeneratePom=true
+   mvn install:install-file -Dfile=dist/xenon-1.0.jar -DartifactId=xenon -Dversion=1.0 -DgroupId=nl.esciencecenter.xenon -Dpackaging=jar -DgeneratePom=true
 
 3. Make copy of 'joblauncher.yml-dist' to 'joblauncher.yml'
-3.1 Configure Octopus scheduler
-3.2 Configure Octopus sandbox root directory
+3.1 Configure Xenon scheduler
+3.2 Configure Xenon sandbox root directory
 3.3 Configure optional MAC id/key
 4. Build uber-jar or execute from maven.
-4.1. Uber-jar, to start on other machine the `octopus-job-ws-2.0.jar` and `joblauncher.yml` files must be copied.
+4.1. Uber-jar, to start on other machine the `osmium-2.0.jar` and `joblauncher.yml` files must be copied.
 
 .. code-block:: bash
 
    mvn package
-   java -jar target/octopus-job-ws-2.0.jar server joblauncher.yml
+   java -jar target/osmium-2.0.jar server joblauncher.yml
 
 4.2 Execute from maven
 

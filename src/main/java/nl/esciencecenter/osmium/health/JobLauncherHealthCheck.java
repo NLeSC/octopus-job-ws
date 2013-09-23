@@ -1,6 +1,6 @@
 /*
  * #%L
- * Octopus Job Webservice
+ * Xenon Job Webservice
  * %%
  * Copyright (C) 2013 Nederlands eScience Center
  * %%
@@ -17,30 +17,20 @@
  * limitations under the License.
  * #L%
  */
-{
-	"macs": [{
-		"id": "id",
-		"key": "key",
-		"scope": "http://localhost",
-		"algorithm": "hmac-sha-1"
-	}],
-    "xenon": {
-        "scheduler": {
-            "scheme": "local",
-            "queue": "multi"
-        },
-        "sandbox": {
-            "scheme": "file",
-            "location": "/",
-            "path": "/tmp/sandboxes"
-        },
-        "preferences": {
-            "xenon.adaptors.local.queue.multi.maxConcurrentJobs": 4
-        },
-        "poll": {
-           "interval": 30000,
-           "cancelTimeout": 3600000,
-           "deleteTimeout": 43200000
-        }
+package nl.esciencecenter.osmium.health;
+
+import com.yammer.metrics.core.HealthCheck;
+
+public class JobLauncherHealthCheck extends HealthCheck {
+
+    public JobLauncherHealthCheck(String name) {
+        super(name);
     }
+
+    @Override
+    protected Result check() {
+        // TODO test if broker is ok
+        return Result.healthy();
+    }
+
 }

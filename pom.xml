@@ -1,11 +1,11 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>nl.esciencecenter.octopus.webservice</groupId>
-	<artifactId>octopus-job-ws</artifactId>
-	<version>2.0</version>
-	<name>Octopus Job Webservice</name>
-	<description>REST based job submission using Octopus</description>
+	<groupId>nl.esciencecenter.osmium</groupId>
+	<artifactId>osmium</artifactId>
+	<version>3.0.0</version>
+	<name>Xenon Job Webservice</name>
+	<description>REST based job submission using Xenon</description>
 	<inceptionYear>2013</inceptionYear>
 
 	<issueManagement>
@@ -46,7 +46,7 @@
 		</license>
 	</licenses>
 	<properties>
-		<octopus.version>1.0</octopus.version>
+		<xenon.version>1.0</xenon.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<dropwizard.version>0.6.2</dropwizard.version>
 		<powermock.version>1.5</powermock.version>
@@ -63,9 +63,9 @@
 			<version>${dropwizard.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>nl.esciencecenter.octopus</groupId>
-			<artifactId>octopus</artifactId>
-			<version>${octopus.version}</version>
+			<groupId>nl.esciencecenter.xenon</groupId>
+			<artifactId>xenon</artifactId>
+			<version>${xenon.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
@@ -110,7 +110,7 @@
 			<classifier>tests</classifier>
 			<scope>test</scope>
 		</dependency>
-		<!-- Octopus dependencies -->
+		<!-- Xenon dependencies -->
 		<dependency>
 			<groupId>com.jcraft</groupId>
 			<artifactId>jsch</artifactId>
@@ -141,7 +141,7 @@
 					</execution>
 				</executions>
 				<configuration>
-					<mainClass>nl.esciencecenter.octopus.webservice.JobLauncherService</mainClass>
+					<mainClass>nl.esciencecenter.xenon.webservice.JobLauncherService</mainClass>
 					<commandlineArgs>server ${project.basedir}/joblauncher.yml</commandlineArgs>
 				</configuration>
 			</plugin>
@@ -177,7 +177,7 @@
 									implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
 								<transformer
 									implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-									<mainClass>nl.esciencecenter.octopus.webservice.JobLauncherService</mainClass>
+									<mainClass>nl.esciencecenter.xenon.webservice.JobLauncherService</mainClass>
 								</transformer>
 							</transformers>
 						</configuration>

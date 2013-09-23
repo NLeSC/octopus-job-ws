@@ -1,15 +1,15 @@
 /*
  * #%L
- * Octopus Job Webservice
+ * Xenon Job Webservice
  * %%
  * Copyright (C) 2013 Nederlands eScience Center
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * 
  *      http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,30 +17,21 @@
  * limitations under the License.
  * #L%
  */
-{
-	"macs": [{
-		"id": "id",
-		"key": "key",
-		"scope": "http://localhost",
-		"algorithm": "hmac-sha-1"
-	}],
-    "xenon": {
-        "scheduler": {
-            "scheme": "local",
-            "queue": "multi"
-        },
-        "sandbox": {
-            "scheme": "file",
-            "location": "/",
-            "path": "/tmp/sandboxes"
-        },
-        "preferences": {
-            "xenon.adaptors.local.queue.multi.maxConcurrentJobs": 4
-        },
-        "poll": {
-           "interval": 30000,
-           "cancelTimeout": 3600000,
-           "deleteTimeout": 43200000
-        }
+package nl.esciencecenter.osmium.mac;
+
+
+
+import org.apache.http.auth.AuthScheme;
+import org.apache.http.auth.AuthSchemeFactory;
+import org.apache.http.params.HttpParams;
+
+/**
+ * Factory for {@link MacScheme} implementations.
+ *
+ * @author verhoes
+ */
+public class MacSchemeFactory implements AuthSchemeFactory {
+    public AuthScheme newInstance(final HttpParams params) {
+        return new MacScheme();
     }
 }

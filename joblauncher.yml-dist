@@ -3,12 +3,12 @@
 #- id: <MAC key identifier>
 #  key: <MAC key>
 #  scope: <URL where MAC key should be used>
-octopus:
+xenon:
   scheduler: local:///
   queue: multi
   sandboxRoot: file:///tmp/
   preferences:
-    octopus.adaptors.local.queue.multi.maxConcurrentJobs: 4
+    xenon.adaptors.local.queue.multi.maxConcurrentJobs: 4
   poll:
    interval: 30000  # 30 seconds
    cancelTimeout: 3600000  # 1 hour

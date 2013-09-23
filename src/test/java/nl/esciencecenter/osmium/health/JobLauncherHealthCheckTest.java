@@ -1,15 +1,15 @@
 /*
  * #%L
- * Octopus Job Webservice
+ * Xenon Job Webservice
  * %%
  * Copyright (C) 2013 Nederlands eScience Center
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * 
  *      http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,30 +17,22 @@
  * limitations under the License.
  * #L%
  */
-{
-	"macs": [{
-		"id": "id",
-		"key": "key",
-		"scope": "http://localhost",
-		"algorithm": "hmac-sha-1"
-	}],
-    "xenon": {
-        "scheduler": {
-            "scheme": "local",
-            "queue": "multi"
-        },
-        "sandbox": {
-            "scheme": "file",
-            "location": "/",
-            "path": "/tmp/sandboxes"
-        },
-        "preferences": {
-            "xenon.adaptors.local.queue.multi.maxConcurrentJobs": 4
-        },
-        "poll": {
-           "interval": 30000,
-           "cancelTimeout": 3600000,
-           "deleteTimeout": 43200000
-        }
+package nl.esciencecenter.osmium.health;
+
+
+import static org.junit.Assert.*;
+import nl.esciencecenter.osmium.health.JobLauncherHealthCheck;
+
+import org.junit.Test;
+
+import com.yammer.metrics.core.HealthCheck.Result;
+
+public class JobLauncherHealthCheckTest {
+
+    @Test
+    public void testCheck() throws Exception {
+        JobLauncherHealthCheck hc = new JobLauncherHealthCheck("gat");
+        assertEquals(Result.healthy(), hc.check());
     }
+
 }
