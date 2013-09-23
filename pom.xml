@@ -4,19 +4,20 @@
 	<groupId>nl.esciencecenter.osmium</groupId>
 	<artifactId>osmium</artifactId>
 	<version>3.0.0</version>
-	<name>Xenon Job Webservice</name>
+	<name>Osmium</name>
 	<description>REST based job submission using Xenon</description>
+	<url>http://nlesc.github.io/osmium</url>
 	<inceptionYear>2013</inceptionYear>
 
 	<issueManagement>
 		<system>GitHub</system>
-		<url>https://github.com/NLeSC/octopus-job-ws/issues</url>
+		<url>https://github.com/NLeSC/osmium/issues</url>
 	</issueManagement>
 
 	<scm>
-		<url>scm:git:https://github.com/NLeSC/octopus-job-ws.git</url>
-		<connection>scm:git:https://github.com/NLeSC/octopus-job-ws.git</connection>
-		<developerConnection>scm:git:git@github.com:NLeSC/octopus-job-ws.git</developerConnection>
+		<url>scm:git:https://github.com/NLeSC/osmium.git</url>
+		<connection>scm:git:https://github.com/NLeSC/osmium.git</connection>
+		<developerConnection>scm:git:ssh://git@github.com:NLeSC/osmium.git</developerConnection>
 	</scm>
 
 	<developers>
@@ -368,6 +369,8 @@
 					</reportPlugins>
 				</configuration>
 			</plugin>
+
 		</plugins>
+
 	</build>
 </project>
