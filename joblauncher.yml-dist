@@ -15,3 +15,5 @@ xenon:
    deleteTimeout: 43200000  # 12 hour
 http:
   port: 9998
+  adminPort: 9998
+  bindHost: localhost
