@@ -1,6 +1,6 @@
 /*
  * #%L
- * Xenon Job Webservice
+ * Osmium
  * %%
  * Copyright (C) 2013 Nederlands eScience Center
  * %%

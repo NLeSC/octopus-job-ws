@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<!-- #%L Octopus Job Webservice %% Copyright (C) 2013 Nederlands eScience
+<!-- #%L Osmium %% Copyright (C) 2013 Nederlands eScience
 	Center %% Licensed under the Apache License, Version 2.0 (the "License");
 	you may not use this file except in compliance with the License. You may
 	obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
@@ -10,7 +10,7 @@
 	#L% -->
 
 
-<project name="Osmium Job Launcher" xmlns="http://maven.apache.org/DECORATION/1.0.0"
+<project name="Osmium" xmlns="http://maven.apache.org/DECORATION/1.0.0"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/DECORATION/1.0.0 http://maven.apache.org/xsd/decoration-1.0.0.xsd">
 	<skin>
@@ -33,7 +33,7 @@
 		<name>Xenon</name>
 		<src>images/logo.png</src>
 		<href>http://nlesc.github.io/osmium/</href>
-		<height>140px<    /height>
+		<height>140px</height>
 	</bannerLeft>
 	<poweredBy>
 		<logo name="Xenon" href="http://nlesc.github.io/Xenon/"

@@ -75,8 +75,7 @@ This project includes:
   Metrics Servlet under Apache License 2.0
   Mockito under The MIT License
   Objenesis under Apache 2
-  octopus under Apache License, Version 2.0
-  Octopus Job Webservice under The Apache Software License, Version 2.0
+  Xenon under Apache License, Version 2.0
   powermock-api-mockito under The Apache Software License, Version 2.0
   powermock-api-support under The Apache Software License, Version 2.0
   powermock-core under The Apache Software License, Version 2.0
