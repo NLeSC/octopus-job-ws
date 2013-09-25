@@ -1,6 +1,11 @@
 Osmium
 ======
 
+|TravisCILink|_
+
+.. |TravisCILink| image:: https://travis-ci.org/NLeSC/osmium.png
+.. _TravisCILink: https://travis-ci.org/NLeSC/osmium
+
 Web service to submit jobs via a Xenon (https://nlesc.github.io/Xenon) supported scheduler.
 
 Submit job to web service using a HTTP POST request.
