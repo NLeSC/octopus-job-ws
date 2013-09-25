@@ -6,6 +6,7 @@
 xenon:
   scheduler:
     scheme: local
+    location: /
     queue: multi
   sandbox:
     scheme: file
