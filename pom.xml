@@ -152,7 +152,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-shade-plugin</artifactId>
-				<version>2.0</version>
+				<version>2.1</version>
 				<configuration>
 					<createDependencyReducedPom>true</createDependencyReducedPom>
 					<filters>
@@ -260,13 +260,13 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-site-plugin</artifactId>
-				<version>3.2</version>
+				<version>3.3</version>
 				<configuration>
 					<reportPlugins>
 						<plugin>
 							<groupId>org.apache.maven.plugins</groupId>
 							<artifactId>maven-project-info-reports-plugin</artifactId>
-							<version>2.6</version>
+							<version>2.7</version>
 							<configuration>
 								<!-- When true dependencies reports takes long time -->
 								<dependencyLocationsEnabled>false</dependencyLocationsEnabled>
