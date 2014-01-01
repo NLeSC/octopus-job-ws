@@ -50,7 +50,7 @@
 		<xenon.version>1.0.0</xenon.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<dropwizard.version>0.6.2</dropwizard.version>
-		<powermock.version>1.5</powermock.version>
+		<powermock.version>1.5.2</powermock.version>
 	</properties>
 	<dependencies>
 		<dependency>
