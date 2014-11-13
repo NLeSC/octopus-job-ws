@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>nl.esciencecenter.osmium</groupId>
 	<artifactId>osmium</artifactId>
-	<version>3.0.0</version>
+	<version>3.0.1</version>
 	<name>Osmium</name>
 	<description>REST based job submission using Xenon</description>
 	<url>http://nlesc.github.io/osmium</url>
@@ -225,9 +225,6 @@
 						</goals>
 					</execution>
 				</executions>
-				<configuration>
-					<failOnError>false</failOnError>
-				</configuration>
 			</plugin>
 
 			<plugin>
