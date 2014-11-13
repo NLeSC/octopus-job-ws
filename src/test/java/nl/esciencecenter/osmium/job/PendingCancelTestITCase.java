@@ -59,7 +59,7 @@ public class PendingCancelTestITCase {
                 ImmutableMap.of("xenon.adaptors.local.queue.multi.maxConcurrentJobs", "1");
         SchedulerConfiguration scheduler = new SchedulerConfiguration("local", null, "multi", null);
         String sandboxRoot = testFolder.newFolder("sandboxes").getAbsolutePath();
-        SandboxConfiguration sandbox = new SandboxConfiguration("file", null, sandboxRoot, null);
+        SandboxConfiguration sandbox = new SandboxConfiguration("file", "/", sandboxRoot, null);
 
         XenonConfiguration configuration =
                 new XenonConfiguration(scheduler, sandbox, preferences, pollConfiguration);
