@@ -20,7 +20,6 @@
 package nl.esciencecenter.osmium.api;
 
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.List;
 
 import javax.validation.constraints.NotNull;
@@ -41,7 +40,7 @@ import com.google.common.base.Objects;
 /**
  * Request which can be converted to JobDescription which can be submitted using JavaGAT.
  *
- * @author Stefan Verhoeven <s.verhoeven@esciencecenter.nl>
+ * @author Stefan Verhoeven &lt;s.verhoeven@esciencecenter.nl&gt;
  *
  */
 public class JobSubmitRequest {
@@ -88,13 +87,14 @@ public class JobSubmitRequest {
     /**
      * Constructor
      *
-     * @param jobdir
-     * @param executable
-     * @param arguments
-     * @param prestaged
-     * @param poststaged
-     * @param stderr
-     * @param stdout
+     * @param jobdir Directory as source of prestaged files and target of poststaged files
+     * @param executable Path to executable
+     * @param arguments Arguments for executable
+     * @param prestaged List of files that must be copied from jobdir to sandbox
+     * @param poststaged List of files that must be copied from sandbox to jobidr
+     * @param stderr Name of file where stderr is written
+     * @param stdout Name of file where stdout is written
+     * @param statusCallbackURI Optional, url where status changes should be POST-ed
      */
     public JobSubmitRequest(String jobdir, String executable, List<String> arguments, List<String> prestaged,
             List<String> poststaged, String stderr, String stdout, URI statusCallbackURI) {
@@ -124,7 +124,6 @@ public class JobSubmitRequest {
      * Convert requested jobsubmission to JobDescription which can be submitted
      *
      * @return JobDescription
-     * @throws GATObjectCreationException
      */
     public JobDescription toJobDescription() {
         JobDescription description = new JobDescription();
@@ -146,33 +145,32 @@ public class JobSubmitRequest {
      *
      * <ul>
      * <li>
-     * [direction], [argument], [source] -> [destination]</li>
+     * [direction], [argument], [source] -&gt; [destination]</li>
      * <li>
-     * Prestage, "runme.sh", "/tmp/jobdir/runme.sh" -> "/tmp/sandbox/runme.sh"</li>
+     * Prestage, "runme.sh", "/tmp/jobdir/runme.sh" -&gt; "/tmp/sandbox/runme.sh"</li>
      * <li>
-     * Prestage, "/data/uniprot.fasta", "/data/uniprot.fasta" -> "/tmp/sandbox/uniprot.fasta"</li>
+     * Prestage, "/data/uniprot.fasta", "/data/uniprot.fasta" -&gt; "/tmp/sandbox/uniprot.fasta"</li>
      * <li>
-     * Prestage, "input/data.in", "/tmp/jobdir/input/data.in" -> "/tmp/sandbox/data.in"</li>
+     * Prestage, "input/data.in", "/tmp/jobdir/input/data.in" -&gt; "/tmp/sandbox/data.in"</li>
      * <li>
-     * Poststage, "data.out", "/tmp/sandbox/data.out" -> "/tmp/jobdir/data.out"</li>
+     * Poststage, "data.out", "/tmp/sandbox/data.out" -&gt; "/tmp/jobdir/data.out"</li>
      * <li>
-     * Poststage, "/data/uniprot.fasta", "/tmp/sandbox/uniprot.fasta" -> "/tmp/jobdir/data/uniprot.fasta"</li>
+     * Poststage, "/data/uniprot.fasta", "/tmp/sandbox/uniprot.fasta" -&gt; "/tmp/jobdir/data/uniprot.fasta"</li>
      * <li>
-     * Poststage "output/data.out", "/tmp/sandbox/data.out" -> "/tmp/jobdir/output/data.out"</li>
-     * <ul>
+     * Poststage "output/data.out", "/tmp/sandbox/data.out" -&gt; "/tmp/jobdir/output/data.out"</li>
+     * </ul>
      *
-     * @param xenon
-     *            Xenon instance
+     * @param filesEngine
+     *            Xenon Files instance
      * @param sandBoxRoot
      *            Path in which a sandbox will be created.
      * @param sandboxId
      *            Identifier of sandbox
      * @return A sandbox with stderr, stdout, prestaged and poststaged files/directories.
-
-     * @throws URISyntaxException
-     * @throws XenonException
+     *
+     * @throws XenonException if unable to copy files
      */
-    public Sandbox toSandbox(Files filesEngine, Path sandBoxRoot, String sandboxId) throws URISyntaxException, XenonException {
+    public Sandbox toSandbox(Files filesEngine, Path sandBoxRoot, String sandboxId) throws XenonException {
         Sandbox sandbox = new Sandbox(filesEngine, sandBoxRoot, sandboxId);
         FileSystem localFs = filesEngine.newFileSystem("file", "/", null, null);
         Path localRoot = filesEngine.newPath(localFs, new RelativePath());

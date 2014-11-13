@@ -108,6 +108,9 @@ public class MacScheme implements ContextAwareAuthScheme {
     /**
      * Generates normalized request string and encrypt is using a secret key
      *
+     * @param credentials Username/Password to use
+     * @param request Request to derive key
+     * @param context HTTP context
      * @return MAC Authentication header
      * @throws AuthenticationException when signature generation fails
      */
@@ -194,7 +197,7 @@ public class MacScheme implements ContextAwareAuthScheme {
 
     /**
      * Random setter
-     * @param random
+     * @param random Random object
      */
     public void setRandom(Random random) {
         this.random = random;
@@ -206,7 +209,7 @@ public class MacScheme implements ContextAwareAuthScheme {
 
     /**
      * Date setter
-     * @param date
+     * @param date The date
      */
     public void setDate(Date date) {
         this.date = date;
@@ -226,8 +229,7 @@ public class MacScheme implements ContextAwareAuthScheme {
     }
 
     /**
-     *
-     * @param uri
+     * @param uri Uri from which to extract port
      * @return Port of `uri` based on explicit port or derived from scheme
      */
     public static int getPort(URI uri) {

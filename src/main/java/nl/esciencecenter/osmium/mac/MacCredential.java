@@ -71,9 +71,9 @@ public class MacCredential implements Credentials {
     /**
      * Constructor
      *
-     * @param id
-     * @param key
-     * @param scope
+     * @param id MAC id
+     * @param key MAC key
+     * @param scope URI for which the id, key combination should be used
      * Algorithm is set to 'hmac-sha-1'.
      */
     public MacCredential(String id, String key, URI scope) {

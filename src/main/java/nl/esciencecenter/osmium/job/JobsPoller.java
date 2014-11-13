@@ -176,7 +176,7 @@ public class JobsPoller implements Runnable {
 
     /**
      * Cancels all not done jobs and cleans sandboxes of those jobs.
-     * @throws XenonException
+     * @throws XenonException if job was not cancelled successfully
      *
      */
     public void stop() throws XenonException {

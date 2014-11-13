@@ -24,7 +24,6 @@ import java.io.IOException;
 
 import nl.esciencecenter.xenon.XenonException;
 import nl.esciencecenter.xenon.files.CopyOption;
-import nl.esciencecenter.xenon.files.InvalidCopyOptionsException;
 import nl.esciencecenter.xenon.jobs.Job;
 import nl.esciencecenter.xenon.jobs.JobStatus;
 import nl.esciencecenter.xenon.util.Sandbox;
@@ -126,8 +125,6 @@ public class SandboxedJob {
      *
      * @param status
      *            new Job status
-     * @throws JsonProcessingException
-     *             when job status can not be converted to JSON.
      * @throws IOException
      *             when callback fails.
      */
@@ -151,22 +148,18 @@ public class SandboxedJob {
     /**
      * Deletes sandbox.
      *
-     * @throws UnsupportedOperationException
-     * @throws XenonException
+     * @throws XenonException if deletion of sandbox fails
      */
-    public void cleanSandbox() throws UnsupportedOperationException, XenonException {
+    public void cleanSandbox() throws XenonException {
         sandbox.delete();
     }
 
     /**
      * Downloads sandbox contents.
      *
-     * @throws UnsupportedOperationException
-     * @throws XenonException
-     * @throws InvalidCopyOptionsException
-     *
+     * @throws XenonException if copying of poststaged files from sandbox to jobdir fails
      */
-    public void downloadSandbox() throws UnsupportedOperationException, InvalidCopyOptionsException, XenonException {
+    public void downloadSandbox() throws XenonException {
         sandbox.download(CopyOption.REPLACE);
     }
 

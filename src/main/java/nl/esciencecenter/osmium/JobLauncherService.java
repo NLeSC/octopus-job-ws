@@ -72,7 +72,7 @@ public class JobLauncherService extends Service<JobLauncherConfiguration> {
      *
      * @param args
      *            CLI arguments
-     * @throws Exception
+     * @throws Exception if something goes wrong
      */
     public static void main(String[] args) throws Exception {
         new JobLauncherService().run(args);
@@ -103,11 +103,11 @@ public class JobLauncherService extends Service<JobLauncherConfiguration> {
     /**
      * Enable insecure SSL in http client like self signed certificates.
      *
-     * @param httpClient
-     * @throws NoSuchAlgorithmException
-     * @throws KeyManagementException
-     * @throws KeyStoreException
-     * @throws UnrecoverableKeyException
+     * @param httpClient http client with secure SSL enabled
+     * @throws NoSuchAlgorithmException when a particular cryptographic algorithm is requested but is not available in the environment.
+     * @throws KeyManagementException if key management fails
+     * @throws KeyStoreException if key store fails
+     * @throws UnrecoverableKeyException if key is unrecoverable
      */
     public void useInsecureSSL(HttpClient httpClient) throws NoSuchAlgorithmException, KeyManagementException, KeyStoreException,
             UnrecoverableKeyException {
@@ -130,8 +130,8 @@ public class JobLauncherService extends Service<JobLauncherConfiguration> {
      *
      * Http client will use MAC Access Authentication when url is in scope of given MAC credentials.
      *
-     * @param httpClient
-     * @param macs
+     * @param httpClient http client without MAC Access authentication support
+     * @param macs List of credentials to add to http client
      * @return httpClient with MAC access authentication and credentials injected.
      */
     public static AbstractHttpClient macifyHttpClient(AbstractHttpClient httpClient, ImmutableList<MacCredential> macs) {

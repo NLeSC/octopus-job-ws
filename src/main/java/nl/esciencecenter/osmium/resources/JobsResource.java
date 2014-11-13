@@ -21,7 +21,6 @@ package nl.esciencecenter.osmium.resources;
 
 
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -68,8 +67,8 @@ public class JobsResource {
     /**
      * Constructor
      *
-     * @param xenonmanager
-     * @param httpClient
+     * @param xenonmanager Xenon manager
+     * @param httpClient http client
      */
     public JobsResource(XenonManager xenonmanager, HttpClient httpClient) {
         super();
@@ -80,9 +79,9 @@ public class JobsResource {
     /**
      * Constructor
      *
-     * @param xenonmanager
-     * @param httpClient
-     * @param uriInfo
+     * @param xenonmanager Xenon manager
+     * @param httpClient http client
+     * @param uriInfo uri info
      */
     public JobsResource(XenonManager xenonmanager, HttpClient httpClient, UriInfo uriInfo) {
         super();
@@ -97,16 +96,11 @@ public class JobsResource {
      * @param request
      *            A job submission request
      * @return Response with element URI in Location header
-     * @throws URISyntaxException
-     * @throws XenonException
-     * @throws XenonIOException
-     * @throws Exception
-     * @throws GATInvocationException
-     * @throws GATObjectCreationException
+     * @throws XenonException When job submission fails
      */
     @POST
     @Timed
-    public Response submitJob(@Valid JobSubmitRequest request) throws URISyntaxException, XenonException {
+    public Response submitJob(@Valid JobSubmitRequest request) throws XenonException {
         SandboxedJob job = xenonmanager.submitJob(request, httpClient);
         UriBuilder builder = uriInfo.getAbsolutePathBuilder();
         URI location = builder.path(job.getIdentifier()).build();

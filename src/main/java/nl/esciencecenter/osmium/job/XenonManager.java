@@ -20,7 +20,6 @@
 package nl.esciencecenter.osmium.job;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -73,11 +72,10 @@ public class XenonManager implements Managed {
     /**
      * Sets preferences in GAT context and initializes a broker.
      *
-     * @param configuration
-     * @throws URISyntaxException
-     * @throws XenonException
+     * @param configuration Configuration for Xenon
+     * @throws XenonException if Xenon could not be configured
      */
-    public XenonManager(XenonConfiguration configuration) throws URISyntaxException, XenonException {
+    public XenonManager(XenonConfiguration configuration) throws XenonException {
         this.configuration = configuration;
 
         xenon = XenonFactory.newXenon(configuration.getPreferences());
@@ -96,7 +94,7 @@ public class XenonManager implements Managed {
 
     /**
      * @return Path
-     * @throws XenonException
+     * @throws XenonException If the creation of the FileSystem failed or an I/O error occured.
      */
     protected Path newSandboxRootPath() throws XenonException {
         Credential credential = null;
@@ -108,7 +106,7 @@ public class XenonManager implements Managed {
 
     /**
      * @return Scheduler
-     * @throws XenonException
+     * @throws XenonException If the creation of the Scheduler failed 
      */
     protected Scheduler newScheduler() throws XenonException {
         Credential credential = null;
@@ -140,9 +138,8 @@ public class XenonManager implements Managed {
     /**
      * Terminates any running Xenon processes and stops the job poller.
      *
-     * @throws InterruptedException
-     * @throws XenonException
-     * @throws XenonIOException
+     * @throws InterruptedException If waiting for job to complete failed
+     * @throws XenonException If Xenon is unable to stop
      */
     public void stop() throws InterruptedException, XenonException {
         executor.shutdown();
@@ -161,11 +158,9 @@ public class XenonManager implements Managed {
      *            http client used to reporting status to job callback.
      * @return SandboxedJob job
      *
-     * @throws XenonException
-     * @throws URISyntaxException
+     * @throws XenonException If staging file or submit job failed
      */
-    public SandboxedJob submitJob(JobSubmitRequest request, HttpClient httpClient) throws XenonException,
-            URISyntaxException {
+    public SandboxedJob submitJob(JobSubmitRequest request, HttpClient httpClient) throws XenonException {
         Sandbox sandbox = request.toSandbox(xenon.files(), sandboxRootPath, null);
 
         // create job description
@@ -204,8 +199,8 @@ public class XenonManager implements Managed {
      *
      * @throws NoSuchJobException
      *             When job with jobIdentifier could not be found.
-     * @throws XenonException
-     * @throws IOException
+     * @throws XenonException if job cancelation failed
+     * @throws IOException if job status callback failed
      */
     public void cancelJob(String jobIdentifier) throws XenonException, IOException {
         SandboxedJob job = getJob(jobIdentifier);
@@ -234,9 +229,9 @@ public class XenonManager implements Managed {
     /**
      * Get a job
      *
-     * @param jobIdentifier
+     * @param jobIdentifier Identifier of job
      * @return the job
-     * @throws NoSuchJobException
+     * @throws NoSuchJobException When job is not found
      */
     public SandboxedJob getJob(String jobIdentifier) throws NoSuchJobException {
         SandboxedJob job = jobs.get(jobIdentifier);
