@@ -196,13 +196,13 @@ public class JobSubmitRequestTest {
 
     @Test
     public void testHashCode() {
-        assertThat(request.hashCode()).isEqualTo(-1597450360);
+        assertThat(request.hashCode()).isEqualTo(-474674438);
     }
 
     @Test
     public void testToString() {
         String s =
-                "JobSubmitRequest{jobdir=/tmp/jobdir, executable=/bin/sh, stderr=stderr.txt, stdout=stdout.txt, arguments=[runme.sh], prestaged=[runme.sh, input.dat], poststaged=[output.dat], status_callback_url=http://localhost/status}";
+                "JobSubmitRequest{jobdir=/tmp/jobdir, executable=/bin/sh, stderr=stderr.txt, stdout=stdout.txt, arguments=[runme.sh], prestaged=[runme.sh, input.dat], poststaged=[output.dat], environment={OSMIUM_JOBID=mynewjob}, status_callback_url=http://localhost/status}";
         assertEquals(s, request.toString());
     }
 
@@ -215,6 +215,9 @@ public class JobSubmitRequestTest {
         expected_description.setExecutable("/bin/sh");
         expected_description.setStderr("stderr.txt");
         expected_description.setStdout("stdout.txt");
+		Map<String, String> env = new HashMap<String, String>();
+		env.put("OSMIUM_JOBID", "mynewjob");
+		expected_description.setEnvironment(env);
 
         // FIXME when https://github.com/NLeSC/xenon/issues/53 is resolved then remove ignore
         assertThat(description.toString()).isEqualTo(expected_description.toString());

@@ -10,5 +10,6 @@
     	"runme.sh", "input.dat"
     ],
     "poststaged": ["output.dat"],
+    "environment": {"OSMIUM_JOBID": "mynewjob"},
     "status_callback_url": "http://localhost/status"
 }
