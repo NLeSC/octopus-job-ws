@@ -38,7 +38,9 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import nl.esciencecenter.xenon.Xenon;
 import nl.esciencecenter.xenon.XenonException;
@@ -121,7 +123,9 @@ public class JobSubmitRequestTest {
             cb = new URI("http://localhost/status");
         } catch (URISyntaxException e) {
         }
-        return new JobSubmitRequest("/tmp/jobdir", "/bin/sh", arguments, prestaged, poststaged, "stderr.txt", "stdout.txt", cb);
+		Map<String, String> environment = new HashMap<String, String>();
+		environment.put("OSMIUM_JOBID", "mynewjob");
+        return new JobSubmitRequest("/tmp/jobdir", "/bin/sh", arguments, prestaged, poststaged, "stderr.txt", "stdout.txt", environment, cb);
     }
 
     @Test
@@ -192,13 +196,13 @@ public class JobSubmitRequestTest {
 
     @Test
     public void testHashCode() {
-        assertThat(request.hashCode()).isEqualTo(-1597450360);
+        assertThat(request.hashCode()).isEqualTo(-474674438);
     }
 
     @Test
     public void testToString() {
         String s =
-                "JobSubmitRequest{jobdir=/tmp/jobdir, executable=/bin/sh, stderr=stderr.txt, stdout=stdout.txt, arguments=[runme.sh], prestaged=[runme.sh, input.dat], poststaged=[output.dat], status_callback_url=http://localhost/status}";
+                "JobSubmitRequest{jobdir=/tmp/jobdir, executable=/bin/sh, stderr=stderr.txt, stdout=stdout.txt, arguments=[runme.sh], prestaged=[runme.sh, input.dat], poststaged=[output.dat], environment={OSMIUM_JOBID=mynewjob}, status_callback_url=http://localhost/status}";
         assertEquals(s, request.toString());
     }
 
@@ -211,6 +215,9 @@ public class JobSubmitRequestTest {
         expected_description.setExecutable("/bin/sh");
         expected_description.setStderr("stderr.txt");
         expected_description.setStdout("stdout.txt");
+		Map<String, String> env = new HashMap<String, String>();
+		env.put("OSMIUM_JOBID", "mynewjob");
+		expected_description.setEnvironment(env);
 
         // FIXME when https://github.com/NLeSC/xenon/issues/53 is resolved then remove ignore
         assertThat(description.toString()).isEqualTo(expected_description.toString());
@@ -246,7 +253,7 @@ public class JobSubmitRequestTest {
         prestaged.add("/data/uniprot.fasta");
         JobSubmitRequest req =
                 new JobSubmitRequest("/tmp/jobdir", "/usr/bin/mail", new ArrayList<String>(), prestaged, new ArrayList<String>(),
-                        "stderr.txt", "stdout.txt", null);
+                        "stderr.txt", "stdout.txt", new HashMap<String, String>(), null);
 
         Sandbox sandbox = req.toSandbox(filesEngine, sandBoxRoot, sandboxId);
 
@@ -267,7 +274,7 @@ public class JobSubmitRequestTest {
         prestaged.add("data/uniprot.fasta");
         JobSubmitRequest req =
                 new JobSubmitRequest("/tmp/jobdir", "/usr/bin/mail", new ArrayList<String>(), prestaged, new ArrayList<String>(),
-                        "stderr.txt", "stdout.txt", null);
+                        "stderr.txt", "stdout.txt", new HashMap<String, String>(), null);
 
         Sandbox sandbox = req.toSandbox(filesEngine, sandBoxRoot, sandboxId);
 
@@ -288,7 +295,7 @@ public class JobSubmitRequestTest {
         poststaged.add("/data/uniprot.fasta");
         JobSubmitRequest req =
                 new JobSubmitRequest("/tmp/jobdir", "/usr/bin/mail", new ArrayList<String>(), new ArrayList<String>(),
-                        poststaged, "stderr.txt", "stdout.txt", null);
+                        poststaged, "stderr.txt", "stdout.txt", new HashMap<String, String>(), null);
 
         Sandbox sandbox = req.toSandbox(filesEngine, sandBoxRoot, sandboxId);
 
@@ -309,7 +316,7 @@ public class JobSubmitRequestTest {
         poststaged.add("data/uniprot.fasta");
         JobSubmitRequest req =
                 new JobSubmitRequest("/tmp/jobdir", "/usr/bin/mail", new ArrayList<String>(), new ArrayList<String>(),
-                        poststaged, "stderr.txt", "stdout.txt", null);
+                        poststaged, "stderr.txt", "stdout.txt", new HashMap<String, String>(), null);
 
         Sandbox sandbox = req.toSandbox(filesEngine, sandBoxRoot, sandboxId);
 

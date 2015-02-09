@@ -41,6 +41,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ImmutableMap;
+import java.util.HashMap;
 
 public class PendingCancelTestITCase {
     protected static final Logger LOGGER = LoggerFactory.getLogger(PendingCancelTestITCase.class);
@@ -72,7 +73,7 @@ public class PendingCancelTestITCase {
         arguments.add("60");
         JobSubmitRequest submit =
                 new JobSubmitRequest(jobdir, "/bin/sleep", arguments, new ArrayList<String>(), new ArrayList<String>(),
-                        "stderr.txt", "stdout.txt", null);
+                        "stderr.txt", "stdout.txt", new HashMap<String, String>(), null);
 
         // when 1 job is submmited -> test passes,
         // when 2 jobs are submitted and second cancelled -> test fails.

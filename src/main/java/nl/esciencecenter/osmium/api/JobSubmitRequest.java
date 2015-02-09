@@ -36,6 +36,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Objects;
+import java.util.Map;
 
 /**
  * Request which can be converted to JobDescription which can be submitted using JavaGAT.
@@ -80,11 +81,16 @@ public class JobSubmitRequest {
      */
     public List<String> poststaged;
     /**
+	 * Environment variables and their values.
+	 */
+	public Map<String, String> environment;
+
+    /**
      * Url where changes of state are PUT to.
      */
     public URI status_callback_url;
-
-    /**
+	
+	/**
      * Constructor
      *
      * @param jobdir Directory as source of prestaged files and target of poststaged files
@@ -94,10 +100,11 @@ public class JobSubmitRequest {
      * @param poststaged List of files that must be copied from sandbox to jobidr
      * @param stderr Name of file where stderr is written
      * @param stdout Name of file where stdout is written
+     * @param environment variables url where status changes should be POST-ed
      * @param statusCallbackURI Optional, url where status changes should be POST-ed
      */
     public JobSubmitRequest(String jobdir, String executable, List<String> arguments, List<String> prestaged,
-            List<String> poststaged, String stderr, String stdout, URI statusCallbackURI) {
+            List<String> poststaged, String stderr, String stdout, Map<String, String> environment, URI statusCallbackURI) {
         super();
         this.jobdir = jobdir;
         this.executable = executable;
@@ -106,6 +113,7 @@ public class JobSubmitRequest {
         this.poststaged = poststaged;
         this.stderr = stderr;
         this.stdout = stdout;
+		this.environment = environment;
         this.status_callback_url = statusCallbackURI;
     }
 
@@ -131,6 +139,7 @@ public class JobSubmitRequest {
         description.setArguments(arguments.toArray(new String[0]));
         description.setStdout(stdout);
         description.setStderr(stderr);
+		description.setEnvironment(environment);
 
         return description;
     }
@@ -200,7 +209,7 @@ public class JobSubmitRequest {
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(jobdir, executable, stderr, stdout, arguments, prestaged, poststaged, status_callback_url);
+        return Objects.hashCode(jobdir, executable, stderr, stdout, arguments, prestaged, poststaged, environment, status_callback_url);
     }
 
     @Override
@@ -218,7 +227,7 @@ public class JobSubmitRequest {
         return Objects.equal(this.jobdir, other.jobdir) && Objects.equal(this.executable, other.executable)
                 && Objects.equal(this.arguments, other.arguments) && Objects.equal(this.stderr, other.stderr)
                 && Objects.equal(this.stdout, other.stdout) && Objects.equal(this.prestaged, other.prestaged)
-                && Objects.equal(this.poststaged, other.poststaged)
+                && Objects.equal(this.poststaged, other.poststaged) && Objects.equal(this.environment, other.environment)
                 && Objects.equal(this.status_callback_url, other.status_callback_url);
     }
 
@@ -226,6 +235,6 @@ public class JobSubmitRequest {
     public String toString() {
         return Objects.toStringHelper(this).add("jobdir", jobdir).add("executable", executable).add("stderr", stderr)
                 .add("stdout", stdout).add("arguments", arguments).add("prestaged", prestaged).add("poststaged", poststaged)
-                .add("status_callback_url", status_callback_url).toString();
+				.add("environment", environment).add("status_callback_url", status_callback_url).toString();
     }
 }
