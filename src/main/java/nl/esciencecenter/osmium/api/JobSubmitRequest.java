@@ -81,16 +81,16 @@ public class JobSubmitRequest {
      */
     public List<String> poststaged;
     /**
-     * Url where changes of state are PUT to.
-     */
-    public URI status_callback_url;
-	
-	/**
 	 * Environment variables and their values.
 	 */
 	public Map<String, String> environment;
 
     /**
+     * Url where changes of state are PUT to.
+     */
+    public URI status_callback_url;
+	
+	/**
      * Constructor
      *
      * @param jobdir Directory as source of prestaged files and target of poststaged files
