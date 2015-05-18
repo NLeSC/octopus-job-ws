@@ -66,7 +66,7 @@ public class XenonManager implements Managed {
     private final Path sandboxRootPath;
     private final Map<String, SandboxedJob> jobs;
     private final JobsPoller poller;
-    private ScheduledExecutorService executor;
+    private final ScheduledExecutorService executor;
 
 
     /**
@@ -84,7 +84,7 @@ public class XenonManager implements Managed {
 
         sandboxRootPath = newSandboxRootPath();
 
-        jobs = new ConcurrentHashMap<String, SandboxedJob>();
+        jobs = new ConcurrentHashMap<String, SandboxedJob>(10);
 
         executor = Executors.newSingleThreadScheduledExecutor();
         PollConfiguration pollConf = configuration.getPoll();
@@ -96,7 +96,7 @@ public class XenonManager implements Managed {
      * @return Path
      * @throws XenonException If the creation of the FileSystem failed or an I/O error occured.
      */
-    protected Path newSandboxRootPath() throws XenonException {
+    protected final Path newSandboxRootPath() throws XenonException {
         Credential credential = null;
         SandboxConfiguration sandboxConf = this.configuration.getSandbox();
         Files filesEngine = xenon.files();
@@ -108,7 +108,7 @@ public class XenonManager implements Managed {
      * @return Scheduler
      * @throws XenonException If the creation of the Scheduler failed 
      */
-    protected Scheduler newScheduler() throws XenonException {
+    protected final Scheduler newScheduler() throws XenonException {
         Credential credential = null;
         SchedulerConfiguration schedulerConf = configuration.getScheduler();
         // TODO prompt user for password/passphrases
