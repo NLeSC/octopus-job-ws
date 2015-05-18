@@ -20,7 +20,10 @@
 package nl.esciencecenter.osmium.api;
 
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.validation.constraints.NotNull;
 
@@ -36,7 +39,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Objects;
-import java.util.Map;
 
 /**
  * Request which can be converted to JobDescription which can be submitted using JavaGAT.
@@ -69,21 +71,21 @@ public class JobSubmitRequest {
     /**
      * Arguments passed to executable
      */
-    public List<String> arguments;
+    public List<String> arguments = new ArrayList<String>(0);
     /**
      * List of filenames to copy from job directory to work directory before executable is called. Work directory is created on
      * the execution host. Can be relative to job directory or absolute paths.
      */
-    public List<String> prestaged;
+    public List<String> prestaged = new ArrayList<String>(0);
     /**
      * List of filenames to copy from work directory to job directory after executable is called. Must be relative to job
      * directory.
      */
-    public List<String> poststaged;
+    public List<String> poststaged = new ArrayList<String>(0);
     /**
 	 * Environment variables and their values.
 	 */
-	public Map<String, String> environment;
+	public Map<String, String> environment = new HashMap<String, String>(0);
 
     /**
      * Url where changes of state are PUT to.
@@ -136,7 +138,7 @@ public class JobSubmitRequest {
     public JobDescription toJobDescription() {
         JobDescription description = new JobDescription();
         description.setExecutable(executable);
-        description.setArguments(arguments.toArray(new String[0]));
+        description.setArguments(arguments.toArray(new String[arguments.size()]));
         description.setStdout(stdout);
         description.setStderr(stderr);
 		description.setEnvironment(environment);

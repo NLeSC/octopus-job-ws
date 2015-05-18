@@ -22,6 +22,7 @@ package nl.esciencecenter.osmium.api;
 import static com.yammer.dropwizard.testing.JsonHelpers.asJson;
 import static com.yammer.dropwizard.testing.JsonHelpers.fromJson;
 import static com.yammer.dropwizard.testing.JsonHelpers.jsonFixture;
+
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -52,7 +53,6 @@ import nl.esciencecenter.xenon.files.Path;
 import nl.esciencecenter.xenon.files.RelativePath;
 import nl.esciencecenter.xenon.jobs.JobDescription;
 import nl.esciencecenter.xenon.util.Sandbox;
-import nl.esciencecenter.osmium.api.JobSubmitRequest;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -145,6 +145,15 @@ public class JobSubmitRequestTest {
         request.status_callback_url = null;
         assertThat("a JobSubmitRequest can be deserialized from JSON",
                 fromJson(jsonFixture("fixtures/request.nocallback.json"), JobSubmitRequest.class), is(request));
+    }
+
+    @Test
+    public void deserializedFromJson_Minimal() throws IOException {
+        JobSubmitRequest minimalRequest = new JobSubmitRequest();
+        minimalRequest.jobdir = "/tmp/jobdir";
+        minimalRequest.executable = "/bin/sh";
+        assertThat("a JobSubmitRequest can be deserialized from JSON",
+                fromJson(jsonFixture("fixtures/request.minimal.json"), JobSubmitRequest.class), is(minimalRequest));
     }
 
     @Test
