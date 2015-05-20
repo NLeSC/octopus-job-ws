@@ -34,11 +34,22 @@ import com.google.common.collect.ImmutableMap;
 public class XenonConfiguration {
 
     /**
-     * Scheduler configuration used to submit jobs
+     * Scheduler name to take if none is given.
+     */
+    private final static String SINGLE_SCHEDULER_NAME = "default";
+
+    /**
+     * Scheduler configuration used to submit jobs.
      */
     @Valid
     @JsonProperty
-    private SchedulerConfiguration scheduler;
+    private ImmutableMap<String, SchedulerConfiguration> schedulers = ImmutableMap.of();
+
+    /**
+     * Default scheduler to use.
+     */
+    @JsonProperty
+    private String defaultScheduler;
 
     /**
      * Sandbox configuration used to upload input files and download output files from job.
@@ -48,7 +59,8 @@ public class XenonConfiguration {
     private SandboxConfiguration sandbox;
 
     /**
-     * Xenon preferences, these could also be put xenon.properties file, but I like scheduler together with it's preferences
+     * Xenon preferences.
+     * These could also be put xenon.properties file, but I like scheduler together with it's preferences
      */
     @JsonProperty
     private ImmutableMap<String, String> preferences = ImmutableMap.of();
@@ -60,25 +72,43 @@ public class XenonConfiguration {
     @JsonProperty
     private PollConfiguration poll = new PollConfiguration();
 
-    public XenonConfiguration(SchedulerConfiguration scheduler, SandboxConfiguration sandbox,
+    public XenonConfiguration(ImmutableMap<String, SchedulerConfiguration> schedulers, String defaultScheduler, SandboxConfiguration sandbox,
             ImmutableMap<String, String> preferences, PollConfiguration poll) {
-        this.scheduler = scheduler;
+        this.schedulers = schedulers;
+        this.defaultScheduler = defaultScheduler;
         this.sandbox = sandbox;
         this.preferences = preferences;
         this.poll = poll;
     }
 
+    public XenonConfiguration(SchedulerConfiguration scheduler, SandboxConfiguration sandbox,
+            ImmutableMap<String, String> preferences, PollConfiguration poll) {
+        this(ImmutableMap.of(SINGLE_SCHEDULER_NAME, scheduler), SINGLE_SCHEDULER_NAME, sandbox, preferences, poll);
+    }
+
     public XenonConfiguration() {
-        this.scheduler = null;
         this.sandbox = null;
     }
 
+    @Valid
+    @JsonProperty
     public SchedulerConfiguration getScheduler() {
-        return scheduler;
+        return this.schedulers.get(SINGLE_SCHEDULER_NAME);
     }
 
+    @Valid
+    @JsonProperty
     public void setScheduler(SchedulerConfiguration scheduler) {
-        this.scheduler = scheduler;
+        this.schedulers = ImmutableMap.of(SINGLE_SCHEDULER_NAME, scheduler);
+        this.defaultScheduler = SINGLE_SCHEDULER_NAME;
+    }
+
+    public ImmutableMap<String, SchedulerConfiguration> getSchedulers() {
+        return schedulers;
+    }
+
+    public void setSchedulers(ImmutableMap<String, SchedulerConfiguration> schedulers) {
+        this.schedulers = schedulers;
     }
 
     public ImmutableMap<String, String> getPreferences() {
@@ -107,7 +137,7 @@ public class XenonConfiguration {
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(scheduler, preferences, sandbox, poll);
+        return Objects.hashCode(schedulers, preferences, sandbox, poll);
     }
 
     @Override
@@ -119,7 +149,7 @@ public class XenonConfiguration {
             return false;
         }
         XenonConfiguration other = (XenonConfiguration) obj;
-        return Objects.equal(this.scheduler, other.scheduler)
+        return Objects.equal(this.schedulers, other.schedulers)
                 && Objects.equal(this.preferences, other.preferences)
                 && Objects.equal(this.poll, other.poll)
                 && Objects.equal(this.sandbox, other.sandbox);
@@ -127,7 +157,15 @@ public class XenonConfiguration {
 
     @Override
     public String toString() {
-        return Objects.toStringHelper(this).addValue(this.scheduler).addValue(this.sandbox)
+        return Objects.toStringHelper(this).addValue(this.schedulers).addValue(this.sandbox)
                 .addValue(this.preferences).addValue(this.poll).toString();
+    }
+
+    public String getDefaultScheduler() {
+        return defaultScheduler;
+    }
+
+    public void setDefaultScheduler(String defaultScheduler) {
+        this.defaultScheduler = defaultScheduler;
     }
 }

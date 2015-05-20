@@ -50,6 +50,11 @@ public class JobSubmitRequest {
     protected static final Logger LOGGER = LoggerFactory.getLogger(JobSubmitRequest.class);
 
     /**
+     * Pre-configured scheduler to run job with.
+     */
+    public String scheduler;
+
+    /**
      * Job directory where stderr/stdout/prestaged/poststaged file are relative to and where job.state file is written. Must end
      * with '/'
      */
@@ -60,6 +65,7 @@ public class JobSubmitRequest {
      */
     @NotNull
     public String executable;
+    
     /**
      * File name to write standard error to
      */
@@ -95,6 +101,7 @@ public class JobSubmitRequest {
 	/**
      * Constructor
      *
+     * @param scheduler Scheduler to run job with. If null, assume the default scheduler.
      * @param jobdir Directory as source of prestaged files and target of poststaged files
      * @param executable Path to executable
      * @param arguments Arguments for executable
@@ -105,9 +112,10 @@ public class JobSubmitRequest {
      * @param environment variables url where status changes should be POST-ed
      * @param statusCallbackURI Optional, url where status changes should be POST-ed
      */
-    public JobSubmitRequest(String jobdir, String executable, List<String> arguments, List<String> prestaged,
+    public JobSubmitRequest(String scheduler, String jobdir, String executable, List<String> arguments, List<String> prestaged,
             List<String> poststaged, String stderr, String stdout, Map<String, String> environment, URI statusCallbackURI) {
         super();
+        this.scheduler = scheduler;
         this.jobdir = jobdir;
         this.executable = executable;
         this.arguments = arguments;
@@ -211,7 +219,7 @@ public class JobSubmitRequest {
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(jobdir, executable, stderr, stdout, arguments, prestaged, poststaged, environment, status_callback_url);
+        return Objects.hashCode(scheduler, jobdir, executable, stderr, stdout, arguments, prestaged, poststaged, environment, status_callback_url);
     }
 
     @Override
@@ -226,7 +234,8 @@ public class JobSubmitRequest {
             return false;
         }
         JobSubmitRequest other = (JobSubmitRequest) obj;
-        return Objects.equal(this.jobdir, other.jobdir) && Objects.equal(this.executable, other.executable)
+        return Objects.equal(this.scheduler, other.scheduler)
+                && Objects.equal(this.jobdir, other.jobdir) && Objects.equal(this.executable, other.executable)
                 && Objects.equal(this.arguments, other.arguments) && Objects.equal(this.stderr, other.stderr)
                 && Objects.equal(this.stdout, other.stdout) && Objects.equal(this.prestaged, other.prestaged)
                 && Objects.equal(this.poststaged, other.poststaged) && Objects.equal(this.environment, other.environment)
@@ -235,7 +244,8 @@ public class JobSubmitRequest {
 
     @Override
     public String toString() {
-        return Objects.toStringHelper(this).add("jobdir", jobdir).add("executable", executable).add("stderr", stderr)
+        return Objects.toStringHelper(this).add("scheduler", scheduler)
+                .add("jobdir", jobdir).add("executable", executable).add("stderr", stderr)
                 .add("stdout", stdout).add("arguments", arguments).add("prestaged", prestaged).add("poststaged", poststaged)
 				.add("environment", environment).add("status_callback_url", status_callback_url).toString();
     }

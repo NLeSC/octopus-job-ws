@@ -51,12 +51,6 @@ import nl.esciencecenter.xenon.jobs.Scheduler;
 import nl.esciencecenter.xenon.util.Sandbox;
 import nl.esciencecenter.osmium.api.JobSubmitRequest;
 import nl.esciencecenter.osmium.api.SandboxedJob;
-import nl.esciencecenter.osmium.job.JobsPoller;
-import nl.esciencecenter.osmium.job.XenonConfiguration;
-import nl.esciencecenter.osmium.job.XenonManager;
-import nl.esciencecenter.osmium.job.PollConfiguration;
-import nl.esciencecenter.osmium.job.SandboxConfiguration;
-import nl.esciencecenter.osmium.job.SchedulerConfiguration;
 
 import org.apache.http.client.HttpClient;
 import org.junit.Test;
@@ -121,8 +115,7 @@ public class XenonManagerTest {
         Xenon xenon = mock(Xenon.class);
         ScheduledExecutorService executor = mock(ScheduledExecutorService.class);
         JobsPoller poller = mock(JobsPoller.class);
-        Scheduler scheduler = mock(Scheduler.class);
-        XenonManager manager = new XenonManager(null, xenon, scheduler, null, null, poller, executor);
+        XenonManager manager = new XenonManager(null, xenon, ImmutableMap.<String,Scheduler>of(), null, null, poller, executor);
 
         manager.stop();
 
@@ -144,6 +137,7 @@ public class XenonManagerTest {
         XenonConfiguration conf = new XenonConfiguration(schedulerConf, sandboxConf, prefs, pollConf);
         Xenon xenon = mock(Xenon.class);
         Scheduler scheduler = mock(Scheduler.class);
+        ImmutableMap<String, Scheduler> schedulers = ImmutableMap.of(conf.getDefaultScheduler(), scheduler);
         Jobs jobs = mock(Jobs.class);
         when(xenon.jobs()).thenReturn(jobs);
         Files files = mock(Files.class);
@@ -168,7 +162,7 @@ public class XenonManagerTest {
         Map<String, SandboxedJob> sjobs = new HashMap<String, SandboxedJob>();
         JobsPoller poller = mock(JobsPoller.class);
         ScheduledExecutorService executor = mock(ScheduledExecutorService.class);
-        XenonManager manager = new XenonManager(conf, xenon, scheduler, sandboxPath, sjobs, poller, executor);
+        XenonManager manager = new XenonManager(conf, xenon, schedulers, sandboxPath, sjobs, poller, executor);
 
         SandboxedJob result = manager.submitJob(request, httpClient);
 

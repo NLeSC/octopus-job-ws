@@ -50,11 +50,11 @@ public class JobLauncherConfigurationTest {
      * @throws URISyntaxException
      */
     public XenonConfiguration getSampleXenonConfiguration() throws URISyntaxException {
-        SchedulerConfiguration scheduler = new SchedulerConfiguration("local", null, "multi", null);
+        ImmutableMap<String,SchedulerConfiguration> scheduler = ImmutableMap.of("local", new SchedulerConfiguration("local", null, "multi", null));
         SandboxConfiguration sandbox = new SandboxConfiguration("file", null, "/tmp/sandboxes", null);
         ImmutableMap<String, String> prefs = ImmutableMap.of("xenon.adaptors.local.queue.multi.maxConcurrentJobs", "4");
         PollConfiguration pollConf = new PollConfiguration(10, 50, 100);
-        XenonConfiguration xenonConf = new XenonConfiguration(scheduler, sandbox, prefs, pollConf);
+        XenonConfiguration xenonConf = new XenonConfiguration(scheduler, "local", sandbox, prefs, pollConf);
         return xenonConf;
     }
 
@@ -116,7 +116,7 @@ public class JobLauncherConfigurationTest {
 
         int hashcode = xenonConf.hashCode();
 
-        assertThat(hashcode).isEqualTo(-501985210);
+        assertThat(hashcode).isEqualTo(1370792525);
     }
 
     @Test
@@ -125,7 +125,7 @@ public class JobLauncherConfigurationTest {
 
         String self = xenonConf.toString();
 
-        String expected = "XenonConfiguration{SchedulerConfiguration{local, multi, null, null}, SandboxConfiguration{file, /tmp/sandboxes, null, null}, {xenon.adaptors.local.queue.multi.maxConcurrentJobs=4}, PollConfiguration{10, 50, 100}}";
+        String expected = "XenonConfiguration{{local=SchedulerConfiguration{local, multi, null, null}}, SandboxConfiguration{file, /tmp/sandboxes, null, null}, {xenon.adaptors.local.queue.multi.maxConcurrentJobs=4}, PollConfiguration{10, 50, 100}}";
         assertThat(self).isEqualTo(expected);
 
     }

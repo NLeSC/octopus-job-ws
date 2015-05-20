@@ -22,15 +22,11 @@ package nl.esciencecenter.osmium.job;
 import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import nl.esciencecenter.osmium.api.JobSubmitRequest;
 import nl.esciencecenter.osmium.api.SandboxedJob;
-import nl.esciencecenter.osmium.job.XenonConfiguration;
-import nl.esciencecenter.osmium.job.XenonManager;
-import nl.esciencecenter.osmium.job.PollConfiguration;
-import nl.esciencecenter.osmium.job.SandboxConfiguration;
-import nl.esciencecenter.osmium.job.SchedulerConfiguration;
 
 import org.apache.http.client.HttpClient;
 import org.apache.http.impl.client.DefaultHttpClient;
@@ -41,7 +37,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ImmutableMap;
-import java.util.HashMap;
 
 public class PendingCancelTestITCase {
     protected static final Logger LOGGER = LoggerFactory.getLogger(PendingCancelTestITCase.class);
@@ -51,7 +46,7 @@ public class PendingCancelTestITCase {
 
     private XenonManager manager;
 
-    private HttpClient httpClient = new DefaultHttpClient();
+    private final HttpClient httpClient = new DefaultHttpClient();
 
     @Test
     public void test() throws Exception {
@@ -72,7 +67,7 @@ public class PendingCancelTestITCase {
         List<String> arguments = new ArrayList<String>();
         arguments.add("60");
         JobSubmitRequest submit =
-                new JobSubmitRequest(jobdir, "/bin/sleep", arguments, new ArrayList<String>(), new ArrayList<String>(),
+                new JobSubmitRequest(null, jobdir, "/bin/sleep", arguments, new ArrayList<String>(), new ArrayList<String>(),
                         "stderr.txt", "stdout.txt", new HashMap<String, String>(), null);
 
         // when 1 job is submmited -> test passes,
