@@ -34,11 +34,6 @@ import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
 
-import nl.esciencecenter.osmium.job.XenonConfiguration;
-import nl.esciencecenter.osmium.job.PollConfiguration;
-import nl.esciencecenter.osmium.job.SandboxConfiguration;
-import nl.esciencecenter.osmium.job.SchedulerConfiguration;
-
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableMap;
@@ -99,6 +94,27 @@ public class XenonConfigurationTest {
     }
 
     @Test
+    public void deserializesMultiSchedulerFromJson() throws IOException, URISyntaxException {
+        XenonConfiguration actual = fromJson(jsonFixture("fixtures/xenon.multischeduler.json"),
+                XenonConfiguration.class);
+
+        ImmutableMap<String, String> emptyProps = ImmutableMap.of();
+
+        SchedulerConfiguration localScheduler = new SchedulerConfiguration("local", null, "multi", emptyProps);
+        SchedulerConfiguration sshScheduler = new SchedulerConfiguration("ssh", null, "single", emptyProps);
+        assertThat(actual.getSchedulers()).isEqualTo(ImmutableMap.of("local", localScheduler, "remote", sshScheduler));
+
+        SandboxConfiguration expectedSandbox = new SandboxConfiguration("file", "/", "/tmp/sandboxes", emptyProps);
+        assertThat(actual.getSandbox()).isEqualTo(expectedSandbox);
+
+        ImmutableMap<String, String> prefs = ImmutableMap.of(
+                "xenon.adaptors.local.queue.multi.maxConcurrentJobs", "4");
+        assertThat(actual.getPreferences()).isEqualTo(prefs);
+        PollConfiguration expected_poll = new PollConfiguration(500, 3600000, 43200000);
+        assertThat(actual.getPoll()).isEqualTo(expected_poll);
+    }
+
+    @Test
     public void validateFromJson() throws IOException {
         ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
         Validator validator = factory.getValidator();
@@ -114,14 +130,14 @@ public class XenonConfigurationTest {
     @Test
     public void testToString() throws URISyntaxException {
         XenonConfiguration config = sampleConfig();
-        String expected = "XenonConfiguration{SchedulerConfiguration{local, multi, null, null}, SandboxConfiguration{file, /tmp/sandboxes, null, null}, {xenon.adaptors.local.queue.multi.maxConcurrentJobs=1}, PollConfiguration{30000, 3600000, 43200000}}";
+        String expected = "XenonConfiguration{{default=SchedulerConfiguration{local, multi, null, null}}, SandboxConfiguration{file, /tmp/sandboxes, null, null}, {xenon.adaptors.local.queue.multi.maxConcurrentJobs=1}, PollConfiguration{30000, 3600000, 43200000}}";
         assertThat(config.toString()).isEqualTo(expected);
     }
 
     @Test
     public void testHashCode() throws URISyntaxException {
         XenonConfiguration config = sampleConfig();
-        int expected = -318369353;
+        int expected = 1777543960;
         assertThat(config.hashCode()).isEqualTo(expected);
     }
 

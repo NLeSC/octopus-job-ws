@@ -21,6 +21,7 @@ package nl.esciencecenter.osmium.job;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
@@ -62,7 +63,7 @@ public class XenonManager implements Managed {
 
     private final XenonConfiguration configuration;
     private final Xenon xenon;
-    private final Scheduler scheduler;
+    private final Map<String,Scheduler> schedulers;
     private final Path sandboxRootPath;
     private final Map<String, SandboxedJob> jobs;
     private final JobsPoller poller;
@@ -80,7 +81,7 @@ public class XenonManager implements Managed {
 
         xenon = XenonFactory.newXenon(configuration.getPreferences());
 
-        scheduler = newScheduler();
+        schedulers = newSchedulers();
 
         sandboxRootPath = newSandboxRootPath();
 
@@ -96,7 +97,7 @@ public class XenonManager implements Managed {
      * @return Path
      * @throws XenonException If the creation of the FileSystem failed or an I/O error occured.
      */
-    protected final Path newSandboxRootPath() throws XenonException {
+    private Path newSandboxRootPath() throws XenonException {
         Credential credential = null;
         SandboxConfiguration sandboxConf = this.configuration.getSandbox();
         Files filesEngine = xenon.files();
@@ -108,19 +109,27 @@ public class XenonManager implements Managed {
      * @return Scheduler
      * @throws XenonException If the creation of the Scheduler failed 
      */
-    protected final Scheduler newScheduler() throws XenonException {
+    private Map<String,Scheduler> newSchedulers() throws XenonException {
         Credential credential = null;
-        SchedulerConfiguration schedulerConf = configuration.getScheduler();
-        // TODO prompt user for password/passphrases
-        return xenon.jobs().newScheduler(schedulerConf.getScheme(), schedulerConf.getLocation(), credential, schedulerConf.getProperties());
+        Map<String, SchedulerConfiguration> schedulerConfs = configuration.getSchedulers();
+        Map<String, Scheduler> schedulerMap = new HashMap<String, Scheduler>(schedulerConfs.size()*4/3);
+        for (Map.Entry<String,SchedulerConfiguration> entry : schedulerConfs.entrySet()) {
+            SchedulerConfiguration schedulerConf = entry.getValue();
+            // TODO prompt user for password/passphrases
+            schedulerMap.put(
+                entry.getKey(),
+                xenon.jobs().newScheduler(schedulerConf.getScheme(), schedulerConf.getLocation(), credential, schedulerConf.getProperties())
+            );
+        }
+        return schedulerMap;
     }
 
-    protected XenonManager(XenonConfiguration configuration, Xenon xenon, Scheduler scheduler, Path sandboxRootPath,
+    protected XenonManager(XenonConfiguration configuration, Xenon xenon, Map<String,Scheduler> scheduler, Path sandboxRootPath,
             Map<String, SandboxedJob> jobs, JobsPoller poller, ScheduledExecutorService executor) {
         super();
         this.configuration = configuration;
         this.xenon = xenon;
-        this.scheduler = scheduler;
+        this.schedulers = scheduler;
         this.sandboxRootPath = sandboxRootPath;
         this.jobs = jobs;
         this.poller = poller;
@@ -163,9 +172,11 @@ public class XenonManager implements Managed {
     public SandboxedJob submitJob(JobSubmitRequest request, HttpClient httpClient) throws XenonException {
         Sandbox sandbox = request.toSandbox(xenon.files(), sandboxRootPath, null);
 
+        String schedulerName = request.scheduler != null ? request.scheduler : configuration.getDefaultScheduler();
+
         // create job description
         JobDescription description = request.toJobDescription();
-        description.setQueueName(configuration.getScheduler().getQueue());
+        description.setQueueName(configuration.getSchedulers().get(schedulerName).getQueue());
         description.setWorkingDirectory(sandbox.getPath().getRelativePath().getAbsolutePath());
         long cancelTimeout = configuration.getPoll().getCancelTimeout();
         // CancelTimeout is in milliseconds and MaxTime must be in minutes, so convert it
@@ -176,7 +187,7 @@ public class XenonManager implements Managed {
         sandbox.upload();
 
         // submit job
-        Job job = xenon.jobs().submitJob(scheduler, description);
+        Job job = xenon.jobs().submitJob(schedulers.get(schedulerName), description);
 
         // store job in jobs map
         SandboxedJob sjob = new SandboxedJob(sandbox, job, request, httpClient);

@@ -1,5 +1,6 @@
 {
     "request": {
+        "scheduler": null,
         "jobdir": "/tmp/jobdir",
         "executable": "/bin/sh",
         "stderr": "stderr.txt",
