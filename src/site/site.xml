@@ -21,7 +21,7 @@
 	<custom>
 		<fluidoSkin>
 			<gitHub>
-				<projectId>NLeSC/MAGMa</projectId>
+				<projectId>NLeSC/Osmium</projectId>
 				<ribbonOrientation>right</ribbonOrientation>
 			</gitHub>
 		</fluidoSkin>
@@ -30,7 +30,7 @@
 		<menu ref="reports" />
 	</body>
 	<bannerLeft>
-		<name>Xenon</name>
+		<name>Osmium</name>
 		<src>images/logo.png</src>
 		<href>http://nlesc.github.io/osmium/</href>
 		<height>140px</height>
