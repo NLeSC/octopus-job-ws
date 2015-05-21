@@ -32,31 +32,18 @@ import com.google.common.collect.ImmutableMap;
  *
  */
 public class XenonConfiguration {
-
-    /**
-     * Scheduler name to take if none is given.
-     */
-    private final static String SINGLE_SCHEDULER_NAME = "default";
-
     /**
      * Scheduler configuration used to submit jobs.
      */
     @Valid
     @JsonProperty
-    private ImmutableMap<String, SchedulerConfiguration> schedulers = ImmutableMap.of();
+    private ImmutableMap<String, LauncherConfiguration> launchers = ImmutableMap.of();
 
     /**
      * Default scheduler to use.
      */
     @JsonProperty
-    private String defaultScheduler;
-
-    /**
-     * Sandbox configuration used to upload input files and download output files from job.
-     */
-    @Valid
-    @JsonProperty
-    private SandboxConfiguration sandbox;
+    private String defaultLauncher;
 
     /**
      * Xenon preferences.
@@ -72,43 +59,29 @@ public class XenonConfiguration {
     @JsonProperty
     private PollConfiguration poll = new PollConfiguration();
 
-    public XenonConfiguration(ImmutableMap<String, SchedulerConfiguration> schedulers, String defaultScheduler, SandboxConfiguration sandbox,
+    public XenonConfiguration(ImmutableMap<String, LauncherConfiguration> launchers, String defaultScheduler,
             ImmutableMap<String, String> preferences, PollConfiguration poll) {
-        this.schedulers = schedulers;
-        this.defaultScheduler = defaultScheduler;
-        this.sandbox = sandbox;
+        this.launchers = launchers;
+        this.defaultLauncher = defaultScheduler;
         this.preferences = preferences;
         this.poll = poll;
     }
 
-    public XenonConfiguration(SchedulerConfiguration scheduler, SandboxConfiguration sandbox,
+    public XenonConfiguration(SchedulerConfiguration scheduler, SandboxConfiguration sandbox, String schedulerName,
             ImmutableMap<String, String> preferences, PollConfiguration poll) {
-        this(ImmutableMap.of(SINGLE_SCHEDULER_NAME, scheduler), SINGLE_SCHEDULER_NAME, sandbox, preferences, poll);
+        this(ImmutableMap.of(schedulerName, new LauncherConfiguration(scheduler, sandbox)), schedulerName, preferences, poll);
     }
-
+    
     public XenonConfiguration() {
-        this.sandbox = null;
+        defaultLauncher = null;
     }
 
-    @Valid
-    @JsonProperty
-    public SchedulerConfiguration getScheduler() {
-        return this.schedulers.get(SINGLE_SCHEDULER_NAME);
+    public ImmutableMap<String, LauncherConfiguration> getLaunchers() {
+        return launchers;
     }
 
-    @Valid
-    @JsonProperty
-    public void setScheduler(SchedulerConfiguration scheduler) {
-        this.schedulers = ImmutableMap.of(SINGLE_SCHEDULER_NAME, scheduler);
-        this.defaultScheduler = SINGLE_SCHEDULER_NAME;
-    }
-
-    public ImmutableMap<String, SchedulerConfiguration> getSchedulers() {
-        return schedulers;
-    }
-
-    public void setSchedulers(ImmutableMap<String, SchedulerConfiguration> schedulers) {
-        this.schedulers = schedulers;
+    public void setLaunchers(ImmutableMap<String, LauncherConfiguration> launchers) {
+        this.launchers = launchers;
     }
 
     public ImmutableMap<String, String> getPreferences() {
@@ -117,14 +90,6 @@ public class XenonConfiguration {
 
     public void setPreferences(ImmutableMap<String, String> preferences) {
         this.preferences = preferences;
-    }
-
-    public SandboxConfiguration getSandbox() {
-        return sandbox;
-    }
-
-    public void setSandbox(SandboxConfiguration sandboxConfiguration) {
-        sandbox = sandboxConfiguration;
     }
 
     public PollConfiguration getPoll() {
@@ -137,7 +102,7 @@ public class XenonConfiguration {
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(schedulers, preferences, sandbox, poll);
+        return Objects.hashCode(launchers, defaultLauncher, preferences, poll);
     }
 
     @Override
@@ -149,23 +114,23 @@ public class XenonConfiguration {
             return false;
         }
         XenonConfiguration other = (XenonConfiguration) obj;
-        return Objects.equal(this.schedulers, other.schedulers)
+        return Objects.equal(this.launchers, other.launchers)
+                && Objects.equal(this.defaultLauncher, other.defaultLauncher)
                 && Objects.equal(this.preferences, other.preferences)
-                && Objects.equal(this.poll, other.poll)
-                && Objects.equal(this.sandbox, other.sandbox);
+                && Objects.equal(this.poll, other.poll);
     }
 
     @Override
     public String toString() {
-        return Objects.toStringHelper(this).addValue(this.schedulers).addValue(this.sandbox)
+        return Objects.toStringHelper(this).addValue(this.launchers).addValue(this.defaultLauncher)
                 .addValue(this.preferences).addValue(this.poll).toString();
     }
 
-    public String getDefaultScheduler() {
-        return defaultScheduler;
+    public String getDefaultLauncher() {
+        return defaultLauncher;
     }
 
-    public void setDefaultScheduler(String defaultScheduler) {
-        this.defaultScheduler = defaultScheduler;
+    public void setDefaultLauncher(String defaultLauncher) {
+        this.defaultLauncher = defaultLauncher;
     }
 }

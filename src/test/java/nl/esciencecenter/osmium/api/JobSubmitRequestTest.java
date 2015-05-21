@@ -211,7 +211,7 @@ public class JobSubmitRequestTest {
     @Test
     public void testToString() {
         String s =
-                "JobSubmitRequest{scheduler=null, jobdir=/tmp/jobdir, executable=/bin/sh, stderr=stderr.txt, stdout=stdout.txt, arguments=[runme.sh], prestaged=[runme.sh, input.dat], poststaged=[output.dat], environment={OSMIUM_JOBID=mynewjob}, status_callback_url=http://localhost/status}";
+                "JobSubmitRequest{launcher=null, jobdir=/tmp/jobdir, executable=/bin/sh, stderr=stderr.txt, stdout=stdout.txt, arguments=[runme.sh], prestaged=[runme.sh, input.dat], poststaged=[output.dat], environment={OSMIUM_JOBID=mynewjob}, status_callback_url=http://localhost/status}";
         assertEquals(s, request.toString());
     }
 

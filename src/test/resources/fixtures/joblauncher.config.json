@@ -6,15 +6,20 @@
 		"algorithm": "hmac-sha-1"
 	}],
     "xenon": {
-        "scheduler": {
-            "scheme": "local",
-            "queue": "multi"
+        "launchers": {
+            "local": {
+                "scheduler": {
+                    "scheme": "local",
+                    "queue": "multi"
+                },
+                "sandbox": {
+                    "scheme": "file",
+                    "location": "/",
+                    "path": "/tmp/sandboxes"
+                }
+            }
         },
-        "sandbox": {
-            "scheme": "file",
-            "location": "/",
-            "path": "/tmp/sandboxes"
-        },
+        "defaultLauncher": "local",
         "preferences": {
             "xenon.adaptors.local.queue.multi.maxConcurrentJobs": 4
         },

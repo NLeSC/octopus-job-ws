@@ -1,13 +1,28 @@
 {
-	"scheduler": {
-	    "scheme": "local",
-	    "queue": "multi"
-	},
-	"sandbox": {
-	    "scheme": "file",
-	    "location": "/",
-	    "path": "/tmp/sandboxes"
-	},
+	"launchers": {
+        "local": {
+            "scheduler": {
+                "scheme": "local",
+                "queue": "multi"
+            },
+            "sandbox": {
+                "scheme": "file",
+                "location": "/",
+                "path": "/tmp/sandboxes"
+            }
+        },
+        "remote": {
+            "scheduler": {
+                "scheme": "ssh",
+                "queue": "single"
+            },
+            "sandbox": {
+                "scheme": "ssh",
+                "location": "/",
+                "path": "/tmp/sandboxes"
+            }
+        }
+    },
 	"preferences": {
 		"xenon.adaptors.local.queue.multi.maxConcurrentJobs": 4
 	},

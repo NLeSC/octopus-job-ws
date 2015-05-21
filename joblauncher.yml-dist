@@ -4,14 +4,17 @@
 #  key: <MAC key>
 #  scope: <URL where MAC key should be used>
 xenon:
-  scheduler:
-    scheme: local
-    location: /
-    queue: multi
-  sandbox:
-    scheme: file
-    location: /
-    path: /tmp
+  launchers:
+    local:
+      scheduler:
+        scheme: local
+        location: /
+        queue: multi
+      sandbox:
+        scheme: file
+        location: /
+        path: /tmp
+  defaultLauncher: local
   preferences:
     xenon.adaptors.local.queue.multi.maxConcurrentJobs: 4
   poll:

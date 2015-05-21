@@ -64,7 +64,7 @@ public class XenonManager implements Managed {
     private final XenonConfiguration configuration;
     private final Xenon xenon;
     private final Map<String,Scheduler> schedulers;
-    private final Path sandboxRootPath;
+    private final Map<String, Path> sandboxRootPaths;
     private final Map<String, SandboxedJob> jobs;
     private final JobsPoller poller;
     private final ScheduledExecutorService executor;
@@ -83,7 +83,7 @@ public class XenonManager implements Managed {
 
         schedulers = newSchedulers();
 
-        sandboxRootPath = newSandboxRootPath();
+        sandboxRootPaths = newSandboxRootPaths();
 
         jobs = new ConcurrentHashMap<String, SandboxedJob>(10);
 
@@ -97,12 +97,19 @@ public class XenonManager implements Managed {
      * @return Path
      * @throws XenonException If the creation of the FileSystem failed or an I/O error occured.
      */
-    private Path newSandboxRootPath() throws XenonException {
+    private Map<String, Path> newSandboxRootPaths() throws XenonException {
         Credential credential = null;
-        SandboxConfiguration sandboxConf = this.configuration.getSandbox();
-        Files filesEngine = xenon.files();
-        FileSystem sandboxFS = filesEngine.newFileSystem(sandboxConf.getScheme(), sandboxConf.getLocation(), credential, sandboxConf.getProperties());
-        return filesEngine.newPath(sandboxFS, sandboxConf.getPath());
+        Map<String, LauncherConfiguration> launcherConfs = configuration.getLaunchers();
+        Map<String, Path> sandboxMap = new HashMap<String, Path>(launcherConfs.size()*4/3);
+
+        for (Map.Entry<String, LauncherConfiguration> entry : launcherConfs.entrySet()) {
+
+            SandboxConfiguration sandboxConf = entry.getValue().getSandbox();
+            Files filesEngine = xenon.files();
+            FileSystem sandboxFS = filesEngine.newFileSystem(sandboxConf.getScheme(), sandboxConf.getLocation(), credential, sandboxConf.getProperties());
+            sandboxMap.put(entry.getKey(), filesEngine.newPath(sandboxFS, sandboxConf.getPath()));
+        }
+        return sandboxMap;
     }
 
     /**
@@ -111,10 +118,10 @@ public class XenonManager implements Managed {
      */
     private Map<String,Scheduler> newSchedulers() throws XenonException {
         Credential credential = null;
-        Map<String, SchedulerConfiguration> schedulerConfs = configuration.getSchedulers();
-        Map<String, Scheduler> schedulerMap = new HashMap<String, Scheduler>(schedulerConfs.size()*4/3);
-        for (Map.Entry<String,SchedulerConfiguration> entry : schedulerConfs.entrySet()) {
-            SchedulerConfiguration schedulerConf = entry.getValue();
+        Map<String, LauncherConfiguration> launcherConfs = configuration.getLaunchers();
+        Map<String, Scheduler> schedulerMap = new HashMap<String, Scheduler>(launcherConfs.size()*4/3);
+        for (Map.Entry<String, LauncherConfiguration> entry : launcherConfs.entrySet()) {
+            SchedulerConfiguration schedulerConf = entry.getValue().getScheduler();
             // TODO prompt user for password/passphrases
             schedulerMap.put(
                 entry.getKey(),
@@ -124,13 +131,13 @@ public class XenonManager implements Managed {
         return schedulerMap;
     }
 
-    protected XenonManager(XenonConfiguration configuration, Xenon xenon, Map<String,Scheduler> scheduler, Path sandboxRootPath,
+    protected XenonManager(XenonConfiguration configuration, Xenon xenon, Map<String,Scheduler> scheduler, Map<String,Path> sandboxRootPaths,
             Map<String, SandboxedJob> jobs, JobsPoller poller, ScheduledExecutorService executor) {
         super();
         this.configuration = configuration;
         this.xenon = xenon;
         this.schedulers = scheduler;
-        this.sandboxRootPath = sandboxRootPath;
+        this.sandboxRootPaths = sandboxRootPaths;
         this.jobs = jobs;
         this.poller = poller;
         this.executor = executor;
@@ -170,13 +177,13 @@ public class XenonManager implements Managed {
      * @throws XenonException If staging file or submit job failed
      */
     public SandboxedJob submitJob(JobSubmitRequest request, HttpClient httpClient) throws XenonException {
-        Sandbox sandbox = request.toSandbox(xenon.files(), sandboxRootPath, null);
+        String launcherName = request.launcher != null ? request.launcher : configuration.getDefaultLauncher();
 
-        String schedulerName = request.scheduler != null ? request.scheduler : configuration.getDefaultScheduler();
+        Sandbox sandbox = request.toSandbox(xenon.files(), sandboxRootPaths.get(launcherName), null);
 
         // create job description
         JobDescription description = request.toJobDescription();
-        description.setQueueName(configuration.getSchedulers().get(schedulerName).getQueue());
+        description.setQueueName(configuration.getLaunchers().get(launcherName).getScheduler().getQueue());
         description.setWorkingDirectory(sandbox.getPath().getRelativePath().getAbsolutePath());
         long cancelTimeout = configuration.getPoll().getCancelTimeout();
         // CancelTimeout is in milliseconds and MaxTime must be in minutes, so convert it
@@ -187,7 +194,7 @@ public class XenonManager implements Managed {
         sandbox.upload();
 
         // submit job
-        Job job = xenon.jobs().submitJob(schedulers.get(schedulerName), description);
+        Job job = xenon.jobs().submitJob(schedulers.get(launcherName), description);
 
         // store job in jobs map
         SandboxedJob sjob = new SandboxedJob(sandbox, job, request, httpClient);

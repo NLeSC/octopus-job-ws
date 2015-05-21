@@ -85,7 +85,7 @@ public class XenonManagerTest {
         PollConfiguration pollConf = new PollConfiguration();
         SchedulerConfiguration scheduler = new SchedulerConfiguration("local", null, "multi", null);
         SandboxConfiguration sandbox = new SandboxConfiguration("file", null, "/tmp/sandboxes", null);
-        XenonConfiguration conf = new XenonConfiguration(scheduler, sandbox, prefs, pollConf);
+        XenonConfiguration conf = new XenonConfiguration(scheduler, sandbox, "default", prefs, pollConf);
 
         new XenonManager(conf);
 
@@ -134,10 +134,10 @@ public class XenonManagerTest {
         PollConfiguration pollConf = new PollConfiguration();
         SchedulerConfiguration schedulerConf = new SchedulerConfiguration("local", null, "multi", null);
         SandboxConfiguration sandboxConf = new SandboxConfiguration("file", null, "/tmp/sandboxes", null);
-        XenonConfiguration conf = new XenonConfiguration(schedulerConf, sandboxConf, prefs, pollConf);
+        XenonConfiguration conf = new XenonConfiguration(schedulerConf, sandboxConf, "default", prefs, pollConf);
         Xenon xenon = mock(Xenon.class);
         Scheduler scheduler = mock(Scheduler.class);
-        ImmutableMap<String, Scheduler> schedulers = ImmutableMap.of(conf.getDefaultScheduler(), scheduler);
+        ImmutableMap<String, Scheduler> schedulers = ImmutableMap.of(conf.getDefaultLauncher(), scheduler);
         Jobs jobs = mock(Jobs.class);
         when(xenon.jobs()).thenReturn(jobs);
         Files files = mock(Files.class);
@@ -162,7 +162,7 @@ public class XenonManagerTest {
         Map<String, SandboxedJob> sjobs = new HashMap<String, SandboxedJob>();
         JobsPoller poller = mock(JobsPoller.class);
         ScheduledExecutorService executor = mock(ScheduledExecutorService.class);
-        XenonManager manager = new XenonManager(conf, xenon, schedulers, sandboxPath, sjobs, poller, executor);
+        XenonManager manager = new XenonManager(conf, xenon, schedulers, ImmutableMap.of(conf.getDefaultLauncher(), sandboxPath), sjobs, poller, executor);
 
         SandboxedJob result = manager.submitJob(request, httpClient);
 

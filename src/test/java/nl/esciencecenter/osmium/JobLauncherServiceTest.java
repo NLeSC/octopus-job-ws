@@ -101,7 +101,7 @@ public class JobLauncherServiceTest {
         SchedulerConfiguration scheduler = new SchedulerConfiguration("local", null, "multi", null);
         SandboxConfiguration sandbox = new SandboxConfiguration("file", "/", "/tmp/sandboxes", null);
         PollConfiguration pollConf = new PollConfiguration();
-        XenonConfiguration xenon = new XenonConfiguration(scheduler, sandbox, prefs, pollConf);
+        XenonConfiguration xenon = new XenonConfiguration(scheduler, sandbox, "default", prefs, pollConf);
         ImmutableList<MacCredential> macs = ImmutableList.of(new MacCredential(
                 "id", "key", new URI("http://localhost")));
         HttpClientConfiguration httpClient = new HttpClientConfiguration();

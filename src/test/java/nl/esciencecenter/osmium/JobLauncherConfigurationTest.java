@@ -22,19 +22,19 @@ package nl.esciencecenter.osmium;
 
 import static com.yammer.dropwizard.testing.JsonHelpers.fromJson;
 import static com.yammer.dropwizard.testing.JsonHelpers.jsonFixture;
+import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.fest.assertions.api.Assertions.assertThat;
 
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import nl.esciencecenter.osmium.JobLauncherConfiguration;
-import nl.esciencecenter.osmium.job.XenonConfiguration;
+import nl.esciencecenter.osmium.job.LauncherConfiguration;
 import nl.esciencecenter.osmium.job.PollConfiguration;
 import nl.esciencecenter.osmium.job.SandboxConfiguration;
 import nl.esciencecenter.osmium.job.SchedulerConfiguration;
+import nl.esciencecenter.osmium.job.XenonConfiguration;
 import nl.esciencecenter.osmium.mac.MacCredential;
 
 import org.junit.Test;
@@ -50,11 +50,11 @@ public class JobLauncherConfigurationTest {
      * @throws URISyntaxException
      */
     public XenonConfiguration getSampleXenonConfiguration() throws URISyntaxException {
-        ImmutableMap<String,SchedulerConfiguration> scheduler = ImmutableMap.of("local", new SchedulerConfiguration("local", null, "multi", null));
+        SchedulerConfiguration scheduler = new SchedulerConfiguration("local", null, "multi", null);
         SandboxConfiguration sandbox = new SandboxConfiguration("file", null, "/tmp/sandboxes", null);
         ImmutableMap<String, String> prefs = ImmutableMap.of("xenon.adaptors.local.queue.multi.maxConcurrentJobs", "4");
         PollConfiguration pollConf = new PollConfiguration(10, 50, 100);
-        XenonConfiguration xenonConf = new XenonConfiguration(scheduler, "local", sandbox, prefs, pollConf);
+        XenonConfiguration xenonConf = new XenonConfiguration(scheduler, sandbox, "local", prefs, pollConf);
         return xenonConf;
     }
 
@@ -102,8 +102,11 @@ public class JobLauncherConfigurationTest {
         xenonConf.setPoll(new PollConfiguration());
         ImmutableList<MacCredential> macs = ImmutableList.of(new MacCredential("id", "key", new URI("http://localhost")));
         ImmutableMap<String, String> emptyProps = ImmutableMap.of();
-        xenonConf.setScheduler(new SchedulerConfiguration("local", null, "multi", emptyProps));
-        xenonConf.setSandbox(new SandboxConfiguration("file", "/", "/tmp/sandboxes", emptyProps));
+        xenonConf.setLaunchers(ImmutableMap.of("local", 
+                new LauncherConfiguration(
+                        new SchedulerConfiguration("local", null, "multi", emptyProps),
+                        new SandboxConfiguration("file", "/", "/tmp/sandboxes", emptyProps)
+                )));
 
         assertThat(conf.getXenonConfiguration()).isEqualTo(xenonConf);
         assertThat(conf.getMacs()).isEqualTo(macs);
@@ -116,7 +119,7 @@ public class JobLauncherConfigurationTest {
 
         int hashcode = xenonConf.hashCode();
 
-        assertThat(hashcode).isEqualTo(1370792525);
+        assertThat(hashcode).isEqualTo(625144505);
     }
 
     @Test
@@ -125,7 +128,7 @@ public class JobLauncherConfigurationTest {
 
         String self = xenonConf.toString();
 
-        String expected = "XenonConfiguration{{local=SchedulerConfiguration{local, multi, null, null}}, SandboxConfiguration{file, /tmp/sandboxes, null, null}, {xenon.adaptors.local.queue.multi.maxConcurrentJobs=4}, PollConfiguration{10, 50, 100}}";
+        String expected = "XenonConfiguration{{local=LauncherConfiguration{SchedulerConfiguration{local, multi, null, null}, SandboxConfiguration{file, /tmp/sandboxes, null, null}}}, local, {xenon.adaptors.local.queue.multi.maxConcurrentJobs=4}, PollConfiguration{10, 50, 100}}";
         assertThat(self).isEqualTo(expected);
 
     }

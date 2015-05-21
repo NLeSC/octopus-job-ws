@@ -58,7 +58,7 @@ public class PendingCancelTestITCase {
         SandboxConfiguration sandbox = new SandboxConfiguration("file", "/", sandboxRoot, null);
 
         XenonConfiguration configuration =
-                new XenonConfiguration(scheduler, sandbox, preferences, pollConfiguration);
+                new XenonConfiguration(scheduler, sandbox, "default", preferences, pollConfiguration);
 
         manager = new XenonManager(configuration);
 
