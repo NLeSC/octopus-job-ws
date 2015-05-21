@@ -61,6 +61,7 @@ Create a json file (query.json)
 .. code-block:: json
 
    {
+      "launcher": <optional non-default launcher name>,
       "jobdir": "<absolute path to myjob directory>",
       "executable": "/bin/sh",
       "prestaged": ["runme.sh", "input_file"],
@@ -110,6 +111,7 @@ Example response when job is running:
 
    {
        "request": {
+           "launcher": "local",
            "jobdir": "/tmp/jobdir",
            "executable": "/bin/sh",
            "stderr": "stderr.txt",
@@ -139,6 +141,7 @@ Example response when job is done:
 
    {
        "request": {
+           "launcher": "local",
            "jobdir": "/tmp/jobdir",
            "executable": "/bin/sh",
            "stderr": "stderr.txt",
@@ -168,6 +171,7 @@ Example response when job has been canceled (see below for cancel command):
 
    {
       "request": {
+         "launcher": "local",
          "jobdir": "/tmp/myjob",
          "status_callback_url": null,
          "poststaged": [

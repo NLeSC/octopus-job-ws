@@ -100,7 +100,7 @@ public class JobsPoller implements Runnable {
         // maximum number of poll iterations
         long maxIterations = timeout / interval;
         // convert SandboxedJob list to Job list
-        List<Job> jjobs = new ArrayList<Job>();
+        List<Job> jjobs = new ArrayList<Job>(jobs.size());
         for (SandboxedJob job : jobs.values()) {
             Boolean jobIsDone = false;
             if (job.getStatus() != null) {
@@ -128,7 +128,7 @@ public class JobsPoller implements Runnable {
 
         LOGGER.trace("Fetching job statuses of " + jjobs.toString());
 
-        return jjobs.toArray(new Job[0]);
+        return jjobs.toArray(new Job[jobs.size()]);
     }
 
     private void deleteJob(SandboxedJob job) {

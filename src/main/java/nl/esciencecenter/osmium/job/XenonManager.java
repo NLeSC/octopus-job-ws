@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -65,6 +66,11 @@ public class XenonManager implements Managed {
     private final Xenon xenon;
     private final Map<String,Scheduler> schedulers;
     private final Map<String, Path> sandboxRootPaths;
+    /**
+     * Map of started jobs.
+     * A new job is added for each job submitted. The variable is shared and
+     * concurrently modified by a JobsPoller instance.
+     */
     private final Map<String, SandboxedJob> jobs;
     private final JobsPoller poller;
     private final ScheduledExecutorService executor;
@@ -177,13 +183,18 @@ public class XenonManager implements Managed {
      * @throws XenonException If staging file or submit job failed
      */
     public SandboxedJob submitJob(JobSubmitRequest request, HttpClient httpClient) throws XenonException {
-        String launcherName = request.launcher != null ? request.launcher : configuration.getDefaultLauncher();
+        if (request.launcher == null) {
+            request.launcher = configuration.getDefaultLauncher();
+        }
+        if (!schedulers.containsKey(request.launcher)) {
+            throw new XenonException(null, "Launcher '" + request.launcher + "' not configured. Choose from " + Objects.toString(schedulers.keySet()));
+        }
 
-        Sandbox sandbox = request.toSandbox(xenon.files(), sandboxRootPaths.get(launcherName), null);
+        Sandbox sandbox = request.toSandbox(xenon.files(), sandboxRootPaths.get(request.launcher), null);
 
         // create job description
         JobDescription description = request.toJobDescription();
-        description.setQueueName(configuration.getLaunchers().get(launcherName).getScheduler().getQueue());
+        description.setQueueName(configuration.getLaunchers().get(request.launcher).getScheduler().getQueue());
         description.setWorkingDirectory(sandbox.getPath().getRelativePath().getAbsolutePath());
         long cancelTimeout = configuration.getPoll().getCancelTimeout();
         // CancelTimeout is in milliseconds and MaxTime must be in minutes, so convert it
@@ -194,7 +205,7 @@ public class XenonManager implements Managed {
         sandbox.upload();
 
         // submit job
-        Job job = xenon.jobs().submitJob(schedulers.get(launcherName), description);
+        Job job = xenon.jobs().submitJob(schedulers.get(request.launcher), description);
 
         // store job in jobs map
         SandboxedJob sjob = new SandboxedJob(sandbox, job, request, httpClient);
