@@ -128,7 +128,7 @@ public class JobsPoller implements Runnable {
 
         LOGGER.trace("Fetching job statuses of " + jjobs.toString());
 
-        return jjobs.toArray(new Job[jobs.size()]);
+        return jjobs.toArray(new Job[jjobs.size()]);
     }
 
     private void deleteJob(SandboxedJob job) {
