@@ -96,7 +96,7 @@ public class JobLauncherConfiguration extends Configuration {
     }
 
     /**
-     * No argument contructor required for JAXB.
+     * No argument constructor required for JAXB.
      */
     public JobLauncherConfiguration() {
 

@@ -38,8 +38,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import nl.esciencecenter.osmium.JobLauncherConfiguration;
-import nl.esciencecenter.osmium.JobLauncherService;
 import nl.esciencecenter.osmium.health.JobLauncherHealthCheck;
 import nl.esciencecenter.osmium.job.XenonConfiguration;
 import nl.esciencecenter.osmium.job.XenonManager;
