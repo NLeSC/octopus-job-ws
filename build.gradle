@@ -8,12 +8,13 @@ version = '3.1.0'
 // Java 7 is not available. No optimal solution here.
 sourceCompatibility = 1.7
 targetCompatibility = 1.7
-// Choose 1.0.0 or put a xenon.jar or xenon-[version].jar in lib/ and put that version here
+
+// Choose 1.0.0 or put a xenon.jar or xenon-[version].jar in lib/ and set that version here
 def xenonVersion = '1.0.0'
 
 //create a single Jar with all dependencies
 task fatJar(type: Jar) {
-	manifest {
+  manifest {
     attributes 'Implementation-Title': 'Osmium',  
                'Implementation-Version': version,
                'Main-Class': 'nl.esciencecenter.osmium.JobLauncherService'
@@ -22,30 +23,6 @@ task fatJar(type: Jar) {
   from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
   with jar
 }
-
-import de.undercouch.gradle.tasks.download.Download
-
-task downloadJGlobus(type: Download) {
-  // Globus dependencies are non-standard but already uploaded to the Xenon
-  // GitHub repository. This resolution is set to a fixed commit in the
-  // Xenon develop branch, to prevent expiration.
-  def baseUrl = 'https://raw.github.com/NLeSC/Xenon/de9892dd92358bf69521819adfee15dc43e41ff4/lib/cog-jglobus/'
-  src([
-      baseUrl + 'cog-jglobus-1.8.0.jar',
-      baseUrl + 'cog-jobmanager-1.8.0.jar',
-      baseUrl + 'cog-url-1.8.0.jar',
-      baseUrl + 'cryptix-asn1.jar',
-      baseUrl + 'cryptix.jar',
-      baseUrl + 'cryptix32.jar',
-      baseUrl + 'jce-jdk13-131.jar',
-      baseUrl + 'jgss.jar',
-      baseUrl + 'puretls.jar',
-    ])
-  dest 'lib'
-  overwrite false
-}
-
-compileJava.dependsOn downloadJGlobus
 
 //Get dependencies locally and then from Maven central repository
 repositories {
@@ -100,3 +77,27 @@ dependencies {
   testCompile group: 'org.powermock', name: 'powermock-api-mockito', version: '1.5.2', transitive: true
   testCompile group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.2.5', classifier: 'tests'
 }
+
+import de.undercouch.gradle.tasks.download.Download
+
+task downloadJGlobus(type: Download) {
+  // Globus dependencies are non-standard but already uploaded to the Xenon
+  // GitHub repository. This resolution is set to a fixed commit in the
+  // Xenon develop branch, to prevent expiration.
+  def baseUrl = 'https://raw.github.com/NLeSC/Xenon/de9892dd92358bf69521819adfee15dc43e41ff4/lib/cog-jglobus/'
+  src([
+      baseUrl + 'cog-jglobus-1.8.0.jar',
+      baseUrl + 'cog-jobmanager-1.8.0.jar',
+      baseUrl + 'cog-url-1.8.0.jar',
+      baseUrl + 'cryptix-asn1.jar',
+      baseUrl + 'cryptix.jar',
+      baseUrl + 'cryptix32.jar',
+      baseUrl + 'jce-jdk13-131.jar',
+      baseUrl + 'jgss.jar',
+      baseUrl + 'puretls.jar',
+    ])
+  dest 'lib'
+  overwrite false
+}
+
+compileJava.dependsOn downloadJGlobus
