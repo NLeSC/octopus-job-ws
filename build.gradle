@@ -1,6 +1,8 @@
 buildscript {
     repositories {
-        jcenter()
+      maven {
+        url "https://jcenter.bintray.com"
+      }
     }
     dependencies {
         classpath 'de.undercouch:gradle-download-task:1.2'
