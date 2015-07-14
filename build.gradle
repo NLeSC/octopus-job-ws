@@ -26,11 +26,11 @@ task fatJar(type: Jar) {
 
 //Get dependencies locally and then from Maven central repository
 repositories {
-  maven {
-    url "http://nlesc.github.io/Xenon/repo"
-  }
   flatDir {
     dirs 'lib'
+  }
+  maven {
+    url "http://nlesc.github.io/Xenon/repo"
   }
   mavenCentral()
 }
