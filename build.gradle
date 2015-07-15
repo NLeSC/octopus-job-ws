@@ -8,6 +8,7 @@ buildscript {
     }
 }
 apply plugin: 'java'
+apply plugin: 'application'
 apply plugin: 'de.undercouch.download'
 
 // Set version information
@@ -72,6 +73,12 @@ dependencies {
   testCompile group: 'org.powermock', name: 'powermock-module-junit4', version: '1.5.2', transitive: true
   testCompile group: 'org.powermock', name: 'powermock-api-mockito', version: '1.5.2', transitive: true
   testCompile group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.2.5', classifier: 'tests'
+}
+
+run {
+  main = jobLauncher
+  description = "Osmium job launcher"
+  args = ['server', 'joblauncher.yml']
 }
 
 jar {
