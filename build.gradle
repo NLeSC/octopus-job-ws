@@ -13,7 +13,7 @@ apply plugin: 'de.undercouch.download'
 
 // Set version information
 version = '3.1.0'
-def jobLauncher = 'nl.esciencecenter.osmium.JobLauncherService'
+mainClassName = 'nl.esciencecenter.osmium.JobLauncherService'
 // will generate a warning with JDK 8, since the runtime jar (rt.jar) of
 // Java 7 is not available. No optimal solution here.
 sourceCompatibility = 1.7
@@ -75,52 +75,6 @@ dependencies {
   testCompile group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.2.5', classifier: 'tests'
 }
 
-run {
-  main = jobLauncher
-  description = "Osmium job launcher"
-  args = ['server', 'joblauncher.yml']
-}
-
-jar {
-  manifest {
-    attributes(
-      'Implementation-Title': 'Osmium',
-      'Implementation-Version': version,
-      'Main-Class': jobLauncher,
-    )
-  }
-}
-
-//create a single Jar with all dependencies
-task fatJar(type: Jar) {
-  manifest.from jar.manifest
-  classifier = 'all'
-  from {
-    configurations.runtime.collect { it.isDirectory() ? it : zipTree(it) }
-  } {
-        exclude "META-INF/*.SF"
-        exclude "META-INF/*.DSA"
-        exclude "META-INF/*.RSA"
-  }
-  with jar
-}
-
-task sourcesJar(type: Jar, dependsOn: classes) {
-    classifier = 'sources'
-    from sourceSets.main.allSource
-}
-
-task javadocJar(type: Jar, dependsOn: javadoc) {
-    classifier = 'javadoc'
-    from javadoc.destinationDir
-}
-
-artifacts {
-    archives sourcesJar
-    archives javadocJar
-    archives fatJar
-}
-
 // Globus dependencies are non-standard but already uploaded to the Xenon
 // GitHub repository. This resolution is set to a fixed commit in the
 // Xenon develop branch, to prevent expiration.
@@ -137,8 +91,59 @@ task downloadJGlobus(type: de.undercouch.gradle.tasks.download.Download) {
       baseUrl + 'jgss.jar',
       baseUrl + 'puretls.jar',
     ])
-  dest 'lib'
+  dest new File(projectDir, '/lib')
   overwrite false
+}
+
+run {
+  main = mainClassName
+  description = "Osmium job launcher"
+  args = ['server', 'joblauncher.yml']
+}
+
+jar {
+  manifest {
+    attributes(
+      'Implementation-Title': 'Osmium',
+      'Implementation-Version': version,
+      'Main-Class': mainClassName,
+    )
+  }
+}
+
+//create a single Jar with all dependencies
+task fatJar(type: Jar) {
+  manifest.from jar.manifest
+  classifier = 'all'
+
+  // Do the actual compilation last: otherwise it needs
+  // all JAR's before downloadJGlobus has run
+  doLast {
+    from {
+      configurations.runtime.collect { it.isDirectory() ? it : zipTree(it) }
+    } {
+          exclude "META-INF/*.SF"
+          exclude "META-INF/*.DSA"
+          exclude "META-INF/*.RSA"
+    }
+    with jar
+  }
+}
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
+artifacts {
+    archives sourcesJar
+    archives javadocJar
+    archives fatJar
 }
 
 compileJava.dependsOn downloadJGlobus
