@@ -9,3 +9,4 @@ src/test/resources/integration.props
 /.gradle
 /build/
 
+/.nb-gradle/
