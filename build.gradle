@@ -1,8 +1,7 @@
+// Load plugins
 buildscript {
     repositories {
-      maven {
-        url "https://jcenter.bintray.com"
-      }
+      maven { url "https://jcenter.bintray.com" }
     }
     dependencies {
         classpath 'de.undercouch:gradle-download-task:1.2'
@@ -11,33 +10,27 @@ buildscript {
 apply plugin: 'java'
 apply plugin: 'de.undercouch.download'
 
+// Set version information
 version = '3.1.0'
 // will generate a warning with JDK 8, since the runtime jar (rt.jar) of
 // Java 7 is not available. No optimal solution here.
 sourceCompatibility = 1.7
 targetCompatibility = 1.7
 
-// Choose 1.0.0 or put a xenon.jar or xenon-[version].jar in lib/ and set that version here
+// Choose Xenon 1.0.0 (from repo) or put a xenon.jar or xenon-[version].jar in lib/ and set that version here
 def xenonVersion = '1.0.0'
-
-configurations {
-    provided
-    compile.extendsFrom provided
-}
 
 //Get dependencies locally and then from Maven central repository
 repositories {
-  flatDir {
-    dirs 'lib'
-  }
-  maven {
-    url "http://nlesc.github.io/Xenon/repo"
-  }
+  flatDir { dirs 'lib' }
+  maven { url "http://nlesc.github.io/Xenon/repo" }
   mavenCentral()
 }
 
 //Project dependencies
 dependencies {
+  // state all packages that are explicitly imported in Osmium here,
+  // even if there already is a transitive dependency
   compile group: 'com.yammer.dropwizard', name: 'dropwizard-core', version: '0.6.2', transitive: true
   compile group: 'com.yammer.dropwizard', name: 'dropwizard-client', version: '0.6.2', transitive: true
   compile group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.1.4'
@@ -48,7 +41,7 @@ dependencies {
   compile group: 'commons-codec', name: 'commons-codec', version: '1.6'
   compile group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.2.5', transitive: true
 
-  // Xenon dependencies
+  // Xenon dependencies. downloadJGlobus task (below) downloads xenon/lib/**/*.jar to ./lib/
   compile group: 'nl.esciencecenter', name: 'xenon', version: xenonVersion
   compile group: 'com.jcraft', name: 'jsch', version: '0.1.50'  
   compile group: 'commons-net', name: 'commons-net', version: '3.3'
@@ -65,7 +58,7 @@ dependencies {
     dependency group: 'org.ietf', name: 'jgss'
     dependency group: 'com.claymoresystems', name: 'puretls', version: '0.9b4'
   }
-  
+
   // Xenon runtime dependencies
   runtime group: 'ch.qos.logback', name: 'logback-core', version: '1.0.11'
   runtime group: 'ch.qos.logback', name: 'logback-classic', version: '1.0.11'
@@ -89,9 +82,7 @@ task fatJar(type: Jar) {
   }
   baseName = project.name + '-all'
   from {
-    (configurations.runtime - configurations.provided).collect {
-      it.isDirectory() ? it : zipTree(it)
-    }
+    configurations.runtime.collect { it.isDirectory() ? it : zipTree(it) }
   } {
         exclude "META-INF/*.SF"
         exclude "META-INF/*.DSA"
@@ -100,10 +91,10 @@ task fatJar(type: Jar) {
   with jar
 }
 
+// Globus dependencies are non-standard but already uploaded to the Xenon
+// GitHub repository. This resolution is set to a fixed commit in the
+// Xenon develop branch, to prevent expiration.
 task downloadJGlobus(type: de.undercouch.gradle.tasks.download.Download) {
-  // Globus dependencies are non-standard but already uploaded to the Xenon
-  // GitHub repository. This resolution is set to a fixed commit in the
-  // Xenon develop branch, to prevent expiration.
   def baseUrl = 'https://raw.github.com/NLeSC/Xenon/de9892dd92358bf69521819adfee15dc43e41ff4/lib/cog-jglobus/'
   src([
       baseUrl + 'cog-jglobus-1.8.0.jar',
