@@ -18,7 +18,7 @@ sourceCompatibility = 1.7
 targetCompatibility = 1.7
 
 // Choose Xenon 1.0.0 (from repo) or put a xenon.jar or xenon-[version].jar in lib/ and set that version here
-def xenonVersion = '1.0.0'
+def xenonVersion = '1.0.0-dev'
 
 //Get dependencies locally and then from Maven central repository
 repositories {
@@ -85,6 +85,13 @@ jar {
 
 //create a single Jar with all dependencies
 task fatJar(type: Jar) {
+  manifest {
+    attributes(
+      'Implementation-Title': 'Osmium',
+      'Implementation-Version': version,
+      'Main-Class': 'nl.esciencecenter.osmium.JobLauncherService',
+    )
+  }
   classifier = 'all'
   from {
     configurations.runtime.collect { it.isDirectory() ? it : zipTree(it) }
