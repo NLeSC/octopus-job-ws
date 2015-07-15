@@ -15,12 +15,12 @@ Requirements
 ------------
 
 - JDK 7 or 8 (http://www.java.com)
-- Maven 3 (http://maven.apache.org)
+- Gradle 1.x or 2.x (http://gradle.org)
 
 Install
 -------
 
-#. Make copy of 'joblauncher.yml-dist' to 'joblauncher.yml'
+1. Make copy of 'joblauncher.yml-dist' to 'joblauncher.yml'
 
   #. Configure Xenon scheduler
   #. Configure Xenon sandbox root directory
@@ -28,19 +28,19 @@ Install
 
 2. Build uber-jar or execute from maven.
 
-2.1. Uber-jar, to start on other machine the `osmium-2.0.jar` and `joblauncher.yml` files must be copied.
+2.1. Uber-jar, to start on other machine the `build/libs/osmium-*-all.jar` and `joblauncher.yml` files must be copied.
 
 .. code-block:: bash
 
-   mvn package
-   java -jar target/osmium-2.0.jar server joblauncher.yml
+   gradle build
+   java -jar build/libs/osmium-*-all.jar server joblauncher.yml
 
 
-2.2. Execute from maven
+2.2. Execute from gradle
 
 .. code-block:: bash
 
-   mvn compile exec:java
+   gradle run
 
 Usage
 -----
@@ -225,4 +225,4 @@ Run integration tests with
 
 .. code-block:: bash
 
-   mvn verify
+   gradle task
