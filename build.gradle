@@ -12,6 +12,7 @@ apply plugin: 'de.undercouch.download'
 
 // Set version information
 version = '3.1.0'
+def jobLauncher = 'nl.esciencecenter.osmium.JobLauncherService'
 // will generate a warning with JDK 8, since the runtime jar (rt.jar) of
 // Java 7 is not available. No optimal solution here.
 sourceCompatibility = 1.7
@@ -78,20 +79,14 @@ jar {
     attributes(
       'Implementation-Title': 'Osmium',
       'Implementation-Version': version,
-      'Main-Class': 'nl.esciencecenter.osmium.JobLauncherService',
+      'Main-Class': jobLauncher,
     )
   }
 }
 
 //create a single Jar with all dependencies
 task fatJar(type: Jar) {
-  manifest {
-    attributes(
-      'Implementation-Title': 'Osmium',
-      'Implementation-Version': version,
-      'Main-Class': 'nl.esciencecenter.osmium.JobLauncherService',
-    )
-  }
+  manifest.from jar.manifest
   classifier = 'all'
   from {
     configurations.runtime.collect { it.isDirectory() ? it : zipTree(it) }
