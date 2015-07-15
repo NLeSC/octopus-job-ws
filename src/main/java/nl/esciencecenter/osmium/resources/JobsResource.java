@@ -19,9 +19,8 @@
  */
 package nl.esciencecenter.osmium.resources;
 
-
 import java.net.URI;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.validation.Valid;
@@ -49,6 +48,7 @@ import com.yammer.metrics.annotation.Timed;
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class JobsResource {
+
     /**
      * Broker to submit jobs with
      */
@@ -93,8 +93,7 @@ public class JobsResource {
     /**
      * Launch a job based on a request.
      *
-     * @param request
-     *            A job submission request
+     * @param request A job submission request
      * @return Response with element URI in Location header
      * @throws XenonException When job submission fails
      */
@@ -113,11 +112,11 @@ public class JobsResource {
     @GET
     @Timed
     public URI[] getJobs() {
-        List<URI> uris = new LinkedList<URI>();
+        List<URI> uris = new ArrayList<>(xenonmanager.getJobs().size());
         UriBuilder builder = uriInfo.getAbsolutePathBuilder().path("{jobidentifier}");
         for (SandboxedJob job : xenonmanager.getJobs()) {
             uris.add(builder.build(job.getIdentifier()));
         }
-        return uris.toArray(new URI[0]);
+        return uris.toArray(new URI[uris.size()]);
     }
 }

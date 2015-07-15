@@ -24,17 +24,16 @@ import static com.yammer.dropwizard.testing.JsonHelpers.jsonFixture;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.util.HashMap;
-import java.util.Map;
+import org.junit.Test;
 
 import nl.esciencecenter.xenon.engine.jobs.JobStatusImplementation;
 import nl.esciencecenter.xenon.jobs.Job;
 import nl.esciencecenter.xenon.jobs.JobStatus;
-import nl.esciencecenter.osmium.api.JobStatusResponse;
 
-import org.junit.Test;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.util.HashMap;
+import java.util.Map;
 
 public class JobStatusResponseTest {
     private JobStatusResponse getRunningJobStatus() {

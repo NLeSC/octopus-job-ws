@@ -1,0 +1,7 @@
+<FindBugsFilter>
+  <!-- Equals test with unrelated types is deliberate -->
+  <Match>
+    <Package name="~nl\.esciencecenter\.osmium.*" />
+    <Bug pattern="EC_UNRELATED_TYPES" />
+  </Match>
+</FindBugsFilter>

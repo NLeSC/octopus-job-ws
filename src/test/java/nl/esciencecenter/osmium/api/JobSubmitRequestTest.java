@@ -22,7 +22,6 @@ package nl.esciencecenter.osmium.api;
 import static com.yammer.dropwizard.testing.JsonHelpers.asJson;
 import static com.yammer.dropwizard.testing.JsonHelpers.fromJson;
 import static com.yammer.dropwizard.testing.JsonHelpers.jsonFixture;
-
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -35,13 +34,8 @@ import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import org.junit.Before;
+import org.junit.Test;
 
 import nl.esciencecenter.xenon.Xenon;
 import nl.esciencecenter.xenon.XenonException;
@@ -54,8 +48,13 @@ import nl.esciencecenter.xenon.files.RelativePath;
 import nl.esciencecenter.xenon.jobs.JobDescription;
 import nl.esciencecenter.xenon.util.Sandbox;
 
-import org.junit.Before;
-import org.junit.Test;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class JobSubmitRequestTest {
     private JobSubmitRequest request;
@@ -122,6 +121,7 @@ public class JobSubmitRequestTest {
         try {
             cb = new URI("http://localhost/status");
         } catch (URISyntaxException e) {
+            fail();
         }
 		Map<String, String> environment = new HashMap<String, String>();
 		environment.put("OSMIUM_JOBID", "mynewjob");

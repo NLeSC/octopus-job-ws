@@ -19,20 +19,6 @@
  */
 package nl.esciencecenter.osmium.mac;
 
-import java.math.BigInteger;
-import java.net.URI;
-import java.nio.charset.StandardCharsets;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
-import java.util.Date;
-import java.util.Objects;
-import java.util.Random;
-import java.util.concurrent.TimeUnit;
-
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
-
 import org.apache.commons.codec.binary.Base64;
 import org.apache.http.Header;
 import org.apache.http.HttpRequest;
@@ -48,19 +34,36 @@ import org.apache.http.protocol.HttpContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.math.BigInteger;
+import java.net.URI;
+import java.nio.charset.StandardCharsets;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.util.Date;
+import java.util.Objects;
+import java.util.Random;
+import java.util.concurrent.TimeUnit;
+
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
+
 /**
- * MAC Access Authentication scheme as defined in https://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-02
+ * MAC Access Authentication scheme as defined in
+ * https://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-02
  *
  * Sign {@link HttpRequest} with a MAC key.
  *
  * @author verhoes
- *
  */
 public class MacScheme implements ContextAwareAuthScheme {
+
     protected static final Logger LOGGER = LoggerFactory
             .getLogger(MacScheme.class);
 
-    /** The name of this authorization scheme. */
+    /**
+     * The name of this authorization scheme.
+     */
     public static final String SCHEME_NAME = "MAC";
 
     private static final int HTTP_PORT = 80;
@@ -142,15 +145,11 @@ public class MacScheme implements ContextAwareAuthScheme {
     /**
      * Computes RFC 2104-compliant HMAC signature.
      *
-     * @param data
-     *            The data to be signed.
-     * @param key
-     *            The signing key.
-     * @param algorithm
-     *            MAC algorithm implemented by javax.crypto.MAC
+     * @param data The data to be signed.
+     * @param key The signing key.
+     * @param algorithm MAC algorithm implemented by javax.crypto.MAC
      * @return The Base64-encoded RFC 2104-compliant HMAC signature.
-     * @throws AuthenticationException
-     *             when signature generation fails
+     * @throws AuthenticationException when signature generation fails
      */
     private String calculateRFC2104HMAC(String data, String key,
             String algorithm) throws AuthenticationException {
@@ -189,6 +188,7 @@ public class MacScheme implements ContextAwareAuthScheme {
 
     /**
      * Random getter
+     *
      * @return Random
      */
     public Random getRandom() {
@@ -197,6 +197,7 @@ public class MacScheme implements ContextAwareAuthScheme {
 
     /**
      * Random setter
+     *
      * @param random Random object
      */
     public void setRandom(Random random) {
@@ -209,10 +210,11 @@ public class MacScheme implements ContextAwareAuthScheme {
 
     /**
      * Date setter
+     *
      * @param date The date
      */
     public void setDate(Date date) {
-        this.date = date;
+        this.date = (Date)date.clone();
     }
 
     /**
@@ -221,7 +223,7 @@ public class MacScheme implements ContextAwareAuthScheme {
      * @return Date
      */
     public Date getDate() {
-        return date;
+        return (Date)date.clone();
     }
 
     private Long getTimestamp() {
@@ -251,8 +253,8 @@ public class MacScheme implements ContextAwareAuthScheme {
     }
 
     /**
-     * The MAC Access authentication standard uses different names for algorithms then
-     * {@link javax.crypto.Mac}
+     * The MAC Access authentication standard uses different names for
+     * algorithms then {@link javax.crypto.Mac}
      *
      * This maps from standard 2 java name.
      *
@@ -277,12 +279,9 @@ public class MacScheme implements ContextAwareAuthScheme {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null) {
+        if (obj == null || getClass() != obj.getClass()) {
             return false;
         }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        return true;
+        return date.equals(((MacScheme)obj).date);
     }
 }
