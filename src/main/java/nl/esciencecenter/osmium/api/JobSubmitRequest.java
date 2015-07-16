@@ -19,13 +19,9 @@
  */
 package nl.esciencecenter.osmium.api;
 
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.validation.constraints.NotNull;
+import com.google.common.base.Objects;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import nl.esciencecenter.xenon.XenonException;
 import nl.esciencecenter.xenon.files.FileSystem;
@@ -35,10 +31,14 @@ import nl.esciencecenter.xenon.files.RelativePath;
 import nl.esciencecenter.xenon.jobs.JobDescription;
 import nl.esciencecenter.xenon.util.Sandbox;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
-import com.google.common.base.Objects;
+import javax.validation.constraints.NotNull;
 
 /**
  * Request which can be converted to JobDescription which can be submitted using JavaGAT.
@@ -77,27 +77,32 @@ public class JobSubmitRequest {
     /**
      * Arguments passed to executable
      */
-    public List<String> arguments = new ArrayList<String>(0);
+    public List<String> arguments = new ArrayList<>(0);
     /**
      * List of filenames to copy from job directory to work directory before executable is called. Work directory is created on
      * the execution host. Can be relative to job directory or absolute paths.
      */
-    public List<String> prestaged = new ArrayList<String>(0);
+    public List<String> prestaged = new ArrayList<>(0);
     /**
      * List of filenames to copy from work directory to job directory after executable is called. Must be relative to job
      * directory.
      */
-    public List<String> poststaged = new ArrayList<String>(0);
+    public List<String> poststaged = new ArrayList<>(0);
     /**
-	 * Environment variables and their values.
-	 */
-	public Map<String, String> environment = new HashMap<String, String>(0);
+     * Environment variables and their values.
+     */
+    public Map<String, String> environment = new HashMap<>(0);
 
     /**
      * Url where changes of state are PUT to.
      */
     public URI status_callback_url;
 	
+    /**
+     * Number of minutes the job may run.
+     */
+    public int max_time = -1;
+
 	/**
      * Constructor
      *
@@ -111,9 +116,11 @@ public class JobSubmitRequest {
      * @param stdout Name of file where stdout is written
      * @param environment variables url where status changes should be POST-ed
      * @param statusCallbackURI Optional, url where status changes should be POST-ed
+     * @param maxTime number of minutes the job may run.
      */
     public JobSubmitRequest(String launcher, String jobdir, String executable, List<String> arguments, List<String> prestaged,
-            List<String> poststaged, String stderr, String stdout, Map<String, String> environment, URI statusCallbackURI) {
+            List<String> poststaged, String stderr, String stdout, Map<String, String> environment, URI statusCallbackURI,
+            int maxTime) {
         super();
         this.launcher = launcher;
         this.jobdir = jobdir;
@@ -125,6 +132,7 @@ public class JobSubmitRequest {
         this.stdout = stdout;
 		this.environment = environment;
         this.status_callback_url = statusCallbackURI;
+        this.max_time = maxTime;
     }
 
     public URI getStatus_callback_url() {
@@ -150,6 +158,7 @@ public class JobSubmitRequest {
         description.setStdout(stdout);
         description.setStderr(stderr);
 		description.setEnvironment(environment);
+        description.setMaxTime(max_time);
 
         return description;
     }
@@ -219,7 +228,7 @@ public class JobSubmitRequest {
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(launcher, jobdir, executable, stderr, stdout, arguments, prestaged, poststaged, environment, status_callback_url);
+        return Objects.hashCode(launcher, jobdir, executable, stderr, stdout, arguments, prestaged, poststaged, environment, status_callback_url, max_time);
     }
 
     @Override
@@ -239,7 +248,8 @@ public class JobSubmitRequest {
                 && Objects.equal(this.arguments, other.arguments) && Objects.equal(this.stderr, other.stderr)
                 && Objects.equal(this.stdout, other.stdout) && Objects.equal(this.prestaged, other.prestaged)
                 && Objects.equal(this.poststaged, other.poststaged) && Objects.equal(this.environment, other.environment)
-                && Objects.equal(this.status_callback_url, other.status_callback_url);
+                && Objects.equal(this.status_callback_url, other.status_callback_url)
+                && Objects.equal(this.max_time, other.max_time);
     }
 
     @Override
@@ -247,6 +257,6 @@ public class JobSubmitRequest {
         return Objects.toStringHelper(this).add("launcher", launcher)
                 .add("jobdir", jobdir).add("executable", executable).add("stderr", stderr)
                 .add("stdout", stdout).add("arguments", arguments).add("prestaged", prestaged).add("poststaged", poststaged)
-				.add("environment", environment).add("status_callback_url", status_callback_url).toString();
+				.add("environment", environment).add("status_callback_url", status_callback_url).add("maxTime", max_time).toString();
     }
 }
