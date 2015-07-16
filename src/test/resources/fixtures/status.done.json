@@ -3,7 +3,7 @@
 	"exitCode" : 0,
     "running": false,
 	"done" : true,
-	"schedulerSpecficInformation" : {
+	"schedulerSpecificInformation" : {
 		"status" : "STOPPED"
 	},
     "exception" : null

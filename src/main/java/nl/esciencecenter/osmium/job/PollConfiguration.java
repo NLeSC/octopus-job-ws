@@ -19,10 +19,10 @@
  */
 package nl.esciencecenter.osmium.job;
 
-import java.util.concurrent.TimeUnit;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Objects;
+
+import java.util.concurrent.TimeUnit;
 
 public class PollConfiguration {
     /**

@@ -3,6 +3,6 @@
 	"exitCode" : null,
     "running": false,
 	"done" : true,
-	"schedulerSpecficInformation" : null,
+	"schedulerSpecificInformation" : null,
     "exception" : "Process cancelled by user."
 }

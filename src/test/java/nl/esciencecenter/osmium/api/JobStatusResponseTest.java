@@ -60,7 +60,7 @@ public class JobStatusResponseTest {
 
         assertThat(status.getState()).isEqualTo("INITIAL");
         assertThat(status.getException()).isNull();
-        assertThat(status.getSchedulerSpecficInformation()).isNull();
+        assertThat(status.getSchedulerSpecificInformation()).isNull();
         assertThat(status.getExitCode()).isNull();
         assertThat(status.isDone()).isFalse();
         assertThat(status.isRunning()).isFalse();

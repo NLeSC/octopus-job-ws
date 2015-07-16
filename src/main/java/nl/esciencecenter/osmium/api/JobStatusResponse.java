@@ -19,17 +19,17 @@
  */
 package nl.esciencecenter.osmium.api;
 
-import java.util.Map;
-
-import javax.validation.constraints.NotNull;
-
-import nl.esciencecenter.xenon.jobs.JobStatus;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Objects;
+
+import nl.esciencecenter.xenon.jobs.JobStatus;
+
+import java.util.Map;
+
+import javax.validation.constraints.NotNull;
 
 public class JobStatusResponse {
     @NotNull
@@ -41,7 +41,7 @@ public class JobStatusResponse {
     private final boolean running;
     @NotNull
     private final boolean done;
-    private final Map<String, String> schedulerSpecficInformation;
+    private final Map<String, String> schedulerSpecificInformation;
 
     public JobStatusResponse(JobStatus jobStatus) {
         if (jobStatus == null) {
@@ -50,26 +50,26 @@ public class JobStatusResponse {
             exception = null;
             running = false;
             done = false;
-            schedulerSpecficInformation = null;
+            schedulerSpecificInformation = null;
         } else {
             state = jobStatus.getState();
             exitCode = jobStatus.getExitCode();
             exception = jobStatus.getException();
             running = jobStatus.isRunning();
             done = jobStatus.isDone();
-            schedulerSpecficInformation = jobStatus.getSchedulerSpecficInformation();
+            schedulerSpecificInformation = jobStatus.getSchedulerSpecficInformation();
         }
     }
 
     public JobStatusResponse(String state, boolean running, boolean done, Integer exitCode, Exception exception,
-            Map<String, String> schedulerSpecficInformation) {
+            Map<String, String> schedulerSpecificInformation) {
         super();
         this.state = state;
         this.running = running;
         this.done = done;
         this.exitCode = exitCode;
         this.exception = exception;
-        this.schedulerSpecficInformation = schedulerSpecficInformation;
+        this.schedulerSpecificInformation = schedulerSpecificInformation;
     }
 
     public Integer getExitCode() {
@@ -104,13 +104,13 @@ public class JobStatusResponse {
         return running;
     }
 
-    public Map<String, String> getSchedulerSpecficInformation() {
-        return schedulerSpecficInformation;
+    public Map<String, String> getSchedulerSpecificInformation() {
+        return schedulerSpecificInformation;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(state, running, done, exitCode, exception, schedulerSpecficInformation);
+        return Objects.hashCode(state, running, done, exitCode, exception, schedulerSpecificInformation);
     }
 
     @Override
@@ -127,7 +127,7 @@ public class JobStatusResponse {
                 && Objects.equal(this.done, other.done)
                 && Objects.equal(this.exitCode, other.exitCode)
                 && Objects.equal(this.exception, other.exception)
-                && Objects.equal(this.schedulerSpecficInformation, other.schedulerSpecficInformation);
+                && Objects.equal(this.schedulerSpecificInformation, other.schedulerSpecificInformation);
     }
 
     @Override
@@ -138,7 +138,7 @@ public class JobStatusResponse {
                 .addValue(this.done)
                 .addValue(this.exitCode)
                 .addValue(this.exception)
-                .addValue(this.schedulerSpecficInformation)
+                .addValue(this.schedulerSpecificInformation)
                 .toString();
     }
 
