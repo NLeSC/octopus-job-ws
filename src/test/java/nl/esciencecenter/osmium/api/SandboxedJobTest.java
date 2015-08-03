@@ -30,12 +30,14 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.HashMap;
-import java.util.Map;
+import org.apache.http.Consts;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPut;
+import org.apache.http.util.EntityUtils;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 
 import nl.esciencecenter.xenon.XenonException;
 import nl.esciencecenter.xenon.engine.jobs.JobImplementation;
@@ -47,17 +49,13 @@ import nl.esciencecenter.xenon.jobs.JobDescription;
 import nl.esciencecenter.xenon.jobs.JobStatus;
 import nl.esciencecenter.xenon.jobs.Scheduler;
 import nl.esciencecenter.xenon.util.Sandbox;
-import nl.esciencecenter.osmium.api.JobSubmitRequest;
-import nl.esciencecenter.osmium.api.SandboxedJob;
 
-import org.apache.http.Consts;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpPut;
-import org.apache.http.util.EntityUtils;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.ArgumentCaptor;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.HashMap;
+import java.util.Map;
 
 public class SandboxedJobTest {
     JobSubmitRequest request;
@@ -75,7 +73,7 @@ public class SandboxedJobTest {
         request = new JobSubmitRequest();
         request.status_callback_url = new URI("http://localhost/job/status");
         httpClient = mock(HttpClient.class);
-        Map<String, String> info = new HashMap<String, String>();
+        Map<String, String> info = new HashMap<>(2);
         info.put("status", "STOPPED");
         status = new JobStatusImplementation(ojob, "DONE", 0, null, false, true, info);
         pollIterations = 10;

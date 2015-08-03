@@ -64,12 +64,12 @@ public class JobSubmitRequest {
      */
     @NotNull
     public String executable;
-    
-    /**
-     * Local directory to read pre-staged files from and write post-staged files to.
-     */
-    @NotNull
-    public String sandbox_path;
+
+//    /**
+//     * Local directory to read pre-staged files from and write post-staged files to.
+//     */
+//    @NotNull
+//    public String sandbox_path;
 
     /**
      * File name to write standard error to

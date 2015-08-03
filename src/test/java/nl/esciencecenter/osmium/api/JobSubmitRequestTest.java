@@ -110,12 +110,12 @@ public class JobSubmitRequestTest {
     }
 
     public static JobSubmitRequest sampleRequest() {
-        List<String> arguments = new ArrayList<String>();
+        List<String> arguments = new ArrayList<>(1);
         arguments.add("runme.sh");
-        List<String> prestaged = new ArrayList<String>();
+        List<String> prestaged = new ArrayList<>(2);
         prestaged.add("runme.sh");
         prestaged.add("input.dat");
-        List<String> poststaged = new ArrayList<String>();
+        List<String> poststaged = new ArrayList<>(1);
         poststaged.add("output.dat");
         URI cb = null;
         try {
@@ -123,7 +123,7 @@ public class JobSubmitRequestTest {
         } catch (URISyntaxException e) {
             fail();
         }
-		Map<String, String> environment = new HashMap<String, String>();
+		Map<String, String> environment = new HashMap<>(2);
 		environment.put("OSMIUM_JOBID", "mynewjob");
         return new JobSubmitRequest(null, "/tmp/jobdir", "/bin/sh", arguments, prestaged, poststaged, "stderr.txt", "stdout.txt", environment, cb, -1);
     }
@@ -157,6 +157,7 @@ public class JobSubmitRequestTest {
     }
 
     @Test
+    @SuppressWarnings({"ObjectEqualsNull", "IncompatibleEquals"})
     public void testEquals() {
         assertThat(request.equals(null)).isFalse();
 
@@ -225,7 +226,7 @@ public class JobSubmitRequestTest {
         expected_description.setStderr("stderr.txt");
         expected_description.setStdout("stdout.txt");
 		expected_description.setMaxTime(-1);
-		Map<String, String> env = new HashMap<String, String>();
+		Map<String, String> env = new HashMap<>(2);
 		env.put("OSMIUM_JOBID", "mynewjob");
 		expected_description.setEnvironment(env);
 
@@ -259,11 +260,11 @@ public class JobSubmitRequestTest {
         String sandboxId = "xenon-sandbox-1234567890";
         Path sandBoxRoot = makePath("/tmp/sandboxes");
 
-        List<String> prestaged = new ArrayList<String>();
+        List<String> prestaged = new ArrayList<>(1);
         prestaged.add("/data/uniprot.fasta");
         JobSubmitRequest req =
-                new JobSubmitRequest(null, "/tmp/jobdir", "/usr/bin/mail", new ArrayList<String>(), prestaged, new ArrayList<String>(),
-                        "stderr.txt", "stdout.txt", new HashMap<String, String>(), null, -1);
+                new JobSubmitRequest(null, "/tmp/jobdir", "/usr/bin/mail", new ArrayList<String>(0), prestaged, new ArrayList<String>(0),
+                        "stderr.txt", "stdout.txt", new HashMap<String, String>(0), null, -1);
 
         Sandbox sandbox = req.toSandbox(filesEngine, sandBoxRoot, sandboxId);
 
@@ -280,11 +281,11 @@ public class JobSubmitRequestTest {
         String sandboxId = "xenon-sandbox-1234567890";
         Path sandBoxRoot = makePath("/tmp/sandboxes");
 
-        List<String> prestaged = new ArrayList<String>();
+        List<String> prestaged = new ArrayList<>(1);
         prestaged.add("data/uniprot.fasta");
         JobSubmitRequest req =
-                new JobSubmitRequest(null, "/tmp/jobdir", "/usr/bin/mail", new ArrayList<String>(), prestaged, new ArrayList<String>(),
-                        "stderr.txt", "stdout.txt", new HashMap<String, String>(), null, -1);
+                new JobSubmitRequest(null, "/tmp/jobdir", "/usr/bin/mail", new ArrayList<String>(0), prestaged, new ArrayList<String>(0),
+                        "stderr.txt", "stdout.txt", new HashMap<String, String>(0), null, -1);
 
         Sandbox sandbox = req.toSandbox(filesEngine, sandBoxRoot, sandboxId);
 
@@ -301,11 +302,11 @@ public class JobSubmitRequestTest {
         String sandboxId = "xenon-sandbox-1234567890";
         Path sandBoxRoot = makePath("/tmp/sandboxes");
 
-        List<String> poststaged = new ArrayList<String>();
+        List<String> poststaged = new ArrayList<>(1);
         poststaged.add("/data/uniprot.fasta");
         JobSubmitRequest req =
-                new JobSubmitRequest(null, "/tmp/jobdir", "/usr/bin/mail", new ArrayList<String>(), new ArrayList<String>(),
-                        poststaged, "stderr.txt", "stdout.txt", new HashMap<String, String>(), null, -1);
+                new JobSubmitRequest(null, "/tmp/jobdir", "/usr/bin/mail", new ArrayList<String>(0), new ArrayList<String>(0),
+                        poststaged, "stderr.txt", "stdout.txt", new HashMap<String, String>(0), null, -1);
 
         Sandbox sandbox = req.toSandbox(filesEngine, sandBoxRoot, sandboxId);
 
@@ -322,11 +323,11 @@ public class JobSubmitRequestTest {
         String sandboxId = "xenon-sandbox-1234567890";
         Path sandBoxRoot = makePath("/tmp/sandboxes");
 
-        List<String> poststaged = new ArrayList<String>();
+        List<String> poststaged = new ArrayList<>(1);
         poststaged.add("data/uniprot.fasta");
         JobSubmitRequest req =
-                new JobSubmitRequest(null, "/tmp/jobdir", "/usr/bin/mail", new ArrayList<String>(), new ArrayList<String>(),
-                        poststaged, "stderr.txt", "stdout.txt", new HashMap<String, String>(), null, -1);
+                new JobSubmitRequest(null, "/tmp/jobdir", "/usr/bin/mail", new ArrayList<String>(0), new ArrayList<String>(0),
+                        poststaged, "stderr.txt", "stdout.txt", new HashMap<String, String>(0), null, -1);
 
         Sandbox sandbox = req.toSandbox(filesEngine, sandBoxRoot, sandboxId);
 
