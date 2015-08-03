@@ -19,6 +19,20 @@
  */
 package nl.esciencecenter.osmium.mac;
 
+import java.math.BigInteger;
+import java.net.URI;
+import java.nio.charset.StandardCharsets;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.util.Date;
+import java.util.Objects;
+import java.util.Random;
+import java.util.concurrent.TimeUnit;
+
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
+
 import org.apache.commons.codec.binary.Base64;
 import org.apache.http.Header;
 import org.apache.http.HttpRequest;
@@ -34,20 +48,6 @@ import org.apache.http.protocol.HttpContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.math.BigInteger;
-import java.net.URI;
-import java.nio.charset.StandardCharsets;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
-import java.util.Date;
-import java.util.Objects;
-import java.util.Random;
-import java.util.concurrent.TimeUnit;
-
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
-
 /**
  * MAC Access Authentication scheme as defined in
  * https://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-02
@@ -61,9 +61,7 @@ public class MacScheme implements ContextAwareAuthScheme {
     protected static final Logger LOGGER = LoggerFactory
             .getLogger(MacScheme.class);
 
-    /**
-     * The name of this authorization scheme.
-     */
+    /** The name of this authorization scheme. */
     public static final String SCHEME_NAME = "MAC";
 
     private static final int HTTP_PORT = 80;
@@ -145,11 +143,15 @@ public class MacScheme implements ContextAwareAuthScheme {
     /**
      * Computes RFC 2104-compliant HMAC signature.
      *
-     * @param data The data to be signed.
-     * @param key The signing key.
-     * @param algorithm MAC algorithm implemented by javax.crypto.MAC
+     * @param data
+     *            The data to be signed.
+     * @param key
+     *            The signing key.
+     * @param algorithm
+     *            MAC algorithm implemented by javax.crypto.MAC
      * @return The Base64-encoded RFC 2104-compliant HMAC signature.
-     * @throws AuthenticationException when signature generation fails
+     * @throws AuthenticationException
+     *             when signature generation fails
      */
     private String calculateRFC2104HMAC(String data, String key,
             String algorithm) throws AuthenticationException {

@@ -61,7 +61,7 @@ Create a json file (query.json)
 .. code-block:: json
 
    {
-      "launcher": <optional non-default launcher name>,
+      "launcher": "<optional non-default launcher name>",
       "jobdir": "<absolute path to myjob directory>",
       "executable": "/bin/sh",
       "prestaged": ["runme.sh", "input_file"],
@@ -123,7 +123,8 @@ Example response when job is running:
                "runme.sh", "input.dat"
            ],
            "poststaged": ["output.dat"],
-           "status_callback_url": "http://localhost/status"
+           "status_callback_url": "http://localhost/status",
+           "max_time": 15
        },
        "status": {
          "state": "RUNNING",
@@ -153,7 +154,8 @@ Example response when job is done:
                "runme.sh", "input.dat"
            ],
            "poststaged": ["output.dat"],
-           "status_callback_url": "http://localhost/status"
+           "status_callback_url": "http://localhost/status",
+           "max_time": 15
        },
        "status": {
          "state": "DONE",
@@ -225,4 +227,4 @@ Run integration tests with
 
 .. code-block:: bash
 
-   gradle task
+   gradle check

@@ -8,5 +8,4 @@ target/
 src/test/resources/integration.props
 /.gradle
 /build/
-
-/.nb-gradle/
+/.nb-gradle*

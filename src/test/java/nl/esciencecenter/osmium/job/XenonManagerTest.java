@@ -171,7 +171,7 @@ public class XenonManagerTest {
         verify(jobs).submitJob(scheduler, description);
 
         // assert description configuration
-        assertThat(description.getMaxTime()).isEqualTo(60);
+        assertThat(description.getMaxTime()).isEqualTo(15);
         assertThat(description.getQueueName()).isEqualTo("multi");
         assertThat(description.getWorkingDirectory()).isEqualTo("/tmp/sandboxes");
     }

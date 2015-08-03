@@ -125,7 +125,7 @@ public class JobSubmitRequestTest {
         }
 		Map<String, String> environment = new HashMap<String, String>();
 		environment.put("OSMIUM_JOBID", "mynewjob");
-        return new JobSubmitRequest(null, "/tmp/jobdir", "/bin/sh", arguments, prestaged, poststaged, "stderr.txt", "stdout.txt", environment, cb);
+        return new JobSubmitRequest(null, "/tmp/jobdir", "/bin/sh", arguments, prestaged, poststaged, "stderr.txt", "stdout.txt", environment, cb, -1);
     }
 
     @Test
@@ -205,13 +205,13 @@ public class JobSubmitRequestTest {
 
     @Test
     public void testHashCode() {
-        assertThat(request.hashCode()).isEqualTo(-2075112292);
+        assertThat(request.hashCode()).isEqualTo(96028387);
     }
 
     @Test
     public void testToString() {
         String s =
-                "JobSubmitRequest{launcher=null, jobdir=/tmp/jobdir, executable=/bin/sh, stderr=stderr.txt, stdout=stdout.txt, arguments=[runme.sh], prestaged=[runme.sh, input.dat], poststaged=[output.dat], environment={OSMIUM_JOBID=mynewjob}, status_callback_url=http://localhost/status}";
+                "JobSubmitRequest{launcher=null, jobdir=/tmp/jobdir, executable=/bin/sh, stderr=stderr.txt, stdout=stdout.txt, arguments=[runme.sh], prestaged=[runme.sh, input.dat], poststaged=[output.dat], environment={OSMIUM_JOBID=mynewjob}, status_callback_url=http://localhost/status, maxTime=-1}";
         assertEquals(s, request.toString());
     }
 
@@ -224,6 +224,7 @@ public class JobSubmitRequestTest {
         expected_description.setExecutable("/bin/sh");
         expected_description.setStderr("stderr.txt");
         expected_description.setStdout("stdout.txt");
+		expected_description.setMaxTime(-1);
 		Map<String, String> env = new HashMap<String, String>();
 		env.put("OSMIUM_JOBID", "mynewjob");
 		expected_description.setEnvironment(env);
@@ -262,7 +263,7 @@ public class JobSubmitRequestTest {
         prestaged.add("/data/uniprot.fasta");
         JobSubmitRequest req =
                 new JobSubmitRequest(null, "/tmp/jobdir", "/usr/bin/mail", new ArrayList<String>(), prestaged, new ArrayList<String>(),
-                        "stderr.txt", "stdout.txt", new HashMap<String, String>(), null);
+                        "stderr.txt", "stdout.txt", new HashMap<String, String>(), null, -1);
 
         Sandbox sandbox = req.toSandbox(filesEngine, sandBoxRoot, sandboxId);
 
@@ -283,7 +284,7 @@ public class JobSubmitRequestTest {
         prestaged.add("data/uniprot.fasta");
         JobSubmitRequest req =
                 new JobSubmitRequest(null, "/tmp/jobdir", "/usr/bin/mail", new ArrayList<String>(), prestaged, new ArrayList<String>(),
-                        "stderr.txt", "stdout.txt", new HashMap<String, String>(), null);
+                        "stderr.txt", "stdout.txt", new HashMap<String, String>(), null, -1);
 
         Sandbox sandbox = req.toSandbox(filesEngine, sandBoxRoot, sandboxId);
 
@@ -304,7 +305,7 @@ public class JobSubmitRequestTest {
         poststaged.add("/data/uniprot.fasta");
         JobSubmitRequest req =
                 new JobSubmitRequest(null, "/tmp/jobdir", "/usr/bin/mail", new ArrayList<String>(), new ArrayList<String>(),
-                        poststaged, "stderr.txt", "stdout.txt", new HashMap<String, String>(), null);
+                        poststaged, "stderr.txt", "stdout.txt", new HashMap<String, String>(), null, -1);
 
         Sandbox sandbox = req.toSandbox(filesEngine, sandBoxRoot, sandboxId);
 
@@ -325,7 +326,7 @@ public class JobSubmitRequestTest {
         poststaged.add("data/uniprot.fasta");
         JobSubmitRequest req =
                 new JobSubmitRequest(null, "/tmp/jobdir", "/usr/bin/mail", new ArrayList<String>(), new ArrayList<String>(),
-                        poststaged, "stderr.txt", "stdout.txt", new HashMap<String, String>(), null);
+                        poststaged, "stderr.txt", "stdout.txt", new HashMap<String, String>(), null, -1);
 
         Sandbox sandbox = req.toSandbox(filesEngine, sandBoxRoot, sandboxId);
 
