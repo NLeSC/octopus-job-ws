@@ -8,7 +8,11 @@ buildscript {
         classpath 'de.undercouch:gradle-download-task:1.2'
     }
 }
+plugins {
+    id "com.jfrog.bintray" version "1.2"
+}
 apply plugin: 'java'
+apply plugin: 'maven-publish'
 apply plugin: 'pmd'
 apply plugin: 'checkstyle'
 apply plugin: 'findbugs'
@@ -20,6 +24,7 @@ defaultTasks 'clean', 'build'
 //    METADATA
 // ==============
 version = '3.1.0'
+description = 'Osmium: Xenon Job Webservice'
 mainClassName = 'nl.esciencecenter.osmium.JobLauncherService'
 // will generate a warning with JDK 8, since the runtime jar (rt.jar) of
 // Java 7 is not available. No optimal solution here (except? using gradle
@@ -164,17 +169,17 @@ run {
 // ==============
 
 findbugsMain {
-  reports {
-    xml.enabled = false
-    html.enabled = true
-  }
+    reports {
+        xml.enabled = false
+        html.enabled = true
+    }
 }
 findbugsTest {
-  excludeFilter = file("$rootProject.projectDir/config/findbugs/findbugs-test-exclude-filter.xml")
-  reports {
-    xml.enabled = false
-    html.enabled = true
-  }
+    excludeFilter = file("$rootProject.projectDir/config/findbugs/findbugs-test-exclude-filter.xml")
+    reports {
+        xml.enabled = false
+        html.enabled = true
+    }
 }
 
 checkstyleMain {
@@ -189,3 +194,34 @@ task checkstyleHtml << {
 checkstyleMain.finalizedBy checkstyleHtml
 // Not that interested in failing checkstyle in tests
 checkstyleTest.enabled = false
+
+//     PUBLISH
+// ==============
+publishing {
+    publications {
+        MyPublication(MavenPublication) {
+            from components.java
+            groupId 'nl.esciencecenter.xenon'
+            artifactId 'osmium'
+            version version
+
+            artifact sourcesJar
+            artifact javadocJar
+        }
+    }
+}
+
+bintray {
+    user = System.getenv('BINTRAY_USER')
+    key = System.getenv('BINTRAY_KEY')
+    pkg {
+      repo = 'xenon'
+      name = 'osmium'
+      desc = description
+      userOrg = 'nlesc'
+      licenses = ['Apache-2.0']
+      vcsUrl = 'https://github.com/NLeSC/osmium.git'
+      issueTrackerUrl = 'https://github.com/NLeSC/osmium/issues'
+    }
+    publications = ['MyPublication']
+}
