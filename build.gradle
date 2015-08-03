@@ -1,23 +1,15 @@
 //    PLUGINS
 // ==============
-buildscript {
-    repositories {
-      maven { url "https://jcenter.bintray.com" }
-    }
-    dependencies {
-        classpath 'de.undercouch:gradle-download-task:1.2'
-    }
-}
 plugins {
-    id "com.jfrog.bintray" version "1.2"
+    id 'java'
+    id 'de.undercouch.download' version '1.2'
+    id 'application'
+    id 'maven-publish'
+    id 'com.jfrog.bintray' version '1.2'
+    id 'pmd'
+    id 'checkstyle'
+    id 'findbugs'
 }
-apply plugin: 'java'
-apply plugin: 'maven-publish'
-apply plugin: 'pmd'
-apply plugin: 'checkstyle'
-apply plugin: 'findbugs'
-apply plugin: 'application'
-apply plugin: 'de.undercouch.download'
 
 defaultTasks 'clean', 'build'
 
@@ -35,6 +27,10 @@ targetCompatibility = 1.7
 // Choose Xenon 1.0.0 (from repo) or put a xenon.jar or xenon-[version].jar in
 // lib/ and set that version here
 def xenonVersion = '1.0.0'
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.4'
+}
 
 //  DEPENDENCIES
 // ==============
@@ -84,9 +80,11 @@ dependencies {
 
   // Testing dependencies
   testCompile group: 'com.yammer.dropwizard', name: 'dropwizard-testing', version: '0.6.2', transitive: true
-  testCompile group: 'junit', name: 'junit', version: '4.11'
+  testCompile group: 'junit', name: 'junit', version: '4.8.2'
+  
   testCompile group: 'org.mockito', name: 'mockito-all', version: '1.9.5'
-  testCompile group: 'org.hamcrest', name: 'hamcrest-all', version: '1.3'
+  testCompile group: 'org.hamcrest', name: 'hamcrest-core', version: '1.1', transitive: true
+  testCompile group: 'org.hamcrest', name: 'hamcrest-all', version: '1.1', transitive: true
   testCompile group: 'org.powermock', name: 'powermock-module-junit4', version: '1.5.2', transitive: true
   testCompile group: 'org.powermock', name: 'powermock-api-mockito', version: '1.5.2', transitive: true
   testCompile group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.2.5', classifier: 'tests'
@@ -220,6 +218,7 @@ bintray {
       desc = description
       userOrg = 'nlesc'
       licenses = ['Apache-2.0']
+      websiteUrl = 'https://github.com/NLeSC/osmium'
       vcsUrl = 'https://github.com/NLeSC/osmium.git'
       issueTrackerUrl = 'https://github.com/NLeSC/osmium/issues'
     }
