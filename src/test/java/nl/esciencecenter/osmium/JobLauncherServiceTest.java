@@ -27,56 +27,41 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import io.dropwizard.client.HttpClientConfiguration;
+import io.dropwizard.setup.Environment;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.security.KeyManagementException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.UnrecoverableKeyException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import nl.esciencecenter.osmium.JobLauncherConfiguration;
-import nl.esciencecenter.osmium.JobLauncherService;
 import nl.esciencecenter.osmium.health.JobLauncherHealthCheck;
-import nl.esciencecenter.osmium.job.XenonConfiguration;
-import nl.esciencecenter.osmium.job.XenonManager;
 import nl.esciencecenter.osmium.job.PollConfiguration;
 import nl.esciencecenter.osmium.job.SandboxConfiguration;
 import nl.esciencecenter.osmium.job.SchedulerConfiguration;
+import nl.esciencecenter.osmium.job.XenonConfiguration;
+import nl.esciencecenter.osmium.job.XenonManager;
 import nl.esciencecenter.osmium.mac.MacCredential;
 import nl.esciencecenter.osmium.mac.MacScheme;
 
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.Credentials;
 import org.apache.http.auth.params.AuthPNames;
-import org.apache.http.client.HttpClient;
 import org.apache.http.client.params.AuthPolicy;
-import org.apache.http.conn.scheme.Scheme;
-import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.yammer.dropwizard.client.HttpClientConfiguration;
-import com.yammer.dropwizard.config.Bootstrap;
-import com.yammer.dropwizard.config.Environment;
 
 public class JobLauncherServiceTest {
     private final Environment environment = mock(Environment.class);
     private final JobLauncherService service = new JobLauncherService();
 
     @Test
-    public void testInitialize() {
-        Bootstrap<JobLauncherConfiguration> bootstrap = new Bootstrap<JobLauncherConfiguration>(
-                service);
-
-        service.initialize(bootstrap);
-
-        assertEquals("joblauncher", bootstrap.getName());
+    public void testGetName() {
+        assertEquals("osmium", service.getName());
     }
 
     @Test
@@ -86,9 +71,9 @@ public class JobLauncherServiceTest {
 
         service.run(config, environment);
 
-        verify(environment, times(2)).addResource(any(Object.class));
-        verify(environment).addHealthCheck(any(JobLauncherHealthCheck.class));
-        verify(environment).manage(any(XenonManager.class));
+        verify(environment, times(2)).jersey().register(any(Object.class));
+        verify(environment).healthChecks().register("osmium", any(JobLauncherHealthCheck.class));
+        verify(environment).lifecycle().manage(any(XenonManager.class));
 
         // TODO test injection of MAC Credentials into httpClient
         // or fold injection into extented HttpClientBuilder
@@ -117,10 +102,12 @@ public class JobLauncherServiceTest {
         JobLauncherConfiguration config = sampleConfiguration();
         DefaultHttpClient httpClient = new DefaultHttpClient();
 
-        JobLauncherService.macifyHttpClient(httpClient, config.getMacs());
+        JobLauncherService.macifyHttpClient(httpClient);
 
-        assertTrue("MAC Registered auth scheme", httpClient.getAuthSchemes()
-                .getSchemeNames().contains("mac"));
+//        List<String> schemes = httpClient.getAuthSchemes()
+//                .getSchemeNames();
+        List<String> schemes = (List<String>) httpClient.getParams().getParameter(AuthPNames.TARGET_AUTH_PREF);
+        assertTrue("MAC Registered auth scheme", schemes.contains("mac"));
 
         MacCredential expected_creds = config.getMacs().get(0);
         AuthScope authscope = expected_creds.getAuthScope();
@@ -136,16 +123,5 @@ public class JobLauncherServiceTest {
         assertEquals(authSchemes,
                 httpClient.getParams()
                         .getParameter(AuthPNames.TARGET_AUTH_PREF));
-    }
-
-    @Test
-    public void useInsecureSSL_NoHostnameVerifier() throws KeyManagementException, UnrecoverableKeyException, NoSuchAlgorithmException, KeyStoreException {
-        HttpClient httpClient = new DefaultHttpClient();
-
-        service.useInsecureSSL(httpClient);
-
-        Scheme scheme = httpClient.getConnectionManager().getSchemeRegistry().get("https");
-        SSLSocketFactory factory = (SSLSocketFactory) scheme.getSchemeSocketFactory();
-        assertEquals(org.apache.http.conn.ssl.SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER, factory.getHostnameVerifier());
     }
 }

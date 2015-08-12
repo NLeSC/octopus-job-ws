@@ -20,9 +20,8 @@
 package nl.esciencecenter.osmium;
 
 
-import static com.yammer.dropwizard.testing.JsonHelpers.fromJson;
-import static com.yammer.dropwizard.testing.JsonHelpers.jsonFixture;
-import static org.fest.assertions.api.Assertions.assertThat;
+import static io.dropwizard.testing.FixtureHelpers.fixture;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -39,11 +38,16 @@ import nl.esciencecenter.osmium.mac.MacCredential;
 
 import org.junit.Test;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.yammer.dropwizard.client.HttpClientConfiguration;
+
+import io.dropwizard.client.HttpClientConfiguration;
+import io.dropwizard.jackson.Jackson;
 
 public class JobLauncherConfigurationTest {
+	private static final ObjectMapper MAPPER = Jackson.newObjectMapper();
+
     /**
      *
      * @return Configuration with local job and file adaptor configured.
@@ -96,13 +100,13 @@ public class JobLauncherConfigurationTest {
 
     @Test
     public void deserializesFromJSON() throws IOException, URISyntaxException {
-        JobLauncherConfiguration conf = fromJson(jsonFixture("fixtures/joblauncher.config.json"), JobLauncherConfiguration.class);
+        JobLauncherConfiguration conf = MAPPER.readValue(fixture("fixtures/joblauncher.config.json"), JobLauncherConfiguration.class);
 
         XenonConfiguration xenonConf = getSampleXenonConfiguration();
         xenonConf.setPoll(new PollConfiguration());
         ImmutableList<MacCredential> macs = ImmutableList.of(new MacCredential("id", "key", new URI("http://localhost")));
         ImmutableMap<String, String> emptyProps = ImmutableMap.of();
-        xenonConf.setLaunchers(ImmutableMap.of("local", 
+        xenonConf.setLaunchers(ImmutableMap.of("local",
                 new LauncherConfiguration(
                         new SchedulerConfiguration("local", null, "multi", emptyProps),
                         new SandboxConfiguration("file", "/", "/tmp/sandboxes", emptyProps)

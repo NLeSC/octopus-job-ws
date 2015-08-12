@@ -20,9 +20,9 @@
 package nl.esciencecenter.osmium.job;
 
 
-import static com.yammer.dropwizard.testing.JsonHelpers.fromJson;
-import static com.yammer.dropwizard.testing.JsonHelpers.jsonFixture;
-import static org.fest.assertions.api.Assertions.assertThat;
+import static io.dropwizard.testing.FixtureHelpers.fixture;
+import static org.assertj.core.api.Assertions.assertThat;
+import io.dropwizard.jackson.Jackson;
 
 import java.io.IOException;
 import java.net.URI;
@@ -36,9 +36,12 @@ import javax.validation.ValidatorFactory;
 
 import org.junit.Test;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 
 public class XenonConfigurationTest {
+	private static final ObjectMapper MAPPER = Jackson.newObjectMapper();
+
     public XenonConfiguration sampleConfig() throws URISyntaxException {
         SchedulerConfiguration scheduler = new SchedulerConfiguration("local", null, "multi", null);
         SandboxConfiguration sandbox = new SandboxConfiguration("file", null, "/tmp/sandboxes", null);
@@ -76,7 +79,7 @@ public class XenonConfigurationTest {
 
     @Test
     public void deserializesFromJson() throws IOException, URISyntaxException {
-        XenonConfiguration actual = fromJson(jsonFixture("fixtures/xenon.json"),
+        XenonConfiguration actual = MAPPER.readValue(fixture("fixtures/xenon.json"),
                 XenonConfiguration.class);
 
         ImmutableMap<String, String> emptyProps = ImmutableMap.of();
@@ -103,7 +106,7 @@ public class XenonConfigurationTest {
         ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
         Validator validator = factory.getValidator();
 
-        XenonConfiguration actual = fromJson(jsonFixture("fixtures/xenon.json"),
+        XenonConfiguration actual = MAPPER.readValue(fixture("fixtures/xenon.json"),
                 XenonConfiguration.class);
 
         Set<ConstraintViolation<XenonConfiguration>> constraintViolations = validator.validateProperty(actual, "launchers");

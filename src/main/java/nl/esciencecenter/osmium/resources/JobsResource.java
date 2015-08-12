@@ -39,11 +39,10 @@ import javax.ws.rs.core.UriInfo;
 import nl.esciencecenter.xenon.XenonException;
 import nl.esciencecenter.osmium.api.JobSubmitRequest;
 import nl.esciencecenter.osmium.api.SandboxedJob;
+import nl.esciencecenter.osmium.callback.CallbackClient;
 import nl.esciencecenter.osmium.job.XenonManager;
 
-import org.apache.http.client.HttpClient;
-
-import com.yammer.metrics.annotation.Timed;
+import com.codahale.metrics.annotation.Timed;
 
 @Path("/job")
 @Consumes(MediaType.APPLICATION_JSON)
@@ -56,7 +55,7 @@ public class JobsResource {
     /**
      * Http client to perform status callbacks with
      */
-    private final HttpClient httpClient;
+    private final CallbackClient callbackClient;
 
     /**
      * Use to make absolute URI to job. Will get injected by JSR311
@@ -68,12 +67,12 @@ public class JobsResource {
      * Constructor
      *
      * @param xenonmanager Xenon manager
-     * @param httpClient http client
+     * @param callbackClient http client
      */
-    public JobsResource(XenonManager xenonmanager, HttpClient httpClient) {
+    public JobsResource(XenonManager xenonmanager, CallbackClient callbackClient) {
         super();
         this.xenonmanager = xenonmanager;
-        this.httpClient = httpClient;
+        this.callbackClient = callbackClient;
     }
 
     /**
@@ -83,10 +82,10 @@ public class JobsResource {
      * @param httpClient http client
      * @param uriInfo uri info
      */
-    public JobsResource(XenonManager xenonmanager, HttpClient httpClient, UriInfo uriInfo) {
+    public JobsResource(XenonManager xenonmanager, CallbackClient callbackClient, UriInfo uriInfo) {
         super();
         this.xenonmanager = xenonmanager;
-        this.httpClient = httpClient;
+        this.callbackClient = callbackClient;
         this.uriInfo = uriInfo;
     }
 
@@ -101,7 +100,7 @@ public class JobsResource {
     @POST
     @Timed
     public Response submitJob(@Valid JobSubmitRequest request) throws XenonException {
-        SandboxedJob job = xenonmanager.submitJob(request, httpClient);
+        SandboxedJob job = xenonmanager.submitJob(request, callbackClient);
         UriBuilder builder = uriInfo.getAbsolutePathBuilder();
         URI location = builder.path(job.getIdentifier()).build();
         return Response.created(location).build();

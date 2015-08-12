@@ -37,7 +37,7 @@ import nl.esciencecenter.xenon.jobs.NoSuchJobException;
 import nl.esciencecenter.osmium.api.SandboxedJob;
 import nl.esciencecenter.osmium.job.XenonManager;
 
-import com.yammer.metrics.annotation.Timed;
+import com.codahale.metrics.annotation.Timed;
 
 /**
  * Job Resource.

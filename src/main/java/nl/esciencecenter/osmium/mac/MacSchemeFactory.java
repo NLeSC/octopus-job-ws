@@ -7,9 +7,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -22,16 +22,17 @@ package nl.esciencecenter.osmium.mac;
 
 
 import org.apache.http.auth.AuthScheme;
-import org.apache.http.auth.AuthSchemeFactory;
-import org.apache.http.params.HttpParams;
+import org.apache.http.auth.AuthSchemeProvider;
+import org.apache.http.protocol.HttpContext;
 
 /**
  * Factory for {@link MacScheme} implementations.
  *
  * @author verhoes
  */
-public class MacSchemeFactory implements AuthSchemeFactory {
-    public AuthScheme newInstance(final HttpParams params) {
-        return new MacScheme();
-    }
+public class MacSchemeFactory implements AuthSchemeProvider {
+	@Override
+	public AuthScheme create(HttpContext context) {
+		return new MacScheme();
+	}
 }

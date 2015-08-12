@@ -20,15 +20,15 @@
 package nl.esciencecenter.osmium.api;
 
 
-import static com.yammer.dropwizard.testing.JsonHelpers.asJson;
-import static com.yammer.dropwizard.testing.JsonHelpers.jsonFixture;
-import static org.fest.assertions.api.Assertions.assertThat;
+import static io.dropwizard.testing.FixtureHelpers.fixture;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
+import io.dropwizard.jackson.Jackson;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -59,6 +59,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 public class SandboxedJobTest {
     JobSubmitRequest request;
     Sandbox sandbox;
@@ -67,6 +69,7 @@ public class SandboxedJobTest {
     JobStatus status;
     int pollIterations;
     SandboxedJob job;
+	private static final ObjectMapper MAPPER = Jackson.newObjectMapper();
 
     @Before
     public void setUp() throws URISyntaxException {
@@ -150,7 +153,7 @@ public class SandboxedJobTest {
         assertThat(callback_request.getURI()).isEqualTo(new URI("http://localhost/job/status"));
         assertThat(callback_request.getEntity().getContentType().getValue()).isEqualTo("application/json; charset=UTF-8");
         String body = EntityUtils.toString(callback_request.getEntity(), Consts.UTF_8);
-        assertThat(body).isEqualTo(jsonFixture("fixtures/status.done.json"));
+        assertThat(body).isEqualTo(fixture("fixtures/status.done.json"));
     }
 
     @Test
@@ -204,6 +207,6 @@ public class SandboxedJobTest {
         JobSubmitRequest request2 = JobSubmitRequestTest.sampleRequest();
         job = new SandboxedJob(sandbox, ojob, request2, httpClient, status, pollIterations);
 
-        assertThat(asJson(job), is(equalTo(jsonFixture("fixtures/job.json"))));
+        assertThat(MAPPER.writeValueAsString(job), is(equalTo(fixture("fixtures/job.json"))));
     }
 }
