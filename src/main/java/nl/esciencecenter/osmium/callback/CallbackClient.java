@@ -25,12 +25,13 @@ public class CallbackClient {
         context = config.getPreemptiveContext();
     }
 
-    public HttpClient getHttpClient() {
-        return httpClient;
+    public CallbackClient(HttpClient httpClient, HttpContext context) {
+        this.httpClient = httpClient;
+        this.context = context;
     }
 
-    public void setHttpClient(HttpClient httpClient) {
-        this.httpClient = httpClient;
+    public HttpContext getContext() {
+        return context;
     }
 
     public void putState(URI uri, JobStatusResponse status) throws ClientProtocolException, IOException {

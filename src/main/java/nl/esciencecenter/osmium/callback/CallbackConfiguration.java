@@ -27,9 +27,12 @@ import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.apache.http.conn.socket.PlainConnectionSocketFactory;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.MoreObjects;
+import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
 
 import io.dropwizard.client.HttpClientConfiguration;
+import nl.esciencecenter.osmium.JobLauncherConfiguration;
 
 
 public class CallbackConfiguration {
@@ -39,7 +42,6 @@ public class CallbackConfiguration {
      * The callback url does not need to have credentials encode in it and
      * the callback server does not need to give a auth challenge.
      */
-    @NotNull
     @JsonProperty
     private ImmutableList<BasicCredential> basicCredentials = ImmutableList.of();
 
@@ -62,6 +64,13 @@ public class CallbackConfiguration {
     public CallbackConfiguration() {
     }
 
+    public CallbackConfiguration(HttpClientConfiguration httpClient, ImmutableList<BasicCredential> basicCredentials,
+            Boolean useInsecureSSL) {
+        this.httpClient = httpClient;
+        this.basicCredentials = basicCredentials;
+        this.useInsecureSSL = useInsecureSSL;
+    }
+
     /**
      * @return Http client configuration
      */
@@ -69,16 +78,7 @@ public class CallbackConfiguration {
         return httpClient;
     }
 
-
-    public ImmutableList<BasicCredential> getBasicCredentials() {
-        return basicCredentials;
-    }
-
-    public Boolean useInsecureSSL() {
-        return useInsecureSSL;
-    }
-
-    CredentialsProvider getCredentialsProvider() {
+    protected CredentialsProvider getCredentialsProvider() {
         CredentialsProvider credsProvider = new BasicCredentialsProvider();
         for (BasicCredential basicCredential : basicCredentials) {
             credsProvider.setCredentials(basicCredential.getAuthScope(), basicCredential.getUsernamePasswordCredentials());
@@ -86,7 +86,7 @@ public class CallbackConfiguration {
         return credsProvider;
     }
 
-    AuthCache getAuthCache() {
+    protected AuthCache getAuthCache() {
         AuthCache authCache = new BasicAuthCache();
         BasicScheme authScheme = new BasicScheme();
         for (BasicCredential basicCredential : basicCredentials) {
@@ -95,7 +95,7 @@ public class CallbackConfiguration {
         return authCache;
     }
 
-    HttpClientContext getPreemptiveContext() {
+    public HttpClientContext getPreemptiveContext() {
         HttpClientContext context = HttpClientContext.create();
         context.setCredentialsProvider(getCredentialsProvider());
         context.setAuthCache(getAuthCache());
@@ -135,5 +135,33 @@ public class CallbackConfiguration {
                 .register("http", PlainConnectionSocketFactory.getSocketFactory())
                 .register("https", sslSocketFactory)
                 .build();
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(httpClient, basicCredentials, useInsecureSSL);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        CallbackConfiguration other = (CallbackConfiguration) obj;
+        // httpClient is missing equals() so not using it
+        return Objects.equal(this.basicCredentials, other.basicCredentials)
+                && Objects.equal(this.useInsecureSSL, other.useInsecureSSL);
+    }
+
+    @Override
+    public String toString() {
+        return MoreObjects.toStringHelper(CallbackConfiguration.class)
+                .addValue(httpClient)
+                .addValue(basicCredentials)
+                .addValue(useInsecureSSL)
+                .toString();
     }
 }

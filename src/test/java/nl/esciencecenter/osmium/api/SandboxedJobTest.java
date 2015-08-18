@@ -25,9 +25,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
+
 import io.dropwizard.jackson.Jackson;
 
 import java.io.IOException;
@@ -49,11 +51,13 @@ import nl.esciencecenter.xenon.jobs.Scheduler;
 import nl.esciencecenter.xenon.util.Sandbox;
 import nl.esciencecenter.osmium.api.JobSubmitRequest;
 import nl.esciencecenter.osmium.api.SandboxedJob;
+import nl.esciencecenter.osmium.callback.CallbackClient;
 
 import org.apache.http.Consts;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPut;
+import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.util.EntityUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -69,7 +73,8 @@ public class SandboxedJobTest {
     JobStatus status;
     int pollIterations;
     SandboxedJob job;
-	private static final ObjectMapper MAPPER = Jackson.newObjectMapper();
+    private CallbackClient callbackClient;
+    private static final ObjectMapper MAPPER = Jackson.newObjectMapper();
 
     @Before
     public void setUp() throws URISyntaxException {
@@ -78,16 +83,17 @@ public class SandboxedJobTest {
         request = new JobSubmitRequest();
         request.status_callback_url = new URI("http://localhost/job/status");
         httpClient = mock(HttpClient.class);
+        callbackClient = new CallbackClient(httpClient, new BasicHttpContext());
         Map<String, String> info = new HashMap<String, String>();
         info.put("status", "STOPPED");
         status = new JobStatusImplementation(ojob, "DONE", 0, null, false, true, info);
         pollIterations = 10;
-        job = new SandboxedJob(sandbox, ojob, request, httpClient, status, pollIterations);
+        job = new SandboxedJob(sandbox, ojob, request, callbackClient, status, pollIterations);
     }
 
     @Test
     public void testSandboxedJob_Default() {
-        SandboxedJob sjob = new SandboxedJob(sandbox, ojob, request, httpClient);
+        SandboxedJob sjob = new SandboxedJob(sandbox, ojob, request, callbackClient);
 
         assertThat(sjob.getStatus()).isEqualTo(null);
         assertThat(sjob.getPollIterations()).isEqualTo(0);
@@ -109,8 +115,8 @@ public class SandboxedJobTest {
     }
 
     @Test
-    public void testGetHttpClient() {
-        assertThat(job.getHttpClient()).isEqualTo(httpClient);
+    public void testCetCallbackClient() {
+        assertThat(job.getCallbackClient()).isEqualTo(callbackClient);
     }
 
     @Test
@@ -142,13 +148,13 @@ public class SandboxedJobTest {
             ClientProtocolException, IOException, URISyntaxException {
         JobStatus rstatus = new JobStatusImplementation(ojob, "RUNNING", null, null, true, false, null);
         pollIterations = 10;
-        job = new SandboxedJob(sandbox, ojob, request, httpClient, rstatus, pollIterations);
+        job = new SandboxedJob(sandbox, ojob, request, callbackClient, rstatus, pollIterations);
 
         job.setStatus(this.status);
 
         assertThat(job.getStatus()).isEqualTo(this.status);
         ArgumentCaptor<HttpPut> argument = ArgumentCaptor.forClass(HttpPut.class);
-        verify(httpClient).execute(argument.capture());
+        verify(httpClient).execute(argument.capture(), eq(callbackClient.getContext()));
         HttpPut callback_request = argument.getValue();
         assertThat(callback_request.getURI()).isEqualTo(new URI("http://localhost/job/status"));
         assertThat(callback_request.getEntity().getContentType().getValue()).isEqualTo("application/json; charset=UTF-8");
@@ -162,7 +168,7 @@ public class SandboxedJobTest {
         request.status_callback_url = null;
         JobStatus rstatus = new JobStatusImplementation(ojob, "RUNNING", null, null, true, false, null);
         pollIterations = 10;
-        job = new SandboxedJob(sandbox, ojob, request, httpClient, rstatus, pollIterations);
+        job = new SandboxedJob(sandbox, ojob, request, callbackClient, rstatus, pollIterations);
 
         job.setStatus(this.status);
         verifyNoMoreInteractions(httpClient);
@@ -172,7 +178,7 @@ public class SandboxedJobTest {
     public void testSetStatus_UnChangedWithCallback_NoHttpClientExecute() throws UnsupportedEncodingException,
             ClientProtocolException, IOException {
         pollIterations = 10;
-        job = new SandboxedJob(sandbox, ojob, request, httpClient, status, pollIterations);
+        job = new SandboxedJob(sandbox, ojob, request, callbackClient, status, pollIterations);
 
         job.setStatus(this.status);
 
@@ -205,7 +211,7 @@ public class SandboxedJobTest {
     @Test
     public void serializesToJSON() throws IOException {
         JobSubmitRequest request2 = JobSubmitRequestTest.sampleRequest();
-        job = new SandboxedJob(sandbox, ojob, request2, httpClient, status, pollIterations);
+        job = new SandboxedJob(sandbox, ojob, request2, callbackClient, status, pollIterations);
 
         assertThat(MAPPER.writeValueAsString(job), is(equalTo(fixture("fixtures/job.json"))));
     }

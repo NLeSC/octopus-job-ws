@@ -27,9 +27,12 @@ import java.util.List;
 
 import nl.esciencecenter.osmium.api.JobSubmitRequest;
 import nl.esciencecenter.osmium.api.SandboxedJob;
+import nl.esciencecenter.osmium.callback.CallbackClient;
 
 import org.apache.http.client.HttpClient;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.protocol.BasicHttpContext;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -46,7 +49,7 @@ public class PendingCancelTestITCase {
 
     private XenonManager manager;
 
-    private final HttpClient httpClient = new DefaultHttpClient();
+    private final CallbackClient callbackClient = new CallbackClient(HttpClients.createDefault(), new BasicHttpContext());
 
     @Test
     public void test() throws Exception {
@@ -72,8 +75,8 @@ public class PendingCancelTestITCase {
 
         // when 1 job is submmited -> test passes,
         // when 2 jobs are submitted and second cancelled -> test fails.
-        manager.submitJob(submit, httpClient);
-        SandboxedJob job = manager.submitJob(submit, httpClient);
+        manager.submitJob(submit, callbackClient);
+        SandboxedJob job = manager.submitJob(submit, callbackClient);
 
         manager.start();
         Thread.sleep(500); // allow poller to update status

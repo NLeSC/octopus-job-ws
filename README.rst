@@ -24,16 +24,16 @@ Install
 
   #. Configure Xenon scheduler
   #. Configure Xenon sandbox root directory
-  #. Configure optional MAC id/key
+  #. Configure optional callback basic credentials
 
 2. Build uber-jar or execute from maven.
 
-2.1. Uber-jar, to start on other machine the `osmium-2.0.jar` and `joblauncher.yml` files must be copied.
+2.1. Uber-jar, to start on other machine the `osmium-3.0.2.jar` and `joblauncher.yml` files must be copied.
 
 .. code-block:: bash
 
    mvn package
-   java -jar target/osmium-2.0.jar server joblauncher.yml
+   java -jar target/osmium-3.0.2.jar server joblauncher.yml
 
 
 2.2. Execute from maven
@@ -93,8 +93,8 @@ The `Location` header value is the url where the job can be queried for it's sta
 Callback authentication
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-The status callbacks uses MAC Access Authentication.
-The MAC key indentifier and MAC key must be obtained from the provider.
+The status callbacks can use basic http authentication.
+The credentials must be added to the config file or can be given in the `status_callback_url` of the job submission request.
 
 Status
 ^^^^^^

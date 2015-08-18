@@ -75,7 +75,6 @@ public class BasicCredential {
         return Objects.equal(this.username, other.username) && Objects.equal(this.password, other.password)
                 && Objects.equal(this.scheme, other.scheme) && Objects.equal(this.hostname, other.hostname)
                 && Objects.equal(this.port, other.port)
-
         ;
     }
 

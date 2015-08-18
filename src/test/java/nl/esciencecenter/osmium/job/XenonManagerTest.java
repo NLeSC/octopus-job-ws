@@ -51,8 +51,10 @@ import nl.esciencecenter.xenon.jobs.Scheduler;
 import nl.esciencecenter.xenon.util.Sandbox;
 import nl.esciencecenter.osmium.api.JobSubmitRequest;
 import nl.esciencecenter.osmium.api.SandboxedJob;
+import nl.esciencecenter.osmium.callback.CallbackClient;
 
 import org.apache.http.client.HttpClient;
+import org.apache.http.protocol.BasicHttpContext;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.powermock.api.mockito.PowerMockito;
@@ -156,6 +158,7 @@ public class XenonManagerTest {
         when(sandboxPath.getRelativePath()).thenReturn(sandboxRelativePath);
         when(sandboxRelativePath.getAbsolutePath()).thenReturn("/tmp/sandboxes");
         HttpClient httpClient = mock(HttpClient.class);
+        CallbackClient callbackClient = new CallbackClient(httpClient, new BasicHttpContext());
         Job job = mock(Job.class);
         when(job.getIdentifier()).thenReturn("1234");
         when(jobs.submitJob(scheduler, description)).thenReturn(job);
@@ -164,7 +167,7 @@ public class XenonManagerTest {
         ScheduledExecutorService executor = mock(ScheduledExecutorService.class);
         XenonManager manager = new XenonManager(conf, xenon, schedulers, ImmutableMap.of(conf.getDefaultLauncher(), sandboxPath), sjobs, poller, executor);
 
-        SandboxedJob result = manager.submitJob(request, httpClient);
+        SandboxedJob result = manager.submitJob(request, callbackClient);
 
         assertThat(result.getIdentifier()).isEqualTo("1234");
         verify(sandbox).upload();

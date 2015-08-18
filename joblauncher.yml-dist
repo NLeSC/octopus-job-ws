@@ -1,8 +1,15 @@
 # Example configuration make copy of me
-#macs:
-#- id: <MAC key identifier>
-#  key: <MAC key>
-#  scope: <URL where MAC key should be used>
+#callback:
+#  useInsecureSSL: false
+#  httpClient:
+#    keepAlive: "5m"
+#  basicCredentials:
+#    -
+#      username: "someone"
+#      password: "mypassword"
+#      hostname: "example.com"
+#      scheme: "https"
+#      port: 443
 xenon:
   launchers:
     local:
@@ -21,7 +28,12 @@ xenon:
    interval: 30000  # 30 seconds
    cancelTimeout: 3600000  # 1 hour
    deleteTimeout: 43200000  # 12 hour
-http:
-  port: 9998
-  adminPort: 9998
-  bindHost: localhost
+server:
+  applicationConnectors:
+    - type: http
+      port: 9998
+      bindHost: localhost
+  adminConnectors:
+    - type: http
+      port: 9999
+      bindHost: localhost
