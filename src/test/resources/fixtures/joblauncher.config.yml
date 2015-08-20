@@ -1,0 +1,28 @@
+callback:
+  useInsecureSSL: false
+  httpClient:
+    keepAlive: "5m"
+  basicCredentials:
+    -
+      username: "someone"
+      password: "mypassword"
+      hostname: "example.com"
+      scheme: "https"
+      port: 443
+xenon:
+  launchers:
+    local:
+      scheduler:
+        scheme: "local"
+        queue: "multi"
+      sandbox:
+        scheme: "file"
+        location: "/"
+        path: "/tmp/sandboxes"
+  defaultLauncher: "local"
+  preferences:
+    xenon.adaptors.local.queue.multi.maxConcurrentJobs: 4
+  poll:
+    interval: 30000
+    cancelTimeout: 3600000
+    deleteTimeout: 43200000

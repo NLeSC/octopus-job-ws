@@ -36,11 +36,14 @@ import javax.ws.rs.core.UriInfo;
 
 import nl.esciencecenter.osmium.api.JobSubmitRequest;
 import nl.esciencecenter.osmium.api.SandboxedJob;
+import nl.esciencecenter.osmium.callback.CallbackClient;
 import nl.esciencecenter.osmium.job.XenonManager;
 import nl.esciencecenter.osmium.resources.JobsResource;
 
 import org.apache.http.client.HttpClient;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.protocol.BasicHttpContext;
 import org.junit.Test;
 
 public class JobsResourceTest {
@@ -51,12 +54,12 @@ public class JobsResourceTest {
         XenonManager manager = mock(XenonManager.class);
         SandboxedJob job = mock(SandboxedJob.class);
         when(job.getIdentifier()).thenReturn("1234");
-        HttpClient httpClient = new DefaultHttpClient();
-        when(manager.submitJob(request, httpClient)).thenReturn(job);
+        CallbackClient callbackClient = new CallbackClient(HttpClients.createDefault(), new BasicHttpContext());
+        when(manager.submitJob(request, callbackClient)).thenReturn(job);
         UriInfo uriInfo = mock(UriInfo.class);
         UriBuilder builder = UriBuilder.fromUri("http://localhost/job/");
         when(uriInfo.getAbsolutePathBuilder()).thenReturn(builder);
-        JobsResource resource = new JobsResource(manager, httpClient, uriInfo);
+        JobsResource resource = new JobsResource(manager, callbackClient, uriInfo);
 
         Response response = resource.submitJob(request);
 
@@ -74,11 +77,11 @@ public class JobsResourceTest {
         Collection<SandboxedJob> jobs = new LinkedList<SandboxedJob>();
         jobs.add(job);
         when(manager.getJobs()).thenReturn(jobs);
-        HttpClient httpClient = new DefaultHttpClient();
+        CallbackClient callbackClient = new CallbackClient(HttpClients.createDefault(), new BasicHttpContext());
         UriInfo uriInfo = mock(UriInfo.class);
         UriBuilder builder = UriBuilder.fromUri("http://localhost/job/");
         when(uriInfo.getAbsolutePathBuilder()).thenReturn(builder);
-        JobsResource resource = new JobsResource(manager, httpClient, uriInfo);
+        JobsResource resource = new JobsResource(manager, callbackClient, uriInfo);
 
         URI[] response = resource.getJobs();
 
@@ -98,11 +101,11 @@ public class JobsResourceTest {
         when(job2.getIdentifier()).thenReturn("4567");
         jobs.add(job2);
         when(manager.getJobs()).thenReturn(jobs);
-        HttpClient httpClient = new DefaultHttpClient();
+        CallbackClient callbackClient = new CallbackClient(HttpClients.createDefault(), new BasicHttpContext());
         UriInfo uriInfo = mock(UriInfo.class);
         UriBuilder builder = UriBuilder.fromUri("http://localhost/job/");
         when(uriInfo.getAbsolutePathBuilder()).thenReturn(builder);
-        JobsResource resource = new JobsResource(manager, httpClient, uriInfo);
+        JobsResource resource = new JobsResource(manager, callbackClient, uriInfo);
 
         URI[] response = resource.getJobs();
 

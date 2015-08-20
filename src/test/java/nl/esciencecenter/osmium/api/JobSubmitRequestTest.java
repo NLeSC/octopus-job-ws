@@ -19,11 +19,8 @@
  */
 package nl.esciencecenter.osmium.api;
 
-import static com.yammer.dropwizard.testing.JsonHelpers.asJson;
-import static com.yammer.dropwizard.testing.JsonHelpers.fromJson;
-import static com.yammer.dropwizard.testing.JsonHelpers.jsonFixture;
-import static org.fest.assertions.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.equalTo;
+import static io.dropwizard.testing.FixtureHelpers.fixture;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -34,9 +31,20 @@ import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.junit.Before;
 import org.junit.Test;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import io.dropwizard.jackson.Jackson;
 import nl.esciencecenter.xenon.Xenon;
 import nl.esciencecenter.xenon.XenonException;
 import nl.esciencecenter.xenon.engine.files.FileSystemImplementation;
@@ -48,19 +56,12 @@ import nl.esciencecenter.xenon.files.RelativePath;
 import nl.esciencecenter.xenon.jobs.JobDescription;
 import nl.esciencecenter.xenon.util.Sandbox;
 
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 public class JobSubmitRequestTest {
     private JobSubmitRequest request;
     private FileSystem filesystem;
     private Xenon xenon;
     private Files filesEngine;
+	private static final ObjectMapper MAPPER = Jackson.newObjectMapper();
 
     @Before
     public void setUp() throws URISyntaxException, XenonException {
@@ -130,21 +131,22 @@ public class JobSubmitRequestTest {
 
     @Test
     public void serializesToJSON() throws IOException {
-        assertThat("a JobSubmitRequest can be serialized to JSON", asJson(request),
-                is(equalTo(jsonFixture("fixtures/request.json"))));
+    	String expected = MAPPER.writeValueAsString(MAPPER.readValue(fixture("fixtures/request.json"), JobSubmitRequest.class));
+
+        assertThat(MAPPER.writeValueAsString(request)).isEqualTo(expected);
     }
 
     @Test
     public void deserializesFromJSON() throws IOException {
         assertThat("a JobSubmitRequest can be deserialized from JSON",
-                fromJson(jsonFixture("fixtures/request.json"), JobSubmitRequest.class), is(request));
+        		MAPPER.readValue(fixture("fixtures/request.json"), JobSubmitRequest.class), is(request));
     }
 
     @Test
     public void deserializedFromJson_WithoutCallback() throws IOException {
         request.status_callback_url = null;
         assertThat("a JobSubmitRequest can be deserialized from JSON",
-                fromJson(jsonFixture("fixtures/request.nocallback.json"), JobSubmitRequest.class), is(request));
+        		MAPPER.readValue(fixture("fixtures/request.nocallback.json"), JobSubmitRequest.class), is(request));
     }
 
     @Test
@@ -153,7 +155,7 @@ public class JobSubmitRequestTest {
         minimalRequest.jobdir = "/tmp/jobdir";
         minimalRequest.executable = "/bin/sh";
         assertThat("a JobSubmitRequest can be deserialized from JSON",
-                fromJson(jsonFixture("fixtures/request.minimal.json"), JobSubmitRequest.class), is(minimalRequest));
+        		MAPPER.readValue(fixture("fixtures/request.minimal.json"), JobSubmitRequest.class), is(minimalRequest));
     }
 
     @Test

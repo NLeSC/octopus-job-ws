@@ -20,30 +20,42 @@
 package nl.esciencecenter.osmium;
 
 
-import static com.yammer.dropwizard.testing.JsonHelpers.fromJson;
-import static com.yammer.dropwizard.testing.JsonHelpers.jsonFixture;
-import static org.fest.assertions.api.Assertions.assertThat;
+import static io.dropwizard.testing.FixtureHelpers.fixture;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import javax.validation.Validation;
+
+import nl.esciencecenter.osmium.callback.BasicCredential;
+import nl.esciencecenter.osmium.callback.CallbackConfiguration;
 import nl.esciencecenter.osmium.job.LauncherConfiguration;
 import nl.esciencecenter.osmium.job.PollConfiguration;
 import nl.esciencecenter.osmium.job.SandboxConfiguration;
 import nl.esciencecenter.osmium.job.SchedulerConfiguration;
 import nl.esciencecenter.osmium.job.XenonConfiguration;
-import nl.esciencecenter.osmium.mac.MacCredential;
 
 import org.junit.Test;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.yammer.dropwizard.client.HttpClientConfiguration;
+import com.google.common.io.Resources;
+
+import io.dropwizard.client.HttpClientConfiguration;
+import io.dropwizard.configuration.ConfigurationException;
+import io.dropwizard.configuration.ConfigurationFactory;
+import io.dropwizard.jackson.Jackson;
+import io.dropwizard.util.Duration;
 
 public class JobLauncherConfigurationTest {
+	private static final ObjectMapper MAPPER = Jackson.newObjectMapper();
+
     /**
      *
      * @return Configuration with local job and file adaptor configured.
@@ -61,56 +73,51 @@ public class JobLauncherConfigurationTest {
     @Test
     public void testJobLauncherConfiguration() throws URISyntaxException {
         XenonConfiguration xenonConf = getSampleXenonConfiguration();
-        ImmutableList<MacCredential> macs = ImmutableList.of(new MacCredential("id", "key", new URI("http://localhost")));
-        HttpClientConfiguration httpClient = new HttpClientConfiguration();
+        HttpClientConfiguration httpConf = new HttpClientConfiguration();
+        ImmutableList<BasicCredential> basicCredentials = ImmutableList.of();
+        Boolean useInsecureSSL = false;
+        CallbackConfiguration callBackConfiguration = new CallbackConfiguration(httpConf, basicCredentials, useInsecureSSL);
 
-        JobLauncherConfiguration conf = new JobLauncherConfiguration(xenonConf, macs, httpClient);
+        JobLauncherConfiguration conf = new JobLauncherConfiguration(xenonConf, callBackConfiguration);
 
         assertThat(conf.getXenonConfiguration()).isEqualTo(xenonConf);
-        assertThat(conf.getMacs()).isEqualTo(macs);
-        assertThat(conf.getHttpClientConfiguration()).isEqualTo(httpClient);
-        assertThat(conf.isUseInsecureSSL()).isFalse();
+        assertThat(conf.getCallbackConfiguration()).isEqualTo(callBackConfiguration);
     }
 
     @Test
     public void testJobLauncherConfiguration_NoArgs() {
         JobLauncherConfiguration conf = new JobLauncherConfiguration();
+        JobLauncherConfiguration expected = new JobLauncherConfiguration(
+                new XenonConfiguration(),
+                new CallbackConfiguration()
+        );
 
-        assertEquals(new XenonConfiguration(), conf.getXenonConfiguration());
-        assertNotNull(conf.getHttpClientConfiguration());
-        ImmutableList<MacCredential> macs = ImmutableList.of();
-        assertEquals(macs, conf.getMacs());
-        assertThat(conf.isUseInsecureSSL()).isFalse();
+        assertThat(conf).isEqualTo(expected);
     }
 
     @Test
-    public void testJobLauncherConfiguration_UseInsecureSSL() throws URISyntaxException {
-        XenonConfiguration xenonConf = getSampleXenonConfiguration();
-        ImmutableList<MacCredential> macs = ImmutableList.of(new MacCredential("id", "key", new URI("http://localhost")));
-        HttpClientConfiguration httpClient = new HttpClientConfiguration();
-
-        JobLauncherConfiguration conf = new JobLauncherConfiguration(xenonConf, macs, httpClient, true);
-
-        assertThat(conf.isUseInsecureSSL()).isTrue();
-    }
-
-    @Test
-    public void deserializesFromJSON() throws IOException, URISyntaxException {
-        JobLauncherConfiguration conf = fromJson(jsonFixture("fixtures/joblauncher.config.json"), JobLauncherConfiguration.class);
+    public void deserializesFromJSON() throws IOException, URISyntaxException, ConfigurationException {
+        JobLauncherConfiguration conf = new ConfigurationFactory<>(JobLauncherConfiguration.class,
+                Validation.buildDefaultValidatorFactory().getValidator(),
+                MAPPER, "osmium")
+                .build(new File(Resources.getResource("fixtures/joblauncher.config.yml").toURI()));
 
         XenonConfiguration xenonConf = getSampleXenonConfiguration();
         xenonConf.setPoll(new PollConfiguration());
-        ImmutableList<MacCredential> macs = ImmutableList.of(new MacCredential("id", "key", new URI("http://localhost")));
         ImmutableMap<String, String> emptyProps = ImmutableMap.of();
-        xenonConf.setLaunchers(ImmutableMap.of("local", 
+        xenonConf.setLaunchers(ImmutableMap.of("local",
                 new LauncherConfiguration(
                         new SchedulerConfiguration("local", null, "multi", emptyProps),
                         new SandboxConfiguration("file", "/", "/tmp/sandboxes", emptyProps)
                 )));
+        HttpClientConfiguration httpConf = new HttpClientConfiguration();
+        httpConf.setKeepAlive(Duration.minutes(5));
+        ImmutableList<BasicCredential> basicCredentials = ImmutableList.of(new BasicCredential("someone", "mypassword", "https", "example.com", 443));
+        Boolean useInsecureSSL = false;
+        CallbackConfiguration callBackConfiguration = new CallbackConfiguration(httpConf, basicCredentials, useInsecureSSL);
+        JobLauncherConfiguration expected = new JobLauncherConfiguration(xenonConf, callBackConfiguration);
 
-        assertThat(conf.getXenonConfiguration()).isEqualTo(xenonConf);
-        assertThat(conf.getMacs()).isEqualTo(macs);
-        assertThat(conf.isUseInsecureSSL()).isFalse();
+        assertThat(conf).isEqualTo(expected);
     }
 
     @Test

@@ -1,8 +1,1 @@
-{
-	"state" : "INITIAL",
-	"exitCode" : null,
-	"running": false,
-	"done" : false,
-	"schedulerSpecficInformation" : null,
-    "exception" : null
-}
+{"state":"INITIAL","exitCode":null,"running":false,"done":false,"schedulerSpecficInformation":null,"exception":null}

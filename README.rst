@@ -15,7 +15,7 @@ Requirements
 ------------
 
 - JDK 7 or 8 (http://www.java.com)
-- Gradle 1.x or 2.x (http://gradle.org)
+- Gradle 2.x (http://gradle.org)
 
 Install
 -------
@@ -24,7 +24,7 @@ Install
 
   #. Configure Xenon scheduler
   #. Configure Xenon sandbox root directory
-  #. Configure optional MAC id/key
+  #. Configure optional callback basic credentials
 
 2. Build uber-jar or execute from maven.
 
@@ -61,7 +61,7 @@ Create a json file (query.json)
 .. code-block:: json
 
    {
-      "launcher": "<optional non-default launcher name>",
+      "launcher": <optional non-default launcher name>,
       "jobdir": "<absolute path to myjob directory>",
       "executable": "/bin/sh",
       "prestaged": ["runme.sh", "input_file"],
@@ -93,8 +93,8 @@ The `Location` header value is the url where the job can be queried for it's sta
 Callback authentication
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-The status callbacks uses MAC Access Authentication.
-The MAC key indentifier and MAC key must be obtained from the provider.
+The status callbacks can use basic http authentication.
+The credentials must be added to the config file or can be given in the `status_callback_url` of the job submission request.
 
 Status
 ^^^^^^

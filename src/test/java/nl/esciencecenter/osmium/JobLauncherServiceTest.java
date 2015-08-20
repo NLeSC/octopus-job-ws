@@ -19,77 +19,86 @@
  */
 package nl.esciencecenter.osmium;
 
-
-
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
-import java.net.URI;
 import java.net.URISyntaxException;
-import java.security.KeyManagementException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.UnrecoverableKeyException;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 
+import org.junit.Before;
+import org.junit.Test;
+
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.health.HealthCheckRegistry;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+
+import io.dropwizard.client.HttpClientConfiguration;
+import io.dropwizard.jersey.setup.JerseyEnvironment;
+import io.dropwizard.lifecycle.setup.LifecycleEnvironment;
+import io.dropwizard.setup.Environment;
+import nl.esciencecenter.osmium.callback.BasicCredential;
+import nl.esciencecenter.osmium.callback.CallbackConfiguration;
 import nl.esciencecenter.osmium.health.JobLauncherHealthCheck;
-import nl.esciencecenter.osmium.job.XenonConfiguration;
-import nl.esciencecenter.osmium.job.XenonManager;
 import nl.esciencecenter.osmium.job.PollConfiguration;
 import nl.esciencecenter.osmium.job.SandboxConfiguration;
 import nl.esciencecenter.osmium.job.SchedulerConfiguration;
-import nl.esciencecenter.osmium.mac.MacCredential;
-import nl.esciencecenter.osmium.mac.MacScheme;
-
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.Credentials;
-import org.apache.http.auth.params.AuthPNames;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.params.AuthPolicy;
-import org.apache.http.conn.scheme.Scheme;
-import org.apache.http.conn.ssl.SSLSocketFactory;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.junit.Test;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.yammer.dropwizard.client.HttpClientConfiguration;
-import com.yammer.dropwizard.config.Bootstrap;
-import com.yammer.dropwizard.config.Environment;
+import nl.esciencecenter.osmium.job.XenonConfiguration;
+import nl.esciencecenter.osmium.job.XenonManager;
 
 public class JobLauncherServiceTest {
-    private final Environment environment = mock(Environment.class);
-    private final JobLauncherService service = new JobLauncherService();
+    private Environment environment;
+    private JobLauncherService service;
+    private JobLauncherConfiguration config;
 
-    @Test
-    public void testInitialize() {
-        Bootstrap<JobLauncherConfiguration> bootstrap = new Bootstrap<JobLauncherConfiguration>(
-                service);
+    @Before
+    public void setUp() throws URISyntaxException {
+        environment = getEnvironment();
+        service = new JobLauncherService();
+        config = sampleConfiguration();
+    }
 
-        service.initialize(bootstrap);
-
-        assertEquals("joblauncher", bootstrap.getName());
+    private Environment getEnvironment() {
+        Environment environment = mock(Environment.class);
+        JerseyEnvironment jersey = mock(JerseyEnvironment.class);
+        when(environment.jersey()).thenReturn(jersey);
+        LifecycleEnvironment lifecycle = mock(LifecycleEnvironment.class);
+        when(environment.lifecycle()).thenReturn(lifecycle);
+        HealthCheckRegistry healthchecks = mock(HealthCheckRegistry.class);
+        when(environment.healthChecks()).thenReturn(healthchecks);
+        MetricRegistry metrics = mock(MetricRegistry.class);
+        when(environment.metrics()).thenReturn(metrics);
+        return environment;
     }
 
     @Test
-    public void testRun() throws Exception {
-        // FIXME Waiting for https://github.com/NLeSC/xenon/issues/38 to be resolved
-        JobLauncherConfiguration config = sampleConfiguration();
+    public void testGetName() {
+        assertEquals("osmium", service.getName());
+    }
 
+    @Test
+    public void testRun_managed_xenon() throws Exception {
         service.run(config, environment);
 
-        verify(environment, times(2)).addResource(any(Object.class));
-        verify(environment).addHealthCheck(any(JobLauncherHealthCheck.class));
-        verify(environment).manage(any(XenonManager.class));
+        verify(environment.lifecycle()).manage(any(XenonManager.class));
+    }
 
-        // TODO test injection of MAC Credentials into httpClient
-        // or fold injection into extented HttpClientBuilder
+    @Test
+    public void testRun_registered_resources() throws Exception {
+        service.run(config, environment);
+
+        verify(environment.jersey(), times(2)).register(any(Object.class));
+    }
+
+    @Test
+    public void testRun_registered_healthcheck() throws Exception {
+        service.run(config, environment);
+
+        verify(environment.healthChecks()).register(eq("osmium"), any(JobLauncherHealthCheck.class));
     }
 
     private JobLauncherConfiguration sampleConfiguration()
@@ -100,50 +109,12 @@ public class JobLauncherServiceTest {
         SandboxConfiguration sandbox = new SandboxConfiguration("file", "/", "/tmp/sandboxes", null);
         PollConfiguration pollConf = new PollConfiguration();
         XenonConfiguration xenon = new XenonConfiguration(scheduler, sandbox, "default", prefs, pollConf);
-        ImmutableList<MacCredential> macs = ImmutableList.of(new MacCredential(
-                "id", "key", new URI("http://localhost")));
-        HttpClientConfiguration httpClient = new HttpClientConfiguration();
+        HttpClientConfiguration httpConf = new HttpClientConfiguration();
+        ImmutableList<BasicCredential> basicCredentials = ImmutableList.of();
+        Boolean useInsecureSSL = false;
+        CallbackConfiguration callBackConfiguration = new CallbackConfiguration(httpConf, basicCredentials, useInsecureSSL);
 
-        JobLauncherConfiguration config = new JobLauncherConfiguration(xenon,
-                macs, httpClient);
+        JobLauncherConfiguration config = new JobLauncherConfiguration(xenon, callBackConfiguration);
         return config;
-    }
-
-    @Test
-    public void testMacifyHttpClient() throws URISyntaxException {
-        // FIXME Waiting for https://github.com/NLeSC/xenon/issues/38 to be resolved
-        JobLauncherConfiguration config = sampleConfiguration();
-        DefaultHttpClient httpClient = new DefaultHttpClient();
-
-        JobLauncherService.macifyHttpClient(httpClient, config.getMacs());
-
-        assertTrue("MAC Registered auth scheme", httpClient.getAuthSchemes()
-                .getSchemeNames().contains("mac"));
-
-        MacCredential expected_creds = config.getMacs().get(0);
-        AuthScope authscope = expected_creds.getAuthScope();
-        Credentials creds = httpClient.getCredentialsProvider().getCredentials(
-                authscope);
-        assertEquals(expected_creds, creds);
-
-        List<String> authSchemes = Collections
-                .unmodifiableList(Arrays.asList(new String[] {
-                        MacScheme.SCHEME_NAME, AuthPolicy.SPNEGO,
-                        AuthPolicy.KERBEROS, AuthPolicy.NTLM,
-                        AuthPolicy.DIGEST, AuthPolicy.BASIC }));
-        assertEquals(authSchemes,
-                httpClient.getParams()
-                        .getParameter(AuthPNames.TARGET_AUTH_PREF));
-    }
-
-    @Test
-    public void useInsecureSSL_NoHostnameVerifier() throws KeyManagementException, UnrecoverableKeyException, NoSuchAlgorithmException, KeyStoreException {
-        HttpClient httpClient = new DefaultHttpClient();
-
-        service.useInsecureSSL(httpClient);
-
-        Scheme scheme = httpClient.getConnectionManager().getSchemeRegistry().get("https");
-        SSLSocketFactory factory = (SSLSocketFactory) scheme.getSchemeSocketFactory();
-        assertEquals(org.apache.http.conn.ssl.SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER, factory.getHostnameVerifier());
     }
 }

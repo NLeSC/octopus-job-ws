@@ -22,17 +22,13 @@ package nl.esciencecenter.osmium.api;
 
 import java.io.IOException;
 
+import nl.esciencecenter.osmium.callback.CallbackClient;
 import nl.esciencecenter.xenon.XenonException;
 import nl.esciencecenter.xenon.files.CopyOption;
 import nl.esciencecenter.xenon.jobs.Job;
 import nl.esciencecenter.xenon.jobs.JobStatus;
 import nl.esciencecenter.xenon.util.Sandbox;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpPut;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.StringEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,25 +47,33 @@ public class SandboxedJob {
     private final JobSubmitRequest request;
     private final Sandbox sandbox;
     private final Job job;
-    private final HttpClient httpClient;
+    private final CallbackClient callbackClient;
     private JobStatus status = null;
     private int pollIterations = 0;
 
-    public SandboxedJob(Sandbox sandbox, Job job, JobSubmitRequest request, HttpClient httpClient) {
+    public SandboxedJob() {
+		super();
+        this.sandbox = null;
+        this.job = null;
+        this.request = null;
+        this.callbackClient = null;
+	}
+
+	public SandboxedJob(Sandbox sandbox, Job job, JobSubmitRequest request, CallbackClient callbackClient) {
         super();
         this.sandbox = sandbox;
         this.job = job;
         this.request = request;
-        this.httpClient = httpClient;
+        this.callbackClient = callbackClient;
     }
 
-    public SandboxedJob(Sandbox sandbox, Job job, JobSubmitRequest request, HttpClient httpClient, JobStatus status,
+    public SandboxedJob(Sandbox sandbox, Job job, JobSubmitRequest request, CallbackClient callbackClient, JobStatus status,
             int pollIterations) {
         super();
         this.sandbox = sandbox;
         this.job = job;
         this.request = request;
-        this.httpClient = httpClient;
+        this.callbackClient = callbackClient;
         this.status = status;
         this.pollIterations = pollIterations;
     }
@@ -89,8 +93,8 @@ public class SandboxedJob {
     }
 
     @JsonIgnore
-    public HttpClient getHttpClient() {
-        return httpClient;
+    public CallbackClient getCallbackClient() {
+        return callbackClient;
     }
 
     @JsonIgnore
@@ -137,11 +141,7 @@ public class SandboxedJob {
 
     private void putState2Callback() throws IOException {
         if (request != null && request.status_callback_url != null) {
-            String body = getStatusResponse().toJson();
-            HttpPut put = new HttpPut(request.status_callback_url);
-            HttpEntity entity = new StringEntity(body, ContentType.APPLICATION_JSON);
-            put.setEntity(entity);
-            httpClient.execute(put);
+            callbackClient.putState(request.status_callback_url, getStatusResponse());
         }
     }
 
