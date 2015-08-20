@@ -25,12 +25,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import nl.esciencecenter.osmium.api.JobSubmitRequest;
-import nl.esciencecenter.osmium.api.SandboxedJob;
-import nl.esciencecenter.osmium.callback.CallbackClient;
-
-import org.apache.http.client.HttpClient;
-import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.protocol.BasicHttpContext;
 import org.junit.Rule;
@@ -40,6 +34,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ImmutableMap;
+
+import nl.esciencecenter.osmium.api.JobSubmitRequest;
+import nl.esciencecenter.osmium.api.SandboxedJob;
+import nl.esciencecenter.osmium.callback.CallbackClient;
 
 public class PendingCancelTestITCase {
     protected static final Logger LOGGER = LoggerFactory.getLogger(PendingCancelTestITCase.class);

@@ -79,7 +79,7 @@ public class JobsResource {
      * Constructor
      *
      * @param xenonmanager Xenon manager
-     * @param httpClient http client
+     * @param callbackClient Callback client
      * @param uriInfo uri info
      */
     public JobsResource(XenonManager xenonmanager, CallbackClient callbackClient, UriInfo uriInfo) {

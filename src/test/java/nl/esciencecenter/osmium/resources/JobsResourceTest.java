@@ -19,9 +19,8 @@
  */
 package nl.esciencecenter.osmium.resources;
 
-import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -40,8 +39,6 @@ import nl.esciencecenter.osmium.callback.CallbackClient;
 import nl.esciencecenter.osmium.job.XenonManager;
 import nl.esciencecenter.osmium.resources.JobsResource;
 
-import org.apache.http.client.HttpClient;
-import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.protocol.BasicHttpContext;
 import org.junit.Test;
@@ -86,7 +83,7 @@ public class JobsResourceTest {
         URI[] response = resource.getJobs();
 
         URI[] expected = { new URI("http://localhost/job/1234") };
-        assertThat(response, is(expected));
+        assertThat(response).isEqualTo(expected);
     }
 
     @Test
@@ -112,7 +109,7 @@ public class JobsResourceTest {
         URI[] expected =
                 { new URI("http://localhost/job/1234"),
                         new URI("http://localhost/job/4567") };
-        assertThat(response, is(expected));
+        assertThat(response).isEqualTo(expected);
     }
 
 }
