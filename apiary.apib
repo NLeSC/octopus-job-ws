@@ -1,4 +1,4 @@
-FORMAT: 1A8
+FORMAT: 1A
 HOST: http://localhost:9998
 
 # Osmium web service api
@@ -48,30 +48,30 @@ Example response when job is done:
 + Response 200 (application/json)
 
         {
-           "request": {
-               "launcher": "local",
-               "jobdir": "/tmp/jobdir",
-               "executable": "/bin/sh",
-               "stderr": "stderr.txt",
-               "stdout": "stdout.txt",
-               "arguments": [
-                   "runme.sh"
-               ],
-               "prestaged": [
-                   "runme.sh", "input.dat"
-               ],
-               "poststaged": ["output.dat"],
-               "status_callback_url": "http://localhost/status",
-               "max_time": 15
-           },
-           "status": {
-             "state": "DONE",
-             "exitCode": 0,
-             "exception": null,
-             "running": false,
-             "done": true,
-             "schedulerSpecficInformation": null
-          }
+            "request": {
+                "launcher": "local",
+                "jobdir": "/tmp/jobdir",
+                "executable": "/bin/sh",
+                "stderr": "stderr.txt",
+                "stdout": "stdout.txt",
+                "arguments": [
+                    "runme.sh"
+                ],
+                "prestaged": [
+                    "runme.sh", "input.dat"
+                ],
+                "poststaged": ["output.dat"],
+                "status_callback_url": "http://localhost/status",
+                "max_time": 15
+            },
+            "status": {
+                "state": "DONE",
+                "exitCode": 0,
+                "exception": null,
+                "running": false,
+                "done": true,
+                "schedulerSpecficInformation": null
+            }
         }
 
 Example response when job has been canceled (see below for cancel command):
