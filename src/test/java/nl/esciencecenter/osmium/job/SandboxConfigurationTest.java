@@ -19,7 +19,7 @@
  */
 package nl.esciencecenter.osmium.job;
 
-import static org.fest.assertions.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import nl.esciencecenter.xenon.files.RelativePath;
 import nl.esciencecenter.osmium.job.SandboxConfiguration;
 

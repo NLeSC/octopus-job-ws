@@ -19,13 +19,9 @@
  */
 package nl.esciencecenter.osmium.health;
 
-import com.yammer.metrics.core.HealthCheck;
+import com.codahale.metrics.health.HealthCheck;
 
 public class JobLauncherHealthCheck extends HealthCheck {
-
-    public JobLauncherHealthCheck(String name) {
-        super(name);
-    }
 
     @Override
     protected Result check() {

@@ -33,14 +33,14 @@ import com.google.common.collect.ImmutableMap;
  */
 public class XenonConfiguration {
     /**
-     * Scheduler configuration used to submit jobs.
+     * Launcher configuration used to submit jobs.
      */
     @Valid
     @JsonProperty
     private ImmutableMap<String, LauncherConfiguration> launchers = ImmutableMap.of();
 
     /**
-     * Default scheduler to use.
+     * Default launcher to use.
      */
     @JsonProperty
     private String defaultLauncher;
@@ -71,7 +71,7 @@ public class XenonConfiguration {
             ImmutableMap<String, String> preferences, PollConfiguration poll) {
         this(ImmutableMap.of(schedulerName, new LauncherConfiguration(scheduler, sandbox)), schedulerName, preferences, poll);
     }
-    
+
     public XenonConfiguration() {
         defaultLauncher = null;
     }

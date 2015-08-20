@@ -1,8 +1,1 @@
-{
-	"state" : "KILLED",
-	"exitCode" : null,
-    "running": false,
-	"done" : true,
-	"schedulerSpecficInformation" : null,
-    "exception" : "Process cancelled by user."
-}
+{"state":"KILLED","exitCode":null,"running":false,"done":true,"schedulerSpecficInformation":null,"exception":"Process cancelled by user."}

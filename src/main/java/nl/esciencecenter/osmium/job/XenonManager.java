@@ -31,6 +31,7 @@ import java.util.concurrent.TimeUnit;
 
 import nl.esciencecenter.osmium.api.JobSubmitRequest;
 import nl.esciencecenter.osmium.api.SandboxedJob;
+import nl.esciencecenter.osmium.callback.CallbackClient;
 import nl.esciencecenter.xenon.Xenon;
 import nl.esciencecenter.xenon.XenonException;
 import nl.esciencecenter.xenon.XenonFactory;
@@ -45,11 +46,10 @@ import nl.esciencecenter.xenon.jobs.NoSuchJobException;
 import nl.esciencecenter.xenon.jobs.Scheduler;
 import nl.esciencecenter.xenon.util.Sandbox;
 
-import org.apache.http.client.HttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.yammer.dropwizard.lifecycle.Managed;
+import io.dropwizard.lifecycle.Managed;
 
 /**
  * Xenon manager.
@@ -120,7 +120,7 @@ public class XenonManager implements Managed {
 
     /**
      * @return Scheduler
-     * @throws XenonException If the creation of the Scheduler failed 
+     * @throws XenonException If the creation of the Scheduler failed
      */
     private Map<String,Scheduler> newSchedulers() throws XenonException {
         Credential credential = null;
@@ -176,13 +176,13 @@ public class XenonManager implements Managed {
      *
      * @param request
      *            The job request
-     * @param httpClient
-     *            http client used to reporting status to job callback.
+     * @param callbackClient
+     *            callback client used to reporting status to job callback.
      * @return SandboxedJob job
      *
      * @throws XenonException If staging file or submit job failed
      */
-    public SandboxedJob submitJob(JobSubmitRequest request, HttpClient httpClient) throws XenonException {
+    public SandboxedJob submitJob(JobSubmitRequest request, CallbackClient callbackClient) throws XenonException {
         if (request.launcher == null) {
             request.launcher = configuration.getDefaultLauncher();
         }
@@ -214,7 +214,7 @@ public class XenonManager implements Managed {
         Job job = xenon.jobs().submitJob(schedulers.get(request.launcher), description);
 
         // store job in jobs map
-        SandboxedJob sjob = new SandboxedJob(sandbox, job, request, httpClient);
+        SandboxedJob sjob = new SandboxedJob(sandbox, job, request, callbackClient);
         jobs.put(sjob.getIdentifier(), sjob);
 
         // JobsPoller will poll job status and download sandbox when job is done.

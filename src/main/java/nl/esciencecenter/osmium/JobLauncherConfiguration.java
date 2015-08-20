@@ -22,14 +22,13 @@ package nl.esciencecenter.osmium;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
+import nl.esciencecenter.osmium.callback.CallbackConfiguration;
 import nl.esciencecenter.osmium.job.XenonConfiguration;
-import nl.esciencecenter.osmium.mac.MacCredential;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
-import com.google.common.collect.ImmutableList;
-import com.yammer.dropwizard.client.HttpClientConfiguration;
-import com.yammer.dropwizard.config.Configuration;
+import io.dropwizard.Configuration;
 
 /**
  * Main configuration of job launcher.
@@ -39,13 +38,6 @@ import com.yammer.dropwizard.config.Configuration;
  */
 public class JobLauncherConfiguration extends Configuration {
     /**
-     * List of mac credentials used to perform authentication when using http client on their scope.
-     */
-    @NotNull
-    @JsonProperty
-    private ImmutableList<MacCredential> macs = ImmutableList.of();
-
-    /**
      * Xenon configuration, contains settings to schedule a job
      */
     @Valid
@@ -54,46 +46,12 @@ public class JobLauncherConfiguration extends Configuration {
     private XenonConfiguration xenonConfiguration = new XenonConfiguration();
 
     /**
-     * Http client used to PUT state changes of jobs the launcher is monitoring to the status callback url of the job
+     * Callback configuration, contains settings to sent job status changes to some url
      */
     @Valid
     @NotNull
-    @JsonProperty
-    private HttpClientConfiguration httpClient = new HttpClientConfiguration();
-
-    /**
-     * Http Client can be configured so self signed ssl certificates work.
-     */
-    @Valid
-    @NotNull
-    @JsonProperty
-    private Boolean useInsecureSSL = false;
-
-    /**
-     * Constructor
-     *
-     * @param xenon
-     *            Xenon configuration
-     * @param macs
-     *            List of macs
-     * @param httpClient
-     *            Http client configuration
-     */
-    public JobLauncherConfiguration(XenonConfiguration xenon, final ImmutableList<MacCredential> macs,
-            HttpClientConfiguration httpClient) {
-        this.xenonConfiguration = xenon;
-        this.macs = macs;
-        this.httpClient = httpClient;
-    }
-
-    public JobLauncherConfiguration(XenonConfiguration xenonConfiguration, final ImmutableList<MacCredential> macs,
-            HttpClientConfiguration httpClient, Boolean useInsecureSSL) {
-        super();
-        this.macs = macs;
-        this.xenonConfiguration = xenonConfiguration;
-        this.httpClient = httpClient;
-        this.useInsecureSSL = useInsecureSSL;
-    }
+    @JsonProperty("callback")
+    private CallbackConfiguration callbackConfiguration = new CallbackConfiguration();
 
     /**
      * No argument constructor required for JAXB.
@@ -102,11 +60,10 @@ public class JobLauncherConfiguration extends Configuration {
 
     }
 
-    /**
-     * @return Http client configuration
-     */
-    public HttpClientConfiguration getHttpClientConfiguration() {
-        return httpClient;
+    public JobLauncherConfiguration(XenonConfiguration xenonConfiguration, CallbackConfiguration callbackConfiguration) {
+        super();
+        this.xenonConfiguration = xenonConfiguration;
+        this.callbackConfiguration = callbackConfiguration;
     }
 
     /**
@@ -116,22 +73,13 @@ public class JobLauncherConfiguration extends Configuration {
         return xenonConfiguration;
     }
 
-    /**
-     * Credentials used for http client.
-     *
-     * @return List of MAC Access Authentication credentials
-     */
-    public ImmutableList<MacCredential> getMacs() {
-        return macs;
-    }
-
-    public Boolean isUseInsecureSSL() {
-        return useInsecureSSL;
+    public CallbackConfiguration getCallbackConfiguration() {
+        return callbackConfiguration;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(macs, xenonConfiguration, httpClient);
+        return Objects.hashCode(xenonConfiguration, callbackConfiguration);
     }
 
     @Override
@@ -143,13 +91,16 @@ public class JobLauncherConfiguration extends Configuration {
             return false;
         }
         JobLauncherConfiguration other = (JobLauncherConfiguration) obj;
-        return Objects.equal(this.macs, other.macs) && Objects.equal(this.xenonConfiguration, other.xenonConfiguration)
-                && Objects.equal(this.httpClient, other.httpClient);
+        return Objects.equal(this.xenonConfiguration, other.xenonConfiguration)
+                && Objects.equal(this.callbackConfiguration, other.callbackConfiguration);
     }
 
     @Override
     public String toString() {
-        return Objects.toStringHelper(this).addValue(this.macs).addValue(this.xenonConfiguration).addValue(this.httpClient)
+        return MoreObjects.toStringHelper(JobLauncherConfiguration.class)
+                .addValue(xenonConfiguration)
+                .addValue(callbackConfiguration)
                 .toString();
     }
+
 }
