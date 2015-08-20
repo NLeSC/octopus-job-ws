@@ -12,40 +12,7 @@ HOST: http://localhost:9998
 
 ### Job status [GET]
 
-Example response when job is running:
-
-+ Response 200 (application/json)
-
-        {
-           "request": {
-               "launcher": "local",
-               "jobdir": "/tmp/jobdir",
-               "executable": "/bin/sh",
-               "stderr": "stderr.txt",
-               "stdout": "stdout.txt",
-               "arguments": [
-                   "runme.sh"
-               ],
-               "prestaged": [
-                   "runme.sh", "input.dat"
-               ],
-               "poststaged": ["output.dat"],
-               "status_callback_url": "http://localhost/status",
-               "max_time": 15
-           },
-           "status": {
-             "state": "RUNNING",
-             "exitCode": null,
-             "exception": null,
-             "running": true,
-             "done": false,
-             "schedulerSpecficInformation": null
-          }
-        }
-
-Example response when job is done:
-
-+ Response 200 (application/json)
+#### Job status of completed job
 
         {
             "request": {
@@ -74,9 +41,9 @@ Example response when job is done:
             }
         }
 
-Example response when job has been canceled (see below for cancel command):
+#### Job status of cancelled job
 
-+ Response 200 (application/json)
+Example response when job has been canceled (see below for cancel command):
 
         {
           "request": {
@@ -107,15 +74,42 @@ Example response when job has been canceled (see below for cancel command):
           }
         }
 
-When job can't be found:
+Job status of running job
+
++ Response 200 (application/json)
+
+        {
+           "request": {
+               "launcher": "local",
+               "jobdir": "/tmp/jobdir",
+               "executable": "/bin/sh",
+               "stderr": "stderr.txt",
+               "stdout": "stdout.txt",
+               "arguments": [
+                   "runme.sh"
+               ],
+               "prestaged": [
+                   "runme.sh", "input.dat"
+               ],
+               "poststaged": ["output.dat"],
+               "status_callback_url": "http://localhost/status",
+               "max_time": 15
+           },
+           "status": {
+             "state": "RUNNING",
+             "exitCode": null,
+             "exception": null,
+             "running": true,
+             "done": false,
+             "schedulerSpecficInformation": null
+          }
+        }
 
 + Response 404
 
 ### Delete a job [DELETE]
 
 + Response 204
-
-When job can't be found:
 
 + Response 404
 
@@ -140,15 +134,15 @@ The credentials must be added to the config file or can be given in the `status_
 
     + Attributes (object)
 
-        + launcher: (string, optional) - Name of launcher
-        + jobdir: (string) - Local location of job input files and location where output files will be written
-        + executable: (string, required) - Executable to execute
-        + arguments: (array) - Arguments for executable
-        + prestaged: (array) - Files to copy from local jobdir to launcher location
-        + poststaged: (array) - Files to copy when job is ready from launcher location to local jobdir
+        + launcher: "default" (string, optional) - Name of launcher
+        + jobdir: "/myjobdir" (string) - Local location of job input files and location where output files will be written
+        + executable: "/bin/sh" (string, required) - Executable to execute
+        + arguments: [] (array) - Arguments for executable
+        + prestaged: [] (array) - Files to copy from local jobdir to launcher location
+        + poststaged: [] (array) - Files to copy when job is ready from launcher location to local jobdir
         + stderr: "stderr.txt" (string) - Filename where stderr is written
         + stdout: "stdout.txt" (string) - Filename where stdout is written
-        + status_callback_url: (string, optional) - Url where job status is PUT to
+        + status_callback_url: "http://localhost/job/1234/status" (string, optional) - Url where job status is PUT to
 
     + Body
 
