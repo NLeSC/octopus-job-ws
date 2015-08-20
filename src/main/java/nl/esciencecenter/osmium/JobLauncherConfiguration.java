@@ -54,7 +54,7 @@ public class JobLauncherConfiguration extends Configuration {
     private CallbackConfiguration callbackConfiguration = new CallbackConfiguration();
 
     /**
-     * No argument contructor required for JAXB.
+     * No argument constructor required for JAXB.
      */
     public JobLauncherConfiguration() {
 

@@ -199,7 +199,13 @@ public class XenonManager implements Managed {
         long cancelTimeout = configuration.getPoll().getCancelTimeout();
         // CancelTimeout is in milliseconds and MaxTime must be in minutes, so convert it
         int maxTime = (int) TimeUnit.MINUTES.convert(cancelTimeout, TimeUnit.MILLISECONDS);
-        description.setMaxTime(maxTime);
+        if (description.getMaxTime() == -1) {
+            description.setMaxTime(maxTime);
+        } else if (description.getMaxTime() > maxTime) {
+            throw new XenonException(null, "Maximum time of job "
+                    + description.getMaxTime()
+                    + " is larger than the cancellation timeout " + cancelTimeout);
+        }
 
         // stage input files
         sandbox.upload();
@@ -212,7 +218,6 @@ public class XenonManager implements Managed {
         jobs.put(sjob.getIdentifier(), sjob);
 
         // JobsPoller will poll job status and download sandbox when job is done.
-
         return sjob;
     }
 

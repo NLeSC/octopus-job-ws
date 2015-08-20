@@ -71,7 +71,7 @@ public class PendingCancelTestITCase {
         arguments.add("60");
         JobSubmitRequest submit =
                 new JobSubmitRequest(null, jobdir, "/bin/sleep", arguments, new ArrayList<String>(), new ArrayList<String>(),
-                        "stderr.txt", "stdout.txt", new HashMap<String, String>(), null);
+                        "stderr.txt", "stdout.txt", new HashMap<String, String>(), null, -1);
 
         // when 1 job is submmited -> test passes,
         // when 2 jobs are submitted and second cancelled -> test fails.
