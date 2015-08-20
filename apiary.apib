@@ -153,15 +153,15 @@ The credentials must be added to the config file or can be given in the `status_
     + Body
 
             {
-              "launcher": "<optional non-default launcher name>",
-              "jobdir": "<absolute path to myjob directory>",
+              "launcher": "default",
+              "jobdir": "/myjobdir",
               "executable": "/bin/sh",
               "prestaged": ["runme.sh", "input_file"],
               "poststaged": ["output_file"],
               "stderr": "stderr.txt",
               "stdout": "stdout.txt",
               "arguments": ["runme.sh"],
-              "status_callback_url": "<optional url where job status is PUT to>"
+              "status_callback_url": "http://localhost/job/1234/status"
             }
 
 + Response 201
