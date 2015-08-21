@@ -1,0 +1,175 @@
+FORMAT: 1A
+HOST: http://localhost:9998
+
+# Osmium web service api
+
+# Group Job
+
+## Job [/job/{id}]
+
++ Parameters
+    + id (string) - Identifier of job
+
+### Job status [GET]
+
+#### Job status of completed job
+
+        {
+            "request": {
+                "launcher": "local",
+                "jobdir": "/tmp/jobdir",
+                "executable": "/bin/sh",
+                "stderr": "stderr.txt",
+                "stdout": "stdout.txt",
+                "arguments": [
+                    "runme.sh"
+                ],
+                "prestaged": [
+                    "runme.sh", "input.dat"
+                ],
+                "poststaged": ["output.dat"],
+                "status_callback_url": "http://localhost/status",
+                "max_time": 15
+            },
+            "status": {
+                "state": "DONE",
+                "exitCode": 0,
+                "exception": null,
+                "running": false,
+                "done": true,
+                "schedulerSpecficInformation": null
+            }
+        }
+
+#### Job status of cancelled job
+
+Example response when job has been canceled (see below for cancel command):
+
+        {
+          "request": {
+             "launcher": "local",
+             "jobdir": "/tmp/myjob",
+             "status_callback_url": null,
+             "poststaged": [
+                "output_file"
+             ],
+             "stderr": "stderr.txt",
+             "executable": "/bin/sh",
+             "arguments": [
+                "runme.sh"
+             ],
+             "prestaged": [
+                "runme.sh",
+                "input_file"
+             ],
+             "stdout": "stdout.txt"
+          },
+          "status": {
+             "running": false,
+             "done": true,
+             "exception": "Process cancelled by user.",
+             "schedulerSpecficInformation": null,
+             "exitCode": null,
+             "state": "KILLED"
+          }
+        }
+
+Job status of running job
+
++ Response 200 (application/json)
+
+        {
+           "request": {
+               "launcher": "local",
+               "jobdir": "/tmp/jobdir",
+               "executable": "/bin/sh",
+               "stderr": "stderr.txt",
+               "stdout": "stdout.txt",
+               "arguments": [
+                   "runme.sh"
+               ],
+               "prestaged": [
+                   "runme.sh", "input.dat"
+               ],
+               "poststaged": ["output.dat"],
+               "status_callback_url": "http://localhost/status",
+               "max_time": 15
+           },
+           "status": {
+             "state": "RUNNING",
+             "exitCode": null,
+             "exception": null,
+             "running": true,
+             "done": false,
+             "schedulerSpecficInformation": null
+          }
+        }
+
++ Response 404
+
+### Delete a job [DELETE]
+
++ Response 204
+
++ Response 404
+
+## Collection of jobs [/jobs]
+
+### Submit a job [POST]
+
+Create an example job with
+
+    mkdir myjob
+    cd myjob
+    echo 'Lorem ipsum' > input_file
+    echo 'hostname;date;wc -l input_file > output_file' > runme.sh
+
+The `status_callback_url` value is the url where the web service will send the job status with a http PUT request.
+Can be used as an alternative for polling the job status.
+
+The status callbacks can use basic http authentication.
+The credentials must be added to the config file or can be given in the `status_callback_url` of the job submission request.
+
++ Request (application/json)
+
+    + Attributes (object)
+
+        + launcher: "default" (string, optional) - Name of launcher
+        + jobdir: "/myjobdir" (string) - Local location of job input files and location where output files will be written
+        + executable: "/bin/sh" (string, required) - Executable to execute
+        + arguments: [] (array) - Arguments for executable
+        + prestaged: [] (array) - Files to copy from local jobdir to launcher location
+        + poststaged: [] (array) - Files to copy when job is ready from launcher location to local jobdir
+        + stderr: "stderr.txt" (string) - Filename where stderr is written
+        + stdout: "stdout.txt" (string) - Filename where stdout is written
+        + status_callback_url: "http://localhost/job/1234/status" (string, optional) - Url where job status is PUT to
+
+    + Body
+
+            {
+              "launcher": "default",
+              "jobdir": "/myjobdir",
+              "executable": "/bin/sh",
+              "prestaged": ["runme.sh", "input_file"],
+              "poststaged": ["output_file"],
+              "stderr": "stderr.txt",
+              "stdout": "stdout.txt",
+              "arguments": ["runme.sh"],
+              "status_callback_url": "http://localhost/job/1234/status"
+            }
+
++ Response 201
+
+    + Headers
+
+            Location: http://localhost/job/local-1234
+
+### Submitted jobs [GET]
+
+List of identifiers of all submitted jobs.
+
++ Response 200 (application/json)
+
+        [
+            "http://localhost/job/local-1234"
+        ]
