@@ -8,3 +8,4 @@ cache:
   directories:
   - .gradle
   - $HOME/.gradle
+  - lib
