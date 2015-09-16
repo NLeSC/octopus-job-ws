@@ -1,0 +1,129 @@
+FORMAT: 1A
+HOST: http://localhost:9998
+
+# Osmium API
+
+Osmium is a webservice to run jobs using the
+[Xenon](http://nlesc.github.io/Xenon) middleware library. Osmium can starts
+jobs remotely based on its configuration. Each remote location is defined as
+a launcher, and for that launcher the connection method is specified. In the
+launcher configuration, also a sandbox directory is defined, where all jobs
+will run. As a result, it is currently not possible to run a job in any other
+working directory.
+
+# Group Job
+
+## Job [/job/{id}]
+
++ Parameters
+    + id (string) - Identifier of job
+
++ Attributes
+    + request (Job request) - request that initialized the job
+    + status (Job status) - current status of the job
+
+### Job status [GET]
+
+The job status returns the following combinations, where KILLED indicates
+a cancelled job.
+
+state   | running | done    | exitCode
+-------:| ------- | ------- | -------
+QUEUED  | false   | false   | null
+RUNNING | true    | false   | null
+KILLED  | false   | true    | null
+DONE    | false   | true    | number (0 - 254)
+
++ Response 200 (application/json)
+
+        {
+            "request": {
+                ...
+            },
+            "status": {
+                "state": "DONE",
+                "exitCode": 0,
+                "exception": null,
+                "running": false,
+                "done": true,
+                "schedulerSpecificInformation": null
+            }
+        }
+
++ Response 404
+
+### Cancel job [DELETE]
+
+The job will be cancelled, but the Osmium status of the job will linger with state cancelled.
+
++ Response 204
++ Response 404
+
+## Job collection [/jobs]
+
+### Submit a job [POST]
+
+Create an example job with
+
+    mkdir myjob
+    cd myjob
+    echo 'Lorem ipsum' > input_file
+    echo 'hostname;date;wc -l input_file > output_file' > runme.sh
+
+The status_callback_url value is the url where the web service will send the job status with a http PUT request.
+Can be used as an alternative for polling the job status.
+
+The status callbacks can use basic http authentication.
+The credentials must be added to the config file or can be given in the status_callback_url of the job submission request.
+
++ Request (application/json)
+    + Attributes (Job request)
+
++ Response 201
+    + Headers
+
+            Location: http://localhost/job/local-1234
+
+### Submitted jobs [GET]
+
+List of URLs of all submitted jobs.
+
++ Response 200 (application/json)
+
+        [
+            "http://localhost/job/local-1234"
+        ]
+
+
+# Data Structures
+
+## Job request (object)
+
++ launcher: local (string, optional) - launcher name in Osmium
+    configuration
++ jobdir: /tmp/jobdir (string) - job directory in Osmiums local filesystem, to
+    get input files from and write output files to.
++ executable: /bin/sh (string) - executable at remote location.
++ arguments: arg1, arg2 (array[string], optional) - arguments for the
+    executable
++ prestaged: input.dat (array[string], optional) - files to be transferred
+    from the specified jobdir to the working directory of the remote
+    command, before execution has started.
++ poststaged: output.dat (array[string], optional) - files to be transferred
+    from the working directory of the remote command to the specified
+    jobdir, after execution has ended.
++ stderr: stderr.txt (string, optional) - file to store stderr of the
+    command in
++ stdout: stderr.txt (string, optional) - file to store stdout of the
+    command in
++ stdout: stderr.txt (string, optional) - file to store stdout of the command in
++ status_callback_url: http://my.example.com/jobs (string, optional) - URL at which the Job will be PUT each time its status is updated.
+
+## Job status (object)
+
++ running: false (boolean) - whether the job is now running
++ done: true (boolean) - whether the job has finished
++ exception: Process cancelled by user (string) - message in case of failure
++ schedulerSpecificInformation: null (object) - information provided by the specific Xenon adaptor
++ exitCode: null (number) - exit code of the command, null if none was found
++ state: KILLED (string) - one of RUNNING, KILLED, DONE, QUEUED.
