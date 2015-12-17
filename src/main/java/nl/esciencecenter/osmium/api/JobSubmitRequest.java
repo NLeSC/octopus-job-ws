@@ -36,7 +36,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 import javax.validation.constraints.NotNull;
 
@@ -61,11 +60,17 @@ public class JobSubmitRequest {
     @NotNull
     public String jobdir;
     /**
-     * Local directory to read prestaged files from and write poststaged files to.
+     * Path to executable on execution host.
      */
     @NotNull
     public String executable;
-    
+
+//    /**
+//     * Local directory to read pre-staged files from and write post-staged files to.
+//     */
+//    @NotNull
+//    public String sandbox_path;
+
     /**
      * File name to write standard error to
      */

@@ -19,7 +19,6 @@
  */
 package nl.esciencecenter.osmium.api;
 
-
 import static io.dropwizard.testing.FixtureHelpers.fixture;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -30,28 +29,12 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
-import io.dropwizard.jackson.Jackson;
-
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
-
-import nl.esciencecenter.xenon.XenonException;
-import nl.esciencecenter.xenon.engine.jobs.JobImplementation;
-import nl.esciencecenter.xenon.engine.jobs.JobStatusImplementation;
-import nl.esciencecenter.xenon.files.CopyOption;
-import nl.esciencecenter.xenon.files.InvalidCopyOptionsException;
-import nl.esciencecenter.xenon.jobs.Job;
-import nl.esciencecenter.xenon.jobs.JobDescription;
-import nl.esciencecenter.xenon.jobs.JobStatus;
-import nl.esciencecenter.xenon.jobs.Scheduler;
-import nl.esciencecenter.xenon.util.Sandbox;
-import nl.esciencecenter.osmium.api.JobSubmitRequest;
-import nl.esciencecenter.osmium.api.SandboxedJob;
-import nl.esciencecenter.osmium.callback.CallbackClient;
 
 import org.apache.http.Consts;
 import org.apache.http.client.ClientProtocolException;
@@ -64,6 +47,19 @@ import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import io.dropwizard.jackson.Jackson;
+import nl.esciencecenter.osmium.callback.CallbackClient;
+import nl.esciencecenter.xenon.XenonException;
+import nl.esciencecenter.xenon.engine.jobs.JobImplementation;
+import nl.esciencecenter.xenon.engine.jobs.JobStatusImplementation;
+import nl.esciencecenter.xenon.files.CopyOption;
+import nl.esciencecenter.xenon.files.InvalidCopyOptionsException;
+import nl.esciencecenter.xenon.jobs.Job;
+import nl.esciencecenter.xenon.jobs.JobDescription;
+import nl.esciencecenter.xenon.jobs.JobStatus;
+import nl.esciencecenter.xenon.jobs.Scheduler;
+import nl.esciencecenter.xenon.util.Sandbox;
 
 public class SandboxedJobTest {
     JobSubmitRequest request;
@@ -84,7 +80,7 @@ public class SandboxedJobTest {
         request.status_callback_url = new URI("http://localhost/job/status");
         httpClient = mock(HttpClient.class);
         callbackClient = new CallbackClient(httpClient, new BasicHttpContext());
-        Map<String, String> info = new HashMap<String, String>();
+        Map<String, String> info = new HashMap<String, String>(2);
         info.put("status", "STOPPED");
         status = new JobStatusImplementation(ojob, "DONE", 0, null, false, true, info);
         pollIterations = 10;
@@ -144,8 +140,8 @@ public class SandboxedJobTest {
     }
 
     @Test
-    public void testSetStatus_ChangedWithCallback_HttpClientExecute() throws UnsupportedEncodingException,
-            ClientProtocolException, IOException, URISyntaxException {
+    public void testSetStatus_ChangedWithCallback_HttpClientExecute()
+            throws UnsupportedEncodingException, ClientProtocolException, IOException, URISyntaxException {
         JobStatus rstatus = new JobStatusImplementation(ojob, "RUNNING", null, null, true, false, null);
         pollIterations = 10;
         job = new SandboxedJob(sandbox, ojob, request, callbackClient, rstatus, pollIterations);
@@ -163,8 +159,8 @@ public class SandboxedJobTest {
     }
 
     @Test
-    public void testSetStatus_ChangedWithoutCallback_NoHttpClientExecute() throws UnsupportedEncodingException,
-            ClientProtocolException, IOException {
+    public void testSetStatus_ChangedWithoutCallback_NoHttpClientExecute()
+            throws UnsupportedEncodingException, ClientProtocolException, IOException {
         request.status_callback_url = null;
         JobStatus rstatus = new JobStatusImplementation(ojob, "RUNNING", null, null, true, false, null);
         pollIterations = 10;
@@ -175,8 +171,8 @@ public class SandboxedJobTest {
     }
 
     @Test
-    public void testSetStatus_UnChangedWithCallback_NoHttpClientExecute() throws UnsupportedEncodingException,
-            ClientProtocolException, IOException {
+    public void testSetStatus_UnChangedWithCallback_NoHttpClientExecute()
+            throws UnsupportedEncodingException, ClientProtocolException, IOException {
         pollIterations = 10;
         job = new SandboxedJob(sandbox, ojob, request, callbackClient, status, pollIterations);
 
@@ -194,7 +190,8 @@ public class SandboxedJobTest {
     }
 
     @Test
-    public void testDownloadSandbox() throws URISyntaxException, UnsupportedOperationException, InvalidCopyOptionsException, XenonException {
+    public void testDownloadSandbox()
+            throws URISyntaxException, UnsupportedOperationException, InvalidCopyOptionsException, XenonException {
         job.downloadSandbox();
 
         verify(sandbox).download(CopyOption.REPLACE);

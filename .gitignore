@@ -6,4 +6,7 @@ dependency-reduced-pom.xml
 joblauncher.yml
 target/
 src/test/resources/integration.props
-
+/.gradle
+/build/
+/.nb-gradle*
+/bin/

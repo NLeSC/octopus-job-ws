@@ -24,21 +24,20 @@ import static io.dropwizard.testing.FixtureHelpers.fixture;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
+import org.junit.Test;
+
+import nl.esciencecenter.xenon.engine.jobs.JobStatusImplementation;
+import nl.esciencecenter.xenon.jobs.Job;
+import nl.esciencecenter.xenon.jobs.JobStatus;
+
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 
-import nl.esciencecenter.xenon.engine.jobs.JobStatusImplementation;
-import nl.esciencecenter.xenon.jobs.Job;
-import nl.esciencecenter.xenon.jobs.JobStatus;
-import nl.esciencecenter.osmium.api.JobStatusResponse;
-
-import org.junit.Test;
-
 public class JobStatusResponseTest {
     private JobStatusResponse getRunningJobStatus() {
-        Map<String, String> info = new HashMap<String, String>();
+        Map<String, String> info = new HashMap<>(2);
         info.put("status", "EXECUTING");
         JobStatusResponse status = new JobStatusResponse("RUNNING", true, false, null, null, info);
         return status;
@@ -74,6 +73,7 @@ public class JobStatusResponseTest {
     }
 
     @Test
+    @SuppressWarnings("ObjectEqualsNull")
     public void testEqual_null_false() {
         JobStatusResponse status = getRunningJobStatus();
 
@@ -96,6 +96,7 @@ public class JobStatusResponseTest {
     }
 
     @Test
+    @SuppressWarnings("IncompatibleEquals")
     public void testEqual_diffClass_false() {
         JobStatusResponse status = getRunningJobStatus();
 
@@ -105,7 +106,7 @@ public class JobStatusResponseTest {
     @Test
     public void testEqual_otherState_false() {
         JobStatusResponse status = getRunningJobStatus();
-        Map<String, String> info = new HashMap<String, String>();
+        Map<String, String> info = new HashMap<>(2);
         info.put("status", "EXECUTING");
         JobStatusResponse expected = new JobStatusResponse("EXECUTING", true, false, null, null, info);
 
@@ -115,7 +116,7 @@ public class JobStatusResponseTest {
     @Test
     public void testEqual_otherNotRunning_false() {
         JobStatusResponse status = getRunningJobStatus();
-        Map<String, String> info = new HashMap<String, String>();
+        Map<String, String> info = new HashMap<>(2);
         info.put("status", "EXECUTING");
         JobStatusResponse expected = new JobStatusResponse("RUNNING", false, false, null, null, info);
 
@@ -125,7 +126,7 @@ public class JobStatusResponseTest {
     @Test
     public void testEqual_otherDone_false() {
         JobStatusResponse status = getRunningJobStatus();
-        Map<String, String> info = new HashMap<String, String>();
+        Map<String, String> info = new HashMap<>(2);
         info.put("status", "EXECUTING");
         JobStatusResponse expected = new JobStatusResponse("RUNNING", true, true, null, null, info);
 
@@ -135,7 +136,7 @@ public class JobStatusResponseTest {
     @Test
     public void testEqual_otherExitCode_false() {
         JobStatusResponse status = getRunningJobStatus();
-        Map<String, String> info = new HashMap<String, String>();
+        Map<String, String> info = new HashMap<>(2);
         info.put("status", "EXECUTING");
         JobStatusResponse expected = new JobStatusResponse("RUNNING", true, false, 0, null, info);
 
@@ -145,7 +146,7 @@ public class JobStatusResponseTest {
     @Test
     public void testEqual_otherException_false() {
         JobStatusResponse status = getRunningJobStatus();
-        Map<String, String> info = new HashMap<String, String>();
+        Map<String, String> info = new HashMap<>(2);
         info.put("status", "EXECUTING");
         Exception exception = new Exception();
         JobStatusResponse expected = new JobStatusResponse("RUNNING", true, false, null, exception, info);
@@ -156,7 +157,7 @@ public class JobStatusResponseTest {
     @Test
     public void testEqual_otherSchedulerInfo_false() {
         JobStatusResponse status = getRunningJobStatus();
-        Map<String, String> info = new HashMap<String, String>();
+        Map<String, String> info = new HashMap<>(2);
         info.put("status", "r");
         JobStatusResponse expected = new JobStatusResponse("RUNNING", true, false, null, null, info);
 
@@ -178,7 +179,7 @@ public class JobStatusResponseTest {
         int exitCode = 0;
         Exception exception = null;
         String scheduler_status = "STOPPED";
-        Map<String, String> info = new HashMap<String, String>();
+        Map<String, String> info = new HashMap<>(2);
         info.put("status", scheduler_status);
         JobStatusResponse status = new JobStatusResponse(state, false, done, exitCode, exception, info);
         assertThat(status.toJson()).isEqualTo(fixture("fixtures/status.done.json"));
