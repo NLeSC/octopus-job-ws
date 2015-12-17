@@ -1,11 +1,10 @@
 language: java
 jdk:
-  - oraclejdk7
-  - openjdk7
   - oraclejdk8
 sudo: false
+before_cache:
+  - rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
 cache:
   directories:
-  - .gradle
-  - $HOME/.gradle
-  - lib
+    - $HOME/.gradle/caches/
+    - $HOME/.gradle/wrapper/

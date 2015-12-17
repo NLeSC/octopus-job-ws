@@ -7,6 +7,7 @@ Web service to submit jobs via a Xenon (https://nlesc.github.io/Xenon) supported
 
 Submit job to web service using a HTTP POST request.
 Reports status of job to submitter using a callback url.
+Copies input files from machine running webservice to machine executing job and copies output files back.
 
 # Requirements
 
@@ -50,7 +51,7 @@ A web service will be started on http://localhost:9998
 
 # Usage
 
-Web service api documetation can be found at http://docs.osmium.apiary.io or as un-rendered format at [apiary.apib](apiary.apib).
+Web service api documentation can be found at http://docs.osmium.apiary.io or as un-rendered format at [apiary.apib](apiary.apib).
 
 # Development
 
@@ -71,13 +72,6 @@ To run web service first create config file `joblauncher.yml`, use `joblauncher.
 ./gradlew run
 ````
 
-Run SonarQube analysis with
-```
-./gradlew sonarqube -Dsonar.host.url=http://localhost:9000 \
--Dsonar.jdbc.url=jdbc:mysql://localhost:3306/sonarqube \
--Dsonar.jdbc.username=sonar -Dsonar.jdbc.password=sonar
-```
-
 # Documentation
 
 ## Javadoc
@@ -92,7 +86,7 @@ firefox build/docs/javadoc/index.html
 
 API documentation is written in https://apiblueprint.org/ format.
 
-API documentation can be preview with:
+API documentation can be previewed with:
 ````
 sudo npm install -g aglio
 aglio -i apiary.apib -s

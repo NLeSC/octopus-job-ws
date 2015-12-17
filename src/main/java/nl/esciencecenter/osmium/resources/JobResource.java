@@ -42,8 +42,6 @@ import com.codahale.metrics.annotation.Timed;
 /**
  * Job Resource.
  *
- * @author verhoes
- *
  */
 @Path("/job/{jobidentifier}")
 @Consumes(MediaType.APPLICATION_JSON)

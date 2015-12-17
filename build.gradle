@@ -2,7 +2,6 @@
 // ==============
 plugins {
     id 'java'
-    id 'de.undercouch.download' version '2.0.0'
     id 'application'
     // publish
     id 'maven-publish'
@@ -16,8 +15,6 @@ plugins {
     id 'org.unbroken-dome.test-sets' version '1.2.0'
     // fat/ubur/one/shadow jar
     id 'com.github.johnrengelman.shadow' version '1.2.2'
-    // quality
-    id "org.sonarqube" version "1.0"
 }
 
 //    METADATA
@@ -27,30 +24,22 @@ version = '3.1.0'
 description = 'Osmium: Xenon Job Webservice'
 mainClassName = 'nl.esciencecenter.osmium.JobLauncherService'
 
-// will generate a warning with JDK 8, since the runtime jar (rt.jar) of
-// Java 7 is not available. No optimal solution here (except? using gradle
-// wrapper)
-sourceCompatibility = 1.7
-targetCompatibility = 1.7
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
 
 ext {
-    // Choose Xenon 1.0.0 (from repo) or put a xenon.jar or xenon-[version].jar in
-    // lib/ and set that version here
-    xenonVersion = '1.0.0'
+    xenonVersion = '1.1.0'
     dropwizardVersion = '0.8.2'
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '2.6'
+    gradleVersion = '2.9'
 }
 
 //  DEPENDENCIES
 // ==============
 
-//Get dependencies locally, from Xenon and then from Maven central repository
 repositories {
-  flatDir { dirs 'lib' }
-  maven { url "http://nlesc.github.io/Xenon/repo" }
   jcenter()
   mavenCentral()
 }
@@ -59,32 +48,7 @@ dependencies {
   compile group: 'io.dropwizard', name: 'dropwizard-core', version: dropwizardVersion
   compile group: 'io.dropwizard', name: 'dropwizard-client', version: dropwizardVersion
 
-  // Xenon dependencies. downloadJGlobus task (below) downloads
-  // xenon/lib/**/*.jar to ./lib/
-  compile group: 'nl.esciencecenter', name: 'xenon', version: xenonVersion
-  runtime group: 'com.jcraft', name: 'jsch', version: '0.1.50'
-  runtime group: 'commons-net', name: 'commons-net', version: '3.3'
-  runtime group: 'com.google.code.findbugs', name: 'findbugs', version: '2.0.2'
-  runtime module(group: 'org.jglobus', name: 'cog-jglobus', version: '1.8.0') {
-    dependency group: 'org.jglobus', name: 'cog-jobmanager', version: '1.8.0'
-    dependency group: 'org.jglobus', name: 'cog-url', version: '1.8.0'
-    dependency('commons-logging:commons-logging:1.1') {
-      // dropwizard comes with a newer version of javax.servlet,
-      // exclude it here otherwise NoSuchMethodError
-      exclude group: 'javax.servlet'
-    }
-    dependency group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.3'
-    dependency group: 'cryptix', name: 'cryptix-asn1'
-    dependency group: 'cryptix', name: 'cryptix'
-    dependency group: 'cryptix', name: 'cryptix32'
-    dependency group: 'org.bountycastle', name: 'jce-jdk13', version: '131'
-    dependency group: 'org.ietf', name: 'jgss'
-    dependency group: 'com.claymoresystems', name: 'puretls', version: '0.9b4'
-  }
-
-  // Xenon runtime dependencies
-  runtime group: 'ch.qos.logback', name: 'logback-core', version: '1.0.11'
-  runtime group: 'ch.qos.logback', name: 'logback-classic', version: '1.0.11'
+  compile group: 'nl.esciencecenter.xenon', name: 'xenon', version: xenonVersion
 
   // Testing dependencies
   testCompile group: 'io.dropwizard', name: 'dropwizard-testing', version: dropwizardVersion
@@ -96,27 +60,6 @@ dependencies {
   testCompile group: 'org.powermock', name: 'powermock-api-mockito', version: '1.6.2'
   testCompile group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5', classifier: 'tests'
 }
-
-task downloadJGlobus(type: de.undercouch.gradle.tasks.download.Download) {
-  // Globus dependencies are non-standard but already uploaded to the Xenon
-  // GitHub repository. This resolution is set to a fixed commit in the
-  // Xenon develop branch, to prevent expiration.
-  def baseUrl = 'https://raw.github.com/NLeSC/Xenon/de9892dd92358bf69521819adfee15dc43e41ff4/lib/cog-jglobus/'
-  src([
-      baseUrl + 'cog-jglobus-1.8.0.jar',
-      baseUrl + 'cog-jobmanager-1.8.0.jar',
-      baseUrl + 'cog-url-1.8.0.jar',
-      baseUrl + 'cryptix-asn1.jar',
-      baseUrl + 'cryptix.jar',
-      baseUrl + 'cryptix32.jar',
-      baseUrl + 'jce-jdk13-131.jar',
-      baseUrl + 'jgss.jar',
-      baseUrl + 'puretls.jar',
-    ])
-  dest new File(projectDir, '/lib')
-  overwrite false
-}
-compileJava.dependsOn downloadJGlobus
 
 //     TEST
 // ==============
@@ -187,14 +130,6 @@ run {
 
 //    CHECK
 // ==============
-
-sonarqube {
-    properties {
-        property "sonar.jacoco.itReportPath", "build/jacoco/integrationTest.exec"
-    }
-}
-// Ensure that integration coverage is availabe before sonar analysis.
-project.tasks["sonarqube"].dependsOn integrationTest
 
 //     PUBLISH
 // ==============
