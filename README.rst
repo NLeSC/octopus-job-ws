@@ -5,6 +5,8 @@ Osmium
 
 .. |TravisCILink| image:: https://travis-ci.org/NLeSC/osmium.png
 .. _TravisCILink: https://travis-ci.org/NLeSC/osmium
+.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.1065436.svg
+   :target: https://doi.org/10.5281/zenodo.1065436
 
 Web service to submit jobs via a Xenon (https://nlesc.github.io/Xenon) supported scheduler.
 
