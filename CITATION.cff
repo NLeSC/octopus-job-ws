@@ -1,0 +1,17 @@
+# YAML 1.2
+# Metadata for citation of this software according to the CFF format (https://citation-file-format.github.io/)
+cff-version: 1.0.3
+message: If you use this software, please cite it as below.
+title: Osmium
+doi: 10.5281/zenodo.1065436
+authors:
+- given-names: Stefan
+  family-names: Verhoeven
+  affiliation: Nederlands eScience Center
+- given-names: Joris
+  family-names: Borgdorff
+  affiliation: Nederlands eScience Center
+version: 3.0.2
+date-released: '2015-02-09'
+repository-code: https://github.com/NLeSC/osmium
+license: Apache-2.0
