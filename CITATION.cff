@@ -12,6 +12,6 @@ authors:
   family-names: Borgdorff
   affiliation: Nederlands eScience Center
 version: 3.0.2
-date-released: '2015-02-09'
+date-released: 2015-02-09
 repository-code: https://github.com/NLeSC/osmium
 license: Apache-2.0
